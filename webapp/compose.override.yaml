@@ -1,5 +1,10 @@
 
 services:
+    frontend:
+        volumes:
+            - ./frontend/src:/usr/local/frontend/src
+            - ./frontend/public:/usr/local/frontend/public
+            - ./frontend/index.html:/usr/local/frontend/index.html
     backend:
         volumes:
             - ./backend/src:/usr/local/backend/src

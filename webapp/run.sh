@@ -3,7 +3,7 @@
 
 if [ "$1" == "--dev" ]; then
 
-    docker compose --env-file .env --env-file .env.dev up --build
+    docker compose --env-file .env --env-file .env.dev --profile dev up --build
 
 else
 
