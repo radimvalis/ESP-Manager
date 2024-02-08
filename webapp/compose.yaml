@@ -1,0 +1,11 @@
+
+services:
+    backend:
+        build:
+            context: "./"
+            dockerfile: "./backend/Dockerfile"
+            target: ${TARGET}
+        environment:
+            BACKEND_PORT: ${BACKEND_PORT}
+        ports:
+            - ${BACKEND_PORT_PUBLIC}:${BACKEND_PORT}

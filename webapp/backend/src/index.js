@@ -1,14 +1,14 @@
 
 import express from "express";
 
-const PORT = 3000;
-
 const app = express();
 
 app.get("/", (req, res) => {
 
     res.send("Hello World!");
 });
+
+const PORT = process.env.BACKEND_PORT;
 
 app.listen(PORT, () => {
 

@@ -1,0 +1,5 @@
+
+services:
+    backend:
+        volumes:
+            - ./backend/src:/usr/local/backend/src
