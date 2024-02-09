@@ -1,6 +1,13 @@
 
 services:
     frontend:
+        build:
+            context: "./"
+            dockerfile: "./frontend/Dockerfile"
+        environment:
+            FRONTEND_PORT: ${FRONTEND_PORT}
+        ports:
+            - ${FRONTEND_PORT_PUBLIC}:${FRONTEND_PORT}
         volumes:
             - ./frontend/src:/usr/local/frontend/src
             - ./frontend/public:/usr/local/frontend/public

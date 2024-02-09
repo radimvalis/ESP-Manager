@@ -1,14 +1,5 @@
 
 services:
-    frontend:
-        build:
-            context: "./"
-            dockerfile: "./frontend/Dockerfile"
-        environment:
-            FRONTEND_PORT: ${FRONTEND_PORT}
-        ports:
-            - ${FRONTEND_PORT_PUBLIC}:${FRONTEND_PORT}
-        profiles: [dev]
     backend:
         build:
             context: "./"
