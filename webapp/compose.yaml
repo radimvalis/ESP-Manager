@@ -1,5 +1,14 @@
 
 services:
+    reverse-proxy:
+        build:
+            context: "./"
+            dockerfile: "./reverse-proxy/Dockerfile"
+            target: ${TARGET}
+        ports:
+            - ${REVERSE_PROXY_PORT_PUBLIC}:${REVERSE_PROXY_PORT}
+        depends_on:
+            - backend
     backend:
         build:
             context: "./"
@@ -7,5 +16,4 @@ services:
             target: ${TARGET}
         environment:
             BACKEND_PORT: ${BACKEND_PORT}
-        ports:
-            - ${BACKEND_PORT_PUBLIC}:${BACKEND_PORT}
+

@@ -1,5 +1,8 @@
 
 services:
+    reverse-proxy:
+        depends_on:
+            - frontend
     frontend:
         build:
             context: "./"
@@ -13,5 +16,7 @@ services:
             - ./frontend/public:/usr/local/frontend/public
             - ./frontend/index.html:/usr/local/frontend/index.html
     backend:
+        ports:
+            - ${BACKEND_PORT_PUBLIC}:${BACKEND_PORT}
         volumes:
             - ./backend/src:/usr/local/backend/src
