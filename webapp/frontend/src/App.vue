@@ -1,29 +1,23 @@
 
 <script setup>
 
-    import { RouterLink, RouterView } from "vue-router";
-    import HelloWorld from "./components/HelloWorld.vue";
+    import { RouterView } from "vue-router";
+    import TheAppBar from "@/components/TheAppBar.vue";
 
 </script>
 
 <template>
 
-    <header>
+    <v-app>
 
-        <HelloWorld/>
+        <TheAppBar/>
 
-        <nav>
+        <v-main>
 
-            <RouterLink to="/">Home</RouterLink>
+            <RouterView/>
 
-            <br/>
+        </v-main>
 
-            <RouterLink to="/about">About</RouterLink>
-
-        </nav>
-
-    </header>
-
-    <RouterView/>
+    </v-app>
 
 </template>
