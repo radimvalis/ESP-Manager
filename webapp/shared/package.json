@@ -1,0 +1,8 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Code shared among backend and frontend",
+  "type": "module",
+  "main": "index.js",
+  "license": "ISC"
+}

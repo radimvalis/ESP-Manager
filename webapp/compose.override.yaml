@@ -15,8 +15,10 @@ services:
             - ./frontend/src:/usr/local/frontend/src
             - ./frontend/public:/usr/local/frontend/public
             - ./frontend/index.html:/usr/local/frontend/index.html
+            - ./shared:/usr/local/shared
     backend:
         ports:
             - ${BACKEND_PORT_PUBLIC}:${BACKEND_PORT}
         volumes:
             - ./backend/src:/usr/local/backend/src
+            - ./shared:/usr/local/shared

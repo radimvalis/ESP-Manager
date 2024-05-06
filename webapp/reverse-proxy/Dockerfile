@@ -17,6 +17,8 @@ COPY    ./frontend/package*.json \
         ./frontend/vite.config.js \
         ./
 
+COPY ./shared ../shared
+
 RUN npm ci
 
 COPY ./frontend/src ./src
