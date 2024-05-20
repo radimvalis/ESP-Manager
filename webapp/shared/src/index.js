@@ -1,10 +1,11 @@
 
-const API = "/api/";
-
 const URL = {
 
-    LOG_IN: API + "login",
-    SIGN_UP: API + "signup"
+    USER: {
+
+        CREATE: "/user/create",
+        LOG_IN: "/user/login"
+    }
 };
 
-export { URL }
+export { URL };

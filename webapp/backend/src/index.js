@@ -1,16 +1,13 @@
 
-import express from "express";
+import ApplicationContext from "./logic/index.js";
+import start from "./api/index.js";
 
-const app = express();
+(async () => {
 
-app.get("/", (req, res) => {
+    const PORT = process.env.BACKEND_PORT || 4000;
+    
+    const context = new ApplicationContext();
 
-    res.send("Hello World!");
-});
+    start(context, PORT);
 
-const PORT = process.env.BACKEND_PORT;
-
-app.listen(PORT, () => {
-
-    console.log(`Example app listening on port ${PORT}`);
-});
+})();
