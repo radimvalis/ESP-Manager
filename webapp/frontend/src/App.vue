@@ -1,8 +1,11 @@
 
 <script setup>
 
+    import { useSessionStore } from '@/stores/session';
     import { RouterView } from "vue-router";
     import TheAppBar from "@/components/TheAppBar.vue";
+
+    useSessionStore().init();
 
 </script>
 
