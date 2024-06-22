@@ -1,7 +1,44 @@
 
 <script setup>
 
-    import { RouterLink } from "vue-router";
+    import { ref } from "vue";
+    import { RouterLink, useRouter } from "vue-router";
+    import { useSessionStore } from '@/stores/session';
+
+    const router = useRouter();
+    const session = useSessionStore();
+
+    const form = ref(null);
+    const username = ref("");
+    const password = ref("");
+    const passwordConfirmed = ref("");
+
+    const usernameRules = [
+
+        (x) => !!x || "Username is required",
+        (x) => /^[a-z0-9]+$/i.test(x) || "Only alphanumeric characters are allowed",
+    ];
+    const passwordRules = [
+                    
+        (x) => !!x || "Password is required",
+    ];
+    const passwordConfirmRules = [
+
+        (x) => !!x || 'Password confirmation is required',
+        (x) => !password.value || (password.value && x === password.value) || "Passwords must match"
+    ];
+
+    async function signUp() {
+
+        const { valid } = await form.value.validate();
+
+        if (valid) {
+
+            await session.api.auth.signUp(username.value, password.value);
+
+            router.push("/boards");
+        }
+    }
 
 </script>
 
@@ -30,9 +67,14 @@
 
                     <v-card-text>
 
-                        <v-form>
+                        <v-form
+                            ref="form"
+                        >
 
                             <v-text-field
+                                v-model="username"
+                                :rules="usernameRules"
+                                class="my-2"
                                 label="Username"
                                 required
                                 variant="outlined"
@@ -40,6 +82,9 @@
                             />
 
                             <v-text-field
+                                v-model="password"
+                                :rules="passwordRules"
+                                class="my-2"
                                 label="Password"
                                 type="password"
                                 required
@@ -48,6 +93,9 @@
                             />
 
                             <v-text-field
+                                v-model="passwordConfirmed"
+                                :rules="passwordConfirmRules"
+                                class="my-2"
                                 label="Confirm Password"
                                 type="password"
                                 required
@@ -57,9 +105,10 @@
 
                             <v-btn
                                 block
-                                size="large"
+                                size="x-large"
                                 variant="flat"
                                 color="primary"
+                                @click="signUp"
                             >
                                 Sign Up
                             </v-btn>

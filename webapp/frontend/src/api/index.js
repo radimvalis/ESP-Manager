@@ -1,17 +1,17 @@
 
 import HttpClient from "@/utils/HttpClient";
 
-import UserApi from "./resources/user.api";
+import AuthApi from "./resources/auth.api";
+
+import { ENDPOINT } from "shared";
 
 export default class ApiProvider {
-
-    user;
 
     constructor() {
 
         const apiBaseUrl = location.origin + "/api";
-        const httpClient = new HttpClient(apiBaseUrl);
+        const httpClient = new HttpClient(apiBaseUrl, ENDPOINT.AUTH.REFRESH_TOKENS);
 
-        this.user = new UserApi(httpClient);
+        this.auth = new AuthApi(httpClient);
     }
 }

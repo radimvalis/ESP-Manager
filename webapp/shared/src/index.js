@@ -1,11 +1,13 @@
 
-const URL = {
+const ENDPOINT = {
 
-    USER: {
+    AUTH: {
 
-        CREATE: "/user/create",
-        LOG_IN: "/user/login"
+        LOG_IN: "/auth/login",
+        SIGN_UP: "/auth/signup",
+        LOG_OUT: "/auth/logout",
+        REFRESH_TOKENS: "/auth/refresh"
     }
-};
+}
 
-export { URL };
+export { ENDPOINT };

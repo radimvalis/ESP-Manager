@@ -1,16 +1,15 @@
 
+import AuthService from "./services/auth.service.js";
+import CookieService from "./services/cookie.service.js";
 import UserService from "./services/user.service.js";
 
 export default class ApplicationContext {
 
-    services;
+    constructor(config) {
 
-    constructor() {
-
-        this.services = {
-
-            user: new UserService()
-        }
+        this.auth = new AuthService(config.auth);
+        this.cookie = new CookieService(config.cookie);
+        this.user = new UserService();
 
         Object.freeze(this);
     }
