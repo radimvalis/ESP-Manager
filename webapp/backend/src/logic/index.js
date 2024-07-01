@@ -9,7 +9,7 @@ export default class ApplicationContext {
 
         this.auth = new AuthService(config.auth);
         this.cookie = new CookieService(config.cookie);
-        this.user = new UserService();
+        this.user = new UserService(config.models);
 
         Object.freeze(this);
     }

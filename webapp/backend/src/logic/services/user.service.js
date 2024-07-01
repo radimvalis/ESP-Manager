@@ -1,39 +1,50 @@
 
-const testDb = [
-
-    {
-        id: 12345,
-        username: "test",
-        password: "test"
-    }
-];
+import bcrypt from "bcrypt";
+import {
+    NotFoundError,
+    WrongPasswordError,
+    CredentialsValidationError
+} from "../../utils/errors.js";
 
 export default class UserService {
 
+    _saltRounds = 10;
+
+    constructor(models) {
+
+        this._models = models;
+    }
+
     async create(username, password) {
-        
-        const newUser = {
 
-            id: Math.floor(Math.random() * ( 99999 - 10000) + 10000),
-            username,
-            password
-        };
+        if (!/^[a-z0-9]+$/i.test(username)) {
 
-        testDb.push(newUser);
+            throw new CredentialsValidationError();
+        }
 
-        return newUser;
+        const hashedPassword = await bcrypt.hash(password, this._saltRounds);
+
+        const user = await this._models.User.create({ username, password: hashedPassword });
+
+        return user;
     }
 
     async getByCredentials(username, password) {
 
-        for (let i = 0; i < testDb.length; i++) {
+        const user = await this._models.User.findOne({ where: { username } });
 
-            const user = testDb[i];
+        if (user === null) {
 
-            if (user.username === username && user.password === password) {
+            throw new NotFoundError();
+        }
 
-                return user;
-            }
-        }        
+        const comparisonResult = await bcrypt.compare(password, user.password);
+
+        if (!comparisonResult) {
+
+            throw new WrongPasswordError();
+        }
+
+        return user;
     }
 }
