@@ -30,6 +30,9 @@
 
             await session.api.auth.logIn(username.value, password.value);
 
+            session.username = username.value;
+            session.isLoggedIn = true;
+            
             router.push("/boards");
         }
     }

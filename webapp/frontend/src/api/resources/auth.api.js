@@ -5,7 +5,7 @@ export default class AuthApi {
 
     constructor(httpClient) {
 
-        this.httpClient = httpClient;
+        this._httpClient = httpClient;
     }
 
     async logIn(username, password) {
@@ -16,7 +16,7 @@ export default class AuthApi {
             password
         };
 
-        return this.httpClient.post(ENDPOINT.AUTH.LOG_IN, data);
+        return this._httpClient.post(ENDPOINT.AUTH.LOG_IN, data);
     }
 
     async signUp(username, password) {
@@ -27,11 +27,11 @@ export default class AuthApi {
             password
         };
 
-        return this.httpClient.post(ENDPOINT.AUTH.SIGN_UP, data);  
+        return this._httpClient.post(ENDPOINT.AUTH.SIGN_UP, data);  
     }
 
     async logOut() {
         
-        return this.httpClient.get(ENDPOINT.AUTH.LOG_OUT); 
+        return this._httpClient.get(ENDPOINT.AUTH.LOG_OUT);
     }
 }

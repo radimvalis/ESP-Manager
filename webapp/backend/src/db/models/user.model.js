@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
 
-    sequelize.define(
+    const User = sequelize.define(
 
         "User",
         {
@@ -28,4 +28,15 @@ export default (sequelize) => {
             }
         }
     );
+
+    User.prototype.getSanitized = function () {
+
+        const user = this.toJSON();
+
+        delete user.password;
+        delete user.createdAt;
+        delete user.updatedAt;
+
+        return user;
+    };
 }

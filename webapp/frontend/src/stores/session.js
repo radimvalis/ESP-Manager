@@ -7,14 +7,40 @@ export const useSessionStore = defineStore("session", {
 
     state: () => ({
 
+        username: null,
+        isLoggedIn: null,
         api: null
     }),
 
+    getters: {
+
+        isInitialized() {
+
+            return this.isLoggedIn !== null;
+        }
+    },
+
     actions: {
 
-        init() {
+        async init() {
 
-            this.api = new ApiProvider();
+            if (!this.isInitialized) {
+
+                this.api = new ApiProvider();
+
+                try {
+    
+                    const { username } = await this.api.user.get();
+    
+                    this.username = username;
+                    this.isLoggedIn = true;
+                }
+    
+                catch(error) {
+    
+                    this.isLoggedIn = false;
+                }
+            }
         }
     }
 });

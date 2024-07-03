@@ -8,7 +8,7 @@ import {
 
 export default class UserService {
 
-    _saltRounds = 10;
+    static _saltRounds = 10;
 
     constructor(models) {
 
@@ -22,18 +22,18 @@ export default class UserService {
             throw new CredentialsValidationError();
         }
 
-        const hashedPassword = await bcrypt.hash(password, this._saltRounds);
+        const hashedPassword = await bcrypt.hash(password, UserService._saltRounds);
 
         const user = await this._models.User.create({ username, password: hashedPassword });
 
-        return user;
+        return user.getSanitized();
     }
 
     async getByCredentials(username, password) {
 
         const user = await this._models.User.findOne({ where: { username } });
 
-        if (user === null) {
+        if (!user) {
 
             throw new NotFoundError();
         }
@@ -45,6 +45,18 @@ export default class UserService {
             throw new WrongPasswordError();
         }
 
-        return user;
+        return user.getSanitized();
+    }
+
+    async getById(id) {
+
+        const user = await this._models.User.findByPk(id);
+
+        if (!user) {
+
+            throw new NotFoundError();
+        }
+
+        return user.getSanitized();
     }
 }

@@ -9,10 +9,12 @@ import authCookieMiddleware from "./middlewares/auth.cookie.middleware.js";
 import refreshCookieMiddleware from "./middlewares/refresh.cookie.middleware.js";
 
 import AuthController from "./controllers/auth.controller.js";
+import UserController from "./controllers/user.controller.js";
 
 export default function start(context, port) {
 
     const authController = new AuthController(context);
+    const userController = new UserController(context);
 
     const app = express();
 
@@ -31,6 +33,7 @@ export default function start(context, port) {
     app.use(authCookieMiddleware(context));
 
     app.get(ENDPOINT.AUTH.LOG_OUT, authController.logOut);
+    app.get(ENDPOINT.USER.GET, userController.get);
 
     //
 
