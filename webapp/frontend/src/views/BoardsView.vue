@@ -12,8 +12,7 @@
 
         await session.api.auth.logOut();
 
-        session.username = null;
-        session.isLoggedIn = false;
+        session.logOut();
 
         router.push("/login");
     }

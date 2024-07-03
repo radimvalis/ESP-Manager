@@ -32,8 +32,7 @@ export const useSessionStore = defineStore("session", {
     
                     const { username } = await this.api.user.get();
     
-                    this.username = username;
-                    this.isLoggedIn = true;
+                    this.logIn(username);
                 }
     
                 catch(error) {
@@ -41,6 +40,18 @@ export const useSessionStore = defineStore("session", {
                     this.isLoggedIn = false;
                 }
             }
+        },
+
+        logIn(username) {
+
+            this.username = username;
+            this.isLoggedIn = true;
+        },
+
+        logOut() {
+
+            this.username = null;
+            this.isLoggedIn = false;
         }
     }
 });
