@@ -26,6 +26,12 @@ const router = createRouter({
             meta: { isAuthRequired: true }
         },
         {
+            path: "/firmwares",
+            name: "firmwares",
+            component: () => import("@/views/FirmwaresView.vue"),
+            meta: { isAuthRequired: true }
+        },
+        {
             path: "/:pathMatch(.*)*",
             component: () => import("@/views/NotFoundView.vue"),
             meta: { isAuthRequired: false }

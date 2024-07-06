@@ -2,7 +2,7 @@
 <template>
 
     <h1>
-        Boards
+        Firmwares
     </h1>
 
 </template>
