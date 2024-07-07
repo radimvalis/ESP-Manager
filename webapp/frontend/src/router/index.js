@@ -9,25 +9,25 @@ const router = createRouter({
     routes: [
         {
             path: "/login",
-            name: "login",
+            name: "LogIn",
             component: LogInView,
             meta: { isAuthRequired: false }
         },
         {
             path: "/signup",
-            name: "signup",
+            name: "SignUp",
             component: () => import("@/views/SignUpView.vue"),
             meta: { isAuthRequired: false }
         },
         {
             path: "/boards",
-            name: "boards",
+            name: "Boards",
             component: () => import("@/views/BoardsView.vue"),
             meta: { isAuthRequired: true }
         },
         {
             path: "/firmwares",
-            name: "firmwares",
+            name: "Firmwares",
             component: () => import("@/views/FirmwaresView.vue"),
             meta: { isAuthRequired: true }
         },
@@ -51,12 +51,12 @@ router.beforeEach(async (to, from) => {
 
     if (isLoggedIn && (!isAuthRequired || to.path === "/")) {
 
-        return { name: "boards" };
+        return { name: "Boards" };
     }
 
     if (!isLoggedIn && (isAuthRequired || to.path === "/")) {
 
-        return { name: "login" };
+        return { name: "LogIn" };
     }
 });
 

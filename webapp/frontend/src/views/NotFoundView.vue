@@ -12,7 +12,7 @@
     </h1>
 
     <v-btn
-        :to="useSessionStore().isLoggedIn ? '/boards' : '/login'" 
+        :to='useSessionStore().isLoggedIn ? { name: "Boards" } : { name: "LogIn" }' 
     >
         Return Home
     </v-btn>

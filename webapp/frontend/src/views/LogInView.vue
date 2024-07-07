@@ -32,7 +32,7 @@
 
             session.logIn(username.value);
             
-            router.push("/boards");
+            router.push({ name: "Boards" });
         }
     }
 

@@ -14,7 +14,7 @@
 
         useSessionStore().logOut();
 
-        router.push("/login");
+        router.push({ name: "LogIn" });
     }
 
 </script>

@@ -38,13 +38,13 @@
                         >
 
                             <v-tab
-                                to="/boards"
+                                :to='{ name: "Boards" }'
                             >
                                 Boards
                             </v-tab>
 
                             <v-tab
-                                to="/firmwares"
+                                :to='{ name: "Firmwares" }'
                             >
                                 Firmwares
                             </v-tab>
