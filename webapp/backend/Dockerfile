@@ -27,6 +27,8 @@ RUN npm ci --omit=dev
 
 COPY ./backend/src ./src
 
+COPY ./backend/data ./data
+
 COPY ./shared ../shared
 
 CMD ["npm", "run", "start"]

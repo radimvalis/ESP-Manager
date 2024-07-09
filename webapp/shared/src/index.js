@@ -12,6 +12,17 @@ const ENDPOINT = {
     USER: {
 
         GET: "/user/get"
+    },
+
+    FILE: {
+
+        DEFAULT: {
+
+            ANY: "/file/default/:filename",
+            FIRMWARE: "/file/default/firmware",
+            PARTITION_TABLE: "/file/default/partition-table",
+            BOOTLOADER: "/file/default/bootloader",
+        }
     }
 }
 

@@ -2,6 +2,7 @@
 import AuthService from "./services/auth.service.js";
 import CookieService from "./services/cookie.service.js";
 import UserService from "./services/user.service.js";
+import FileService from "./services/file.service.js";
 
 export default class ApplicationContext {
 
@@ -10,6 +11,7 @@ export default class ApplicationContext {
         this.auth = new AuthService(config.auth);
         this.cookie = new CookieService(config.cookie);
         this.user = new UserService(config.models);
+        this.file = new FileService(config.dataDirectoryPath);
 
         Object.freeze(this);
     }

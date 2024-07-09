@@ -21,4 +21,5 @@ services:
             - ${BACKEND_PORT_PUBLIC}:${BACKEND_PORT}
         volumes:
             - ./backend/src:/usr/local/backend/src
+            - ./backend/data:/usr/local/backend/data
             - ./shared:/usr/local/shared

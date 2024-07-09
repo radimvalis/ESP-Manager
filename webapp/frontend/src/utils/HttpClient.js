@@ -10,34 +10,34 @@ export default class HttpClient {
         this.maxRetriesCount = maxRetriesCount;
     }
 
-    async get(url) {
+    async get(url, requestConfig = {}) {
 
-        return this._request(url, "GET", {});
+        return this._request(url, "GET", {}, requestConfig);
     }
 
-    async post(url, data) {
+    async post(url, data, requestConfig = {}) {
 
-        return this._request(url, "POST", data);
+        return this._request(url, "POST", data, requestConfig);
     }
 
-    async _request(url, method, data) {
+    async _request(url, method, data, requestConfig) {
 
-        return this._requestWithRetries(url, method, data, this.maxRetriesCount);
+        return this._requestWithRetries(url, method, data, requestConfig, this.maxRetriesCount);
     }
 
-    async _requestWithRetries(url, method, data, remainingRetriesCount) {
+    async _requestWithRetries(url, method, data, requestConfig, remainingRetriesCount) {
 
-        const requestConfig = {
+        const defaultRequestConfig = {
 
             baseURL: this.baseUrl,
             url,
             method,
-            data            
+            data
         };
 
         try {
 
-            const response = await axios.request(requestConfig);
+            const response = await axios.request({ ...defaultRequestConfig, ...requestConfig });
 
             return response.data;
         }

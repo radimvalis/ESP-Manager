@@ -38,6 +38,8 @@ import start from "./api/index.js";
             refreshCookiePath: ENDPOINT.AUTH.REFRESH_TOKENS
         },
 
+        dataDirectoryPath: process.cwd() + "/data",
+
         models: db.models
     };
 
