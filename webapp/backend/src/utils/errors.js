@@ -35,9 +35,19 @@ class WrongPasswordError extends Error {
     }
 }
 
+class NVSGenerationError extends Error {
+
+    constructor(...params) {
+
+        super(...params);
+        this.name = "NVSGenerationError";
+    }    
+}
+
 export {
     MissingTokenError,
     NotFoundError,
     WrongPasswordError,
-    CredentialsValidationError
+    CredentialsValidationError,
+    NVSGenerationError
 };

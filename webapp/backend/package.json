@@ -19,7 +19,8 @@
     "jose": "^5.3.0",
     "sequelize": "^6.37.3",
     "shared": "file:../shared",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "unique-filename": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

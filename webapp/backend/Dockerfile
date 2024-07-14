@@ -5,6 +5,10 @@ FROM node:20.11-bullseye-slim AS base
 
 EXPOSE $BACKEND_PORT
 
+RUN apt-get update || : && apt-get install python3 -y python3-pip
+
+RUN pip install esp-idf-nvs-partition-gen
+
 WORKDIR /usr/local/backend
 
 COPY ./backend/package*.json ./
