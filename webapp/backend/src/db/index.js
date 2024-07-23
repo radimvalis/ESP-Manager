@@ -1,7 +1,9 @@
 
-import { Sequelize } from "sequelize";
+import { Sequelize, DataTypes } from "sequelize";
 
-import UserDefiner from "./models/user.model.js";
+import defineUser from "./models/user.model.js";
+import defineBoard from "./models/board.model.js";
+import defineFirmware from "./models/firmware.model.js";
 
 export default async function getDb() {
 
@@ -11,12 +13,9 @@ export default async function getDb() {
         storage: "db.sqlite"
     });
 
-    const modelDefiners = [ UserDefiner ];
+    [ defineUser, defineBoard, defineFirmware ].forEach((definer) => definer(sequelize, DataTypes));
 
-    for (const modelDefiner of modelDefiners) {
-
-        modelDefiner(sequelize);
-    }
+    Object.values(sequelize.models).forEach((model) => model.associate(sequelize.models));
 
     await sequelize.sync();
 

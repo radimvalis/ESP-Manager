@@ -1,11 +1,9 @@
 
-import { DataTypes } from "sequelize";
-
-export default (sequelize) => {
+export default (sequelize, DataTypes) => {
 
     const User = sequelize.define(
 
-        "User",
+        "user",
         {
             id: {
 
@@ -19,7 +17,7 @@ export default (sequelize) => {
 
                 type: DataTypes.STRING,
                 unique: true,
-                allowNull: false,
+                allowNull: false
             },
             password: {
 
@@ -39,4 +37,10 @@ export default (sequelize) => {
 
         return user;
     };
+
+    User.associate = (models) => {
+
+        User.hasMany(models.board);
+        User.hasMany(models.firmware);
+    }
 }

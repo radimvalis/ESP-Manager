@@ -24,14 +24,14 @@ export default class UserService {
 
         const hashedPassword = await bcrypt.hash(password, UserService._saltRounds);
 
-        const user = await this._models.User.create({ username, password: hashedPassword });
+        const user = await this._models.user.create({ username, password: hashedPassword });
 
         return user.getSanitized();
     }
 
     async getByCredentials(username, password) {
 
-        const user = await this._models.User.findOne({ where: { username } });
+        const user = await this._models.user.findOne({ where: { username } });
 
         if (!user) {
 
@@ -50,7 +50,7 @@ export default class UserService {
 
     async getById(id) {
 
-        const user = await this._models.User.findByPk(id);
+        const user = await this._models.user.findByPk(id);
 
         if (!user) {
 
