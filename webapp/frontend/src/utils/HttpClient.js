@@ -20,6 +20,11 @@ export default class HttpClient {
         return this._request(url, "POST", data, requestConfig);
     }
 
+    async put(url, data, requestConfig = {}) {
+
+        return this._request(url, "PUT", data, requestConfig);
+    }
+
     async _request(url, method, data, requestConfig) {
 
         return this._requestWithRetries(url, method, data, requestConfig, this.maxRetriesCount);

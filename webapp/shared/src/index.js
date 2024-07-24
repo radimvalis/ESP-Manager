@@ -21,8 +21,13 @@ const ENDPOINT = {
             ANY: "/file/default/:filename",
             FIRMWARE: "/file/default/firmware",
             PARTITION_TABLE: "/file/default/partition-table",
-            BOOTLOADER: "/file/default/bootloader",
+            BOOTLOADER: "/file/default/bootloader"
         }
+    },
+
+    BOARD: {
+
+        CREATE: "/board/create"
     }
 }
 

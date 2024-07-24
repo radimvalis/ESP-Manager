@@ -11,12 +11,14 @@ import refreshCookieMiddleware from "./middlewares/refresh.cookie.middleware.js"
 import AuthController from "./controllers/auth.controller.js";
 import UserController from "./controllers/user.controller.js";
 import FileController from "./controllers/file.controller.js";
+import BoardController from "./controllers/board.controller.js";
 
 export default function start(context, port) {
 
     const authController = new AuthController(context);
     const userController = new UserController(context);
     const fileController = new FileController(context);
+    const boardController = new BoardController(context);
 
     const app = express();
 
@@ -37,6 +39,7 @@ export default function start(context, port) {
     app.get(ENDPOINT.AUTH.LOG_OUT, authController.logOut);
     app.get(ENDPOINT.USER.GET, userController.get);
     app.get(ENDPOINT.FILE.DEFAULT.ANY, fileController.getDefault);
+    app.put(ENDPOINT.BOARD.CREATE, boardController.create);
 
     //
 
