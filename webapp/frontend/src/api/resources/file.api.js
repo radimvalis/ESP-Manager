@@ -3,6 +3,8 @@ import { ENDPOINT } from "shared";
 
 export default class FileApi {
 
+    static _binFileRequestConfig = { responseType: "arraybuffer" };
+
     constructor(httpClient) {
 
         this._httpClient = httpClient;
@@ -10,28 +12,27 @@ export default class FileApi {
 
     async getDefaultFirmware() {
 
-        return this._getBinaryFile(ENDPOINT.FILE.DEFAULT.FIRMWARE); 
+        const response = await this._httpClient.get(ENDPOINT.FILE.DEFAULT.FIRMWARE, FileApi._binFileRequestConfig);
+
+        return FileApi._convertArrayBufferToString(response);
     }
 
     async getDefaultPartitionTable() {
 
-        return this._getBinaryFile(ENDPOINT.FILE.DEFAULT.PARTITION_TABLE);
+        const response = await this._httpClient.get(ENDPOINT.FILE.DEFAULT.PARTITION_TABLE, FileApi._binFileRequestConfig);
+
+        return FileApi._convertArrayBufferToString(response);
     }
 
     async getDefaultBootloader() {
 
-        return this._getBinaryFile(ENDPOINT.FILE.DEFAULT.BOOTLOADER);
+        const response = await this._httpClient.get(ENDPOINT.FILE.DEFAULT.BOOTLOADER, FileApi._binFileRequestConfig);
+
+        return FileApi._convertArrayBufferToString(response);
     }
 
-    async _getBinaryFile(endpoint) {
-
-        const requestConfig = {
-
-            responseType: "arraybuffer",
-        };
-
-        const arrayBuffer = await this._httpClient.get(endpoint, requestConfig);
+    static _convertArrayBufferToString(arrayBuffer) {
 
         return new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "");
-   }
+    }
 }
