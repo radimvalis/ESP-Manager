@@ -1,0 +1,20 @@
+[
+    {
+        "key": "name",
+        "encoding": "string",
+        "isRequired": true,
+        "label": "Board name"
+    },
+    {
+        "key": "ssid",
+        "encoding": "string",
+        "isRequired": true,
+        "label": "SSID"
+    },
+    {
+        "key": "password",
+        "encoding": "string",
+        "isRequired": true,
+        "label": "Password"
+    }
+]

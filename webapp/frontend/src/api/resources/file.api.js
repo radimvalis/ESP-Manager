@@ -31,6 +31,11 @@ export default class FileApi {
         return FileApi._convertArrayBufferToString(response);
     }
 
+    async getDefaultConfigForm() {
+
+        return await this._httpClient.get(ENDPOINT.FILE.DEFAULT.CONFIG_FORM);
+    }
+
     static _convertArrayBufferToString(arrayBuffer) {
 
         return new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "");

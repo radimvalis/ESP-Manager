@@ -14,7 +14,9 @@ export default class FileService {
 
     getDefaultPath(filename) {
 
-        return this._dataDirectoryPath + "/default/" + filename + ".bin";
+        const fileExtension = filename === "config-form" ? ".json" : ".bin";
+
+        return this._dataDirectoryPath + "/default/" + filename + fileExtension;
     }
 
     async generateNVS(data) {
