@@ -19,14 +19,14 @@ export default class FileService {
         return this._dataDirectoryPath + "/default/" + filename + fileExtension;
     }
 
-    async generateNVS(data) {
+    async createNVS(data) {
 
         const filename = uniqueFilename(this._dataDirectoryPath + "/tmp/");
 
         const csvPath = filename + ".csv";
         const binPath = filename + ".bin";
 
-        await this._saveNVSDataAsCSV(data, csvPath);
+        await FileService._saveNVSDataAsCSV(data, csvPath);
         
         const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", csvPath, binPath, 0x3000 ]);
 
@@ -41,7 +41,7 @@ export default class FileService {
         return binPath;
     }
 
-    async _saveNVSDataAsCSV(data, outputPath) {
+    static async _saveNVSDataAsCSV(data, outputPath) {
 
         let content = "";
 

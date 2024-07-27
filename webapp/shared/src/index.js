@@ -23,7 +23,9 @@ const ENDPOINT = {
             PARTITION_TABLE: "/file/default/partition-table",
             BOOTLOADER: "/file/default/bootloader",
             CONFIG_FORM: "/file/default/config-form"
-        }
+        },
+
+        NVS: "/file/nvs"
     },
 
     BOARD: {

@@ -39,6 +39,7 @@ export default function start(context, port) {
     app.get(ENDPOINT.AUTH.LOG_OUT, authController.logOut);
     app.get(ENDPOINT.USER.GET, userController.get);
     app.get(ENDPOINT.FILE.DEFAULT.ANY, fileController.getDefault);
+    app.post(ENDPOINT.FILE.NVS, fileController.createNVS);
     app.put(ENDPOINT.BOARD.CREATE, boardController.create);
 
     //

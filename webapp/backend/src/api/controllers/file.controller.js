@@ -9,4 +9,11 @@ export default function FileController(context) {
 
         res.sendFile(path);
     });
+
+    this.createNVS = asyncCatch(async (req, res) => {
+
+        const path = await context.file.createNVS(req.body);
+
+        res.sendFile(path);
+    });
 }

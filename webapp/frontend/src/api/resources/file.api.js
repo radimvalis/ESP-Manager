@@ -36,6 +36,13 @@ export default class FileApi {
         return await this._httpClient.get(ENDPOINT.FILE.DEFAULT.CONFIG_FORM);
     }
 
+    async createNVS(configData) {
+
+        const response = await this._httpClient.post(ENDPOINT.FILE.NVS, configData, FileApi._binFileRequestConfig);
+
+        return FileApi._convertArrayBufferToString(response);
+    }
+
     static _convertArrayBufferToString(arrayBuffer) {
 
         return new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "");
