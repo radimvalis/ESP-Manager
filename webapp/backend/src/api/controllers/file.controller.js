@@ -10,9 +10,9 @@ export default function FileController(context) {
         res.sendFile(path);
     });
 
-    this.createNVS = asyncCatch(async (req, res) => {
+    this.getDefaultNVS = asyncCatch(async (req, res) => {
 
-        const path = await context.file.createNVS(req.body);
+        const path = await context.file.getDefaultNVSPath(req.body.boardId);
 
         res.sendFile(path);
     });

@@ -22,15 +22,14 @@ const ENDPOINT = {
             FIRMWARE: "/file/default/firmware",
             PARTITION_TABLE: "/file/default/partition-table",
             BOOTLOADER: "/file/default/bootloader",
-            CONFIG_FORM: "/file/default/config-form"
-        },
-
-        NVS: "/file/nvs"
+            CONFIG_FORM: "/file/default/config-form",
+            NVS: "/file/default/nvs"
+        }
     },
 
     BOARD: {
 
-        CREATE: "/board/create"
+        REGISTER: "/board/register"
     }
 }
 

@@ -1,11 +1,13 @@
 
 import fs from "fs/promises";
-import uniqueFilename from "unique-filename";
 import { spawn } from "child_process";
 import { once } from "events";
 import { NVSGenerationError } from "../../utils/errors.js";
 
 export default class FileService {
+
+    static _DEFAULT_NVS_CSV = "default-nvs.csv";
+    static _DEFAULT_NVS_BIN = "default-nvs.bin";
 
     constructor(dataDirectoryPath) {
 
@@ -19,29 +21,53 @@ export default class FileService {
         return this._dataDirectoryPath + "/default/" + filename + fileExtension;
     }
 
-    async createNVS(data) {
+    getDefaultNVSPath(boardId) {
 
-        const filename = uniqueFilename(this._dataDirectoryPath + "/tmp/");
-
-        const csvPath = filename + ".csv";
-        const binPath = filename + ".bin";
-
-        await FileService._saveNVSDataAsCSV(data, csvPath);
-        
-        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", csvPath, binPath, 0x3000 ]);
-
-        const result = await once(process, "exit");
-        const exitCode = result[0];
-
-        if (exitCode !== 0) {
-
-            throw new NVSGenerationError();
-        }
-
-        return binPath;
+        return this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
     }
 
-    static async _saveNVSDataAsCSV(data, outputPath) {
+    async createBoardDir(boardId) {
+
+        await fs.mkdir(this._boardsDir + boardId);
+    }
+
+    async createDefaultNVS(configData, boardId) {
+
+        const defaultConfigFormPath = this.getDefaultPath("config-form");
+
+        const defaultConfigForm = await FileService._loadConfigForm(defaultConfigFormPath);
+
+        // Add board ID which is not part of default config form 
+
+        configData.id = boardId;
+        defaultConfigForm.push({ key: "id", encoding: "string" });
+
+        const csvPath = this._getBoardDir(boardId) + FileService._DEFAULT_NVS_CSV;
+        const binPath = this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
+
+        await FileService._saveConfigDataAsCSV(configData, defaultConfigForm, csvPath);
+
+        await this._createNVS(csvPath, binPath);
+    }
+
+    get _boardsDir() {
+
+        return this._dataDirectoryPath + "/boards/";
+    }
+
+    _getBoardDir(boardId) {
+
+        return this._boardsDir + boardId + "/";
+    }
+
+    static async _loadConfigForm(configFormPath) {
+
+        const buffer = await fs.readFile(configFormPath);
+
+        return JSON.parse(buffer);
+    }
+
+    static async _saveConfigDataAsCSV(configData, configForm, outputPath) {
 
         let content = "";
 
@@ -55,11 +81,11 @@ export default class FileService {
 
         // Define other key-value pairs
 
-        data.forEach(x => {
+        configForm.forEach(entry => {
 
-            const value = x.encoding === "string" ? FileService._escapeCSVString(x.value) : x.value;
+            const value = entry.encoding === "string" ? FileService._escapeCSVString(configData[entry.key]) : configData[entry.key];
 
-            content += `${x.key},${x.type},${x.encoding},${value}\n`;
+            content += `${entry.key},data,${entry.encoding},${value}\n`;
         });
 
         await fs.writeFile(outputPath, content);
@@ -75,5 +101,18 @@ export default class FileService {
         }
 
         return value;
+    }
+
+    async _createNVS(inputPath, outputPath) {
+     
+        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, 0x3000 ]);
+
+        const result = await once(process, "exit");
+        const exitCode = result[0];
+
+        if (exitCode !== 0) {
+
+            throw new NVSGenerationError();
+        }
     }
 }

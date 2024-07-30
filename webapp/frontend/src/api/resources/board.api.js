@@ -8,8 +8,8 @@ export default class BoardApi {
         this._httpClient = httpClient;
     }
 
-    async create(name) {
+    async register(configData) {
 
-        return await this._httpClient.put(ENDPOINT.BOARD.CREATE, { name });
+        return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);
     }
 }

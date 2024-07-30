@@ -36,11 +36,11 @@ export default class FileApi {
         return await this._httpClient.get(ENDPOINT.FILE.DEFAULT.CONFIG_FORM);
     }
 
-    async createNVS(configData) {
+    async getDefaultNVS(boardId) {
 
-        const response = await this._httpClient.post(ENDPOINT.FILE.NVS, configData, FileApi._binFileRequestConfig);
+        const response = await this._httpClient.post(ENDPOINT.FILE.DEFAULT.NVS, { boardId }, FileApi._binFileRequestConfig);
 
-        return FileApi._convertArrayBufferToString(response);
+        return FileApi._convertArrayBufferToString(response);        
     }
 
     static _convertArrayBufferToString(arrayBuffer) {
