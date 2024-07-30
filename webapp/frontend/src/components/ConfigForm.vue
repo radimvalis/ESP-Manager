@@ -6,7 +6,7 @@
     import BlobInput from "@/components/ConfigFormBlobInput.vue";
     import NumberInput from "@/components/ConfigFormNumberInput.vue";
 
-    const models = defineModel({ type: Array });
+    const configData = defineModel({ type: Object });
 
     defineProps({ entries: Array });
 
@@ -25,26 +25,26 @@
     >
 
         <template
-            v-for="(entry, idx) in entries"
+            v-for="entry in entries"
         >
 
             <StringInput
                 v-if='entry.encoding === "string"'
-                v-model="models[idx]"
+                v-model="configData[entry.key]"
                 v-bind="entry"
                 class="my-2"
             />
 
             <BlobInput
                 v-else-if='entry.encoding === "blob"'
-                v-model="models[idx]"
+                v-model="configData[entry.key]"
                 v-bind="entry"
                 class="my-2"
             />
 
             <NumberInput
                 v-else-if='numberEncodings.includes(entry.encoding)'
-                v-model="models[idx]"
+                v-model="configData[entry.key]"
                 v-bind="entry"
                 class="my-2"
             />
