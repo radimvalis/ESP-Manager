@@ -13,9 +13,13 @@ export default class Flasher {
         this._baudRate = baudRate;
     }
 
-    async connect() {
+    async requestPort() {
 
         this._device = await navigator.serial.requestPort();
+    }
+
+    async connect() {
+
         this._transport = new Transport(this._device, true);
 
         const loaderOptions = {
