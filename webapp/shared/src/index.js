@@ -29,6 +29,7 @@ const ENDPOINT = {
 
     BOARD: {
 
+        GET: "/board/get",
         REGISTER: "/board/register"
     }
 }

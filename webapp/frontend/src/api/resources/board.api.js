@@ -8,6 +8,11 @@ export default class BoardApi {
         this._httpClient = httpClient;
     }
 
+    async get(boardId) {
+        
+        return await this._httpClient.post(ENDPOINT.BOARD.GET, { boardId });
+    }
+
     async register(configData) {
 
         return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);

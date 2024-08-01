@@ -8,6 +8,18 @@ export default class BoardService {
         this._models = models;
     }
 
+    async getByIdAndUserId(boardId, userId) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        if (!board || board.userId !== userId) {
+
+            throw new NotFoundError();
+        }
+
+        return board.toJSON();
+    }
+
     async create(name, userId) {
 
         const board = await this._models.board.findOne({ where: { name, userId } });
