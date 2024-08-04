@@ -32,12 +32,13 @@ export default class Flasher {
         this._chip = await this._loader.main();
     }
 
-    async program(defaultApp) {
+    async program(defaultApp, reportProgressPercentage) {
 
         const fileArray = [
 
             { data: defaultApp.bootloader, address: 0x1000 },
             { data: defaultApp.partitionTable, address: 0x8000 },
+            { data: defaultApp.config, address: 0x9000 },
             { data: defaultApp.firmware, address: 0x10000 }
         ];
 
@@ -46,19 +47,18 @@ export default class Flasher {
             fileArray: fileArray,
             flashSize: "keep",
             eraseAll: false,
-            compress: true
+            compress: true,
+            reportProgress: (fileIndex, written, total) => {
+
+                reportProgressPercentage(Math.floor(((100 / fileArray.length) * fileIndex) + ((100 / fileArray.length) * written / total)));
+            }
         };
 
-        try {
+        await this._loader.writeFlash(flashOptions);
+    }
 
-            await this._loader.writeFlash(flashOptions);
+    async close() {
 
-            console.log("Success!");
-        }
-
-        catch(error) {
-
-            console.error(error);
-        }
+        await this._device.close();
     }
 }
