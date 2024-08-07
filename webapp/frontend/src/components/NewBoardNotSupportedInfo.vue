@@ -47,18 +47,21 @@
 
                             <v-btn
                                 icon="mdi-google-chrome"
+                                variant="plain"
                                 href="https://www.google.com/chrome/"
                                 target="_blank"
                             />
 
                             <v-btn
                                 icon="mdi-microsoft-edge"
+                                variant="plain"
                                 href="https://www.microsoft.com/edge"
                                 target="_blank"
                             />
 
                             <v-btn
                                 icon="mdi-opera"
+                                variant="plain"
                                 href="https://www.opera.com/"
                                 target="_blank"
                             />
