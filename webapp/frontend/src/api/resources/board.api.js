@@ -13,6 +13,11 @@ export default class BoardApi {
         return await this._httpClient.post(ENDPOINT.BOARD.GET, { boardId });
     }
 
+    async getSummaryList() {
+
+        return await this._httpClient.get(ENDPOINT.BOARD.SUMMARY_LIST);
+    }
+
     async register(configData) {
 
         return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);

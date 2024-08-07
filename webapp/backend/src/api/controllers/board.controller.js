@@ -10,6 +10,13 @@ export default function BoardController(context) {
         res.json(board).end();
     });
 
+    this.getSummaryList = asyncCatch(async (req, res) => {
+
+        const boardsSummary = await context.board.getSummaryList(req.userId);
+
+        res.json(boardsSummary).end();
+    });
+
     this.register = asyncCatch(async (req, res) => {
 
         const board = await context.board.create(req.body.name, req.userId);

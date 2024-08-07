@@ -20,6 +20,34 @@ export default class BoardService {
         return board.toJSON();
     }
 
+    async getSummaryList(userId) {
+
+        const boards = await this._models.board.findAll({
+            
+            where: { userId },
+            include: [
+
+                {
+                    model: this._models.firmware,
+                    attributes:  [ "version" ]
+                }
+            ],
+            attributes: [ "id", "name", "isOnline", "firmwareVersion", "firmwareStatus" ]
+        });
+
+        const boardsSummary = boards.map((board) => {
+            
+            const sanitized = board.getSanitized();
+
+            delete sanitized.firmware;
+            delete sanitized.firmwareVersion;
+
+            return sanitized;
+        });
+
+        return boardsSummary;
+    }
+
     async create(name, userId) {
 
         const board = await this._models.board.findOne({ where: { name, userId } });
