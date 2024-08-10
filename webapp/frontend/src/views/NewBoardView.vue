@@ -6,7 +6,7 @@
     import { useSessionStore } from "@/stores/session";
     import Flasher from "@/utils/Flasher";
     import ConfigForm from "@/components/ConfigForm.vue";
-    import Stepper from "@/components/NewBoardStepper.vue"
+    import Stepper from "@/components/Stepper.vue"
     import ConnectStage from "@/components/NewBoardConnectStage.vue";
     import ConnectProgress from "@/components/NewBoardConnectProgress.vue";
     import ConfigureStage from "@/components/NewBoardConfigureStage.vue";
@@ -21,6 +21,13 @@
         CONFIGURE: 2,
         FINISH: 3
     };
+
+    const stages = [
+
+        { title: "Connect", value: STAGE.CONNECT },
+        { title: "Configure", value: STAGE.CONFIGURE },
+        { title: "Finish", value: STAGE.FINISH },
+    ];
 
     const router = useRouter();
     const session = useSessionStore();
@@ -153,7 +160,7 @@
 
         <Stepper
             :model-value="currentStage"
-            :stage="STAGE"
+            :steps="stages"
         />
 
         <ConnectStage
