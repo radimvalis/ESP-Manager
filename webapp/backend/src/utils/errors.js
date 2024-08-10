@@ -46,12 +46,12 @@ class NotFoundError extends Error {
 
 Sequelize.UniqueConstraintError.prototype.statusCode = 409;
 
-class InvalidBoardNameError extends Error {
+class ConflictError extends Error {
 
     constructor(...params) {
 
         super(...params);
-        this.name = "InvalidBoardNameError";
+        this.name = "ConflictError";
         this.statusCode = 409;
     }
 }
@@ -71,6 +71,6 @@ export {
     NotFoundError,
     WrongPasswordError,
     CredentialsValidationError,
-    InvalidBoardNameError,
+    ConflictError,
     NVSGenerationError
 };

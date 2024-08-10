@@ -32,6 +32,7 @@
 
                 <v-avatar
                     color="surface"
+                    size="32"
                 >
                     {{ avatarText }}
                 </v-avatar>

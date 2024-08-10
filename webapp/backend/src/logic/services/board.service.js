@@ -1,5 +1,5 @@
 
-import { InvalidBoardNameError } from "../../utils/errors.js";
+import { ConflictError } from "../../utils/errors.js";
 
 export default class BoardService {
 
@@ -54,7 +54,7 @@ export default class BoardService {
 
         if (board) {
 
-            throw new InvalidBoardNameError();
+            throw new ConflictError();
         }
 
         const newBoard = await this._models.board.create({ name, userId });
