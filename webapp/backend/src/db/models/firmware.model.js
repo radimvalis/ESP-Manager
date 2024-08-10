@@ -18,16 +18,6 @@ export default (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false             
             },
-            binPath: {
-
-                type: DataTypes.STRING,
-                allowNull: false 
-            },
-            configPath: {
-
-                type: DataTypes.STRING,
-                allowNull: false 
-            },
             version: {
 
                 type: DataTypes.INTEGER,

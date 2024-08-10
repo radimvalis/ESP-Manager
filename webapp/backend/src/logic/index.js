@@ -4,6 +4,7 @@ import CookieService from "./services/cookie.service.js";
 import UserService from "./services/user.service.js";
 import FileService from "./services/file.service.js";
 import BoardService from "./services/board.service.js";
+import FirmwareService from "./services/firmware.service.js";
 
 export default class ApplicationContext {
 
@@ -14,6 +15,7 @@ export default class ApplicationContext {
         this.user = new UserService(config.models);
         this.file = new FileService(config.dataDirectoryPath);
         this.board = new BoardService(config.models);
+        this.firmware = new FirmwareService(config.models);
 
         Object.freeze(this);
     }

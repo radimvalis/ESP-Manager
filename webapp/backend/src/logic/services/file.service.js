@@ -9,6 +9,9 @@ export default class FileService {
     static _DEFAULT_NVS_CSV = "default-nvs.csv";
     static _DEFAULT_NVS_BIN = "default-nvs.bin";
 
+    static _FIRMWARE = "firmware.bin";
+    static _CONFIG_FORM = "config-form.json";
+
     constructor(dataDirectoryPath) {
 
         this._dataDirectoryPath = dataDirectoryPath;
@@ -26,9 +29,38 @@ export default class FileService {
         return this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
     }
 
+    getFirmwarePath(firmwareId) {
+
+        return this._getFirmwareDir(firmwareId) + FileService._FIRMWARE;
+    }
+
+    getConfigFormPath(firmwareId) {
+
+        return this._getFirmwareDir(firmwareId) + FileService._CONFIG_FORM;
+    }
+
+    async moveFirmwareToDedicatedDir(firmwareId, oldFirmwarePath) {
+
+        const newFirmwarePath = this.getFirmwarePath(firmwareId);
+
+        await fs.copyFile(oldFirmwarePath, newFirmwarePath);
+    }
+
+    async moveConfigFormToDedicatedDir(firmwareId, oldConfigFormPath) {
+
+        const newConfigFormPath = this.getConfigFormPath(firmwareId);
+
+        await fs.copyFile(oldConfigFormPath, newConfigFormPath);
+    }
+
     async createBoardDir(boardId) {
 
         await fs.mkdir(this._boardsDir + boardId);
+    }
+
+    async createFirmwareDir(firmwareId) {
+
+        await fs.mkdir(this._firmwaresDir + firmwareId);
     }
 
     async createDefaultNVS(configData, boardId) {
@@ -55,9 +87,19 @@ export default class FileService {
         return this._dataDirectoryPath + "/boards/";
     }
 
+    get _firmwaresDir() {
+
+        return this._dataDirectoryPath + "/firmwares/";
+    }
+
     _getBoardDir(boardId) {
 
         return this._boardsDir + boardId + "/";
+    }
+
+    _getFirmwareDir(firmwareId) {
+
+        return this._firmwaresDir + firmwareId + "/";
     }
 
     static async _loadConfigForm(configFormPath) {

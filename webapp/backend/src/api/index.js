@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import { ENDPOINT } from "shared";
 
+import multer, { diskStorage } from "multer";
 import authCookieMiddleware from "./middlewares/auth.cookie.middleware.js";
 import refreshCookieMiddleware from "./middlewares/refresh.cookie.middleware.js";
 
@@ -12,6 +13,7 @@ import AuthController from "./controllers/auth.controller.js";
 import UserController from "./controllers/user.controller.js";
 import FileController from "./controllers/file.controller.js";
 import BoardController from "./controllers/board.controller.js";
+import FirmwareController from "./controllers/firmware.controller.js";
 
 export default function start(context, port) {
 
@@ -19,12 +21,15 @@ export default function start(context, port) {
     const userController = new UserController(context);
     const fileController = new FileController(context);
     const boardController = new BoardController(context);
+    const firmwareController = new FirmwareController(context);
 
     const app = express();
 
     app.use(cors());
-    app.use(cookieParser())
+    app.use(cookieParser());
     app.use(express.json());
+
+    const upload = multer({ storage: diskStorage({}) });
 
     // Unprotected endpoints
 
@@ -43,6 +48,7 @@ export default function start(context, port) {
     app.post(ENDPOINT.BOARD.GET, boardController.get);
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
+    app.put(ENDPOINT.FIRMWARE.CREATE, upload.array("files"), firmwareController.create);
 
     //
 
