@@ -1,11 +1,13 @@
 
 <script setup>
 
-    import { defineEmits } from "vue";
-
-    const CLICK_RETRY_EVENT = "click-retry";
-
-    defineEmits([ CLICK_RETRY_EVENT ]);
+    defineProps({
+        
+        title: { type: String, required: true },
+        icon: { type: String, required: true },
+        text: { type: String, required: false, default: undefined },
+        color: { type: String, required: false, default: undefined }
+    });
 
 </script>
 
@@ -19,8 +21,8 @@
         <template #prepend>
 
             <v-icon
-                icon="mdi-alert"
-                color="error"
+                :icon="icon"
+                :color="color"
             />
 
         </template>
@@ -31,7 +33,7 @@
                 class="my-6 text-wrap"
             >
 
-                Something went wrong ...
+                {{ title }}
 
             </div>
 
@@ -43,21 +45,15 @@
             class="text-justify"
         >
 
-            Please unplug the board and plug it back in, then try the registration again.
+            {{ text }}
 
         </v-card-text>
         
         <v-card-actions>
 
             <v-spacer/>
-
-            <v-btn
-                @click="$emit(CLICK_RETRY_EVENT)"
-            >
-
-                Retry
-
-            </v-btn>
+            
+            <slot></slot>
 
         </v-card-actions>
 

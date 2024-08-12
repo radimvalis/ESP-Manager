@@ -11,9 +11,9 @@
     import ConnectProgress from "@/components/NewBoardConnectProgress.vue";
     import ConfigureStage from "@/components/NewBoardConfigureStage.vue";
     import RegisterProgress from "@/components/NewBoardRegisterProgress.vue";
-    import FinishStage from "@/components/NewBoardFinishStage.vue";
-    import ErrorInfo from "@/components/NewBoardErrorInfo.vue";
+    import Alert from "@/components/Alert.vue";
     import NotSupportedInfo from "@/components/NewBoardNotSupportedInfo.vue";
+    
 
     const STAGE = {
 
@@ -190,16 +190,40 @@
             :model-value="flashProgress"
         />
 
-        <FinishStage
+        <Alert
             v-if="currentStage === STAGE.FINISH && !isError"
-            :board-name="board.name"
-            @click-inspect="inspect"
-        />
+            :title="'The board \'' + board.name + '\' has been successfully registered'"
+            icon="mdi-check-circle"
+            color="success"
+        >
 
-        <ErrorInfo
+            <v-btn
+                @click="inspect"
+            >
+
+                Inspect
+
+            </v-btn>
+
+        </Alert>
+
+        <Alert
             v-if="isError"
-            @click-retry="retry"
-        />
+            title="Something went wrong ..."
+            text="Please unplug the board and plug it back in, then try the registration again."
+            icon="mdi-close-circle"
+            color="error"
+        >
+
+            <v-btn
+                @click="retry"
+            >
+
+                Retry
+
+            </v-btn>
+
+        </Alert>
 
     </template>
 
