@@ -1,5 +1,5 @@
 
-import { ConflictError } from "../../utils/errors.js";
+import { ConflictError, NotFoundError } from "../../utils/errors.js";
 
 export default class BoardService {
 

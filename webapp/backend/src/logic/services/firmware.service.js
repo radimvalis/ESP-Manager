@@ -1,11 +1,23 @@
 
-import { ConflictError } from "../../utils/errors.js";
+import { ConflictError, NotFoundError } from "../../utils/errors.js";
 
 export default class FirmwareService {
 
     constructor(models) {
 
         this._models = models;
+    }
+
+    async getByIdAndUserId(firmwareId, userId) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId);
+
+        if (!firmware || firmware.userId !== userId) {
+
+            throw new NotFoundError();
+        }
+
+        return firmware.toJSON();
     }
 
     async create(name, userId) {

@@ -3,6 +3,13 @@ import asyncCatch from "../middlewares/error.middleware.js";
 
 export default function FirmwareController(context) {
 
+    this.get = asyncCatch(async (req, res) => {
+
+        const firmware = await context.firmware.getByIdAndUserId(req.body.firmwareId, req.userId);
+
+        res.json(firmware).end();
+    });
+
     this.create = asyncCatch(async (req, res) => {
 
         const firmware = await context.firmware.create(req.body.name, req.userId);

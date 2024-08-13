@@ -8,6 +8,11 @@ export default class FirmwareApi {
         this._httpClient = httpClient;
     }
 
+    async get(firmwareId) {
+
+        return await this._httpClient.post(ENDPOINT.FIRMWARE.GET, { firmwareId });
+    }
+
     async create(name, firmwareFile, configFormFile) {
 
         const formData = new FormData();

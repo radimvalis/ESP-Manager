@@ -35,12 +35,24 @@ const router = createRouter({
             path: "/boards/detail/:id",
             name: "BoardDetail",
             component: () => import("@/views/BoardDetailView.vue"),
-            meta: { isAuthRequired: true }            
+            meta: { isAuthRequired: true }
         },
         {
             path: "/firmwares",
             name: "Firmwares",
             component: () => import("@/views/FirmwaresView.vue"),
+            meta: { isAuthRequired: true }
+        },
+        {
+            path: "/firmwares/new",
+            name: "NewFirmware",
+            component: () => import("@/views/NewFirmwareView.vue"),
+            meta: { isAuthRequired: true }
+        },
+        {
+            path: "/firmwares/detail/:id",
+            name: "FirmwareDetail",
+            component: () => import("@/views/FirmwareDetailView.vue"),
             meta: { isAuthRequired: true }
         },
         {

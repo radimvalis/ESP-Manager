@@ -48,6 +48,7 @@ export default function start(context, port) {
     app.post(ENDPOINT.BOARD.GET, boardController.get);
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
+    app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
     app.put(ENDPOINT.FIRMWARE.CREATE, upload.array("files"), firmwareController.create);
 
     //
