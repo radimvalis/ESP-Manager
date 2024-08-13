@@ -20,6 +20,11 @@ export default class FirmwareService {
         return firmware.toJSON();
     }
 
+    async getSummaryList(userId) {
+
+        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
+    }
+
     async create(name, userId) {
 
         const firmware = await this._models.firmware.findOne({ where: { name, userId } });

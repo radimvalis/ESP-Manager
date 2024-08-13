@@ -37,6 +37,7 @@ const ENDPOINT = {
     FIRMWARE: {
 
         GET: "/firmware/get",
+        SUMMARY_LIST: "/firmware/summary-list",
         CREATE: "/firmware/create"
     }
 }
