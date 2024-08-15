@@ -8,12 +8,14 @@
 
     const session = useSessionStore();
 
-    const { smAndUp } = useDisplay();
+    const { smAndUp, xs } = useDisplay();
 
     const firmwares = ref([]);
 
     const isLoading = ref(true);
     const noDataText = ref("No firmware available");
+
+    const showFilters = ref(false);
 
     const nameFilter = ref(null);
 
@@ -73,42 +75,66 @@
 
                 <v-row>
 
-                    <v-col
-                        :cols="12"
-                        :sm="8"
-                    >
+                    <v-col>
 
                         <v-btn
                             :to='{ name: "NewFirmware" }'
+                            :block="xs"
                             prepend-icon="mdi-plus"
                             variant="flat"
                             color="primary"
                         >
                         
-                            Upload
+                            New Firmware
 
                         </v-btn>
 
                     </v-col>
 
                     <v-col
-                        :cols="12"
-                        :sm="4"
+                        class="text-right"
                     >
 
-                        <v-text-field
-                            v-model="nameFilter"
-                            density="compact"
+                        <v-btn
+                            @click="showFilters = !showFilters"
+                            :active="showFilters"
+                            :block="xs"
+                            color="primary"
                             variant="outlined"
-                            prepend-inner-icon="mdi-magnify"
-                            placeholder="Firmware"
-                            hide-details
-                            clearable
-                        />
+                            prepend-icon="mdi-filter-outline"
+                        >
+
+                            Filters
+
+                        </v-btn>
 
                     </v-col>
 
                 </v-row>
+
+                <v-expand-transition>
+
+                    <v-row
+                        v-show="showFilters"
+                    >
+
+                        <v-col>
+
+                            <v-text-field
+                                v-model="nameFilter"
+                                density="compact"
+                                variant="outlined"
+                                prepend-inner-icon="mdi-magnify"
+                                placeholder="Firmware"
+                                hide-details
+                                clearable
+                            />
+
+                        </v-col>
+
+                    </v-row>
+
+                </v-expand-transition>
 
             </v-container>
 

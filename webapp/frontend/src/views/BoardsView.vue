@@ -8,12 +8,14 @@
 
     const session = useSessionStore();
 
-    const { smAndUp } = useDisplay();
+    const { smAndUp, xs } = useDisplay();
 
     const boards = ref([]);
 
     const isLoading = ref(true);
     const noDataText = ref("No board available");
+
+    const showFilters = ref(false);
 
     const nameFilter = ref(null);
     const connectionFilter = ref(null);
@@ -95,80 +97,108 @@
 
                 <v-row>
 
-                    <v-col
-                        :cols="12"
-                    >
+                    <v-col>
 
                         <v-btn
                             :to='{ name: "NewBoard" }'
+                            :block="xs"
                             prepend-icon="mdi-plus"
                             variant="flat"
                             color="primary"
                         >
                         
-                            Register
+                            New Board
                     
                         </v-btn>
 
                     </v-col>
 
                     <v-col
-                        :cols="12"
-                        :sm="4"
-                        :md="6"
+                        class="text-right"
                     >
 
-                        <v-text-field
-                            v-model="nameFilter"
-                            density="compact"
+                        <v-btn
+                            @click="showFilters = !showFilters"
+                            :active="showFilters"
+                            :block="xs"
+                            color="primary"
                             variant="outlined"
-                            prepend-inner-icon="mdi-magnify"
-                            placeholder="Board"
-                            hide-details
-                            clearable
-                        />
+                            prepend-icon="mdi-filter-outline"
+                        >
+
+                            Filters
+
+                        </v-btn>
 
                     </v-col>
 
-                    <v-col
-                        :cols="12"
-                        :sm="4"
-                        :md="3"
-                    >
-
-                        <v-select
-                            v-model="connectionFilter"
-                            :items="connectionFilterOptions"
-                            density="compact"
-                            variant="outlined"
-                            placeholder="Connection"
-                            hide-details
-                            clearable
-                            chips
-                        />
-
-                    </v-col>
-
-                    <v-col
-                        :cols="12"
-                        :sm="4"
-                        :md="3"
-                    >
-
-                        <v-select
-                            v-model="firmwareFilter"
-                            :items="firmwareFilterOptions"
-                            density="compact"
-                            variant="outlined"
-                            placeholder="Firmware"
-                            hide-details
-                            clearable
-                            chips
-                        />
-
-                    </v-col>
-                    
                 </v-row>
+
+                <v-expand-transition>
+
+                    <v-row 
+                        v-show="showFilters"
+                    >
+
+                        <v-col
+                            :cols="12"
+                            :sm="4"
+                            :md="6"
+                        >
+
+                            <v-text-field
+                                v-model="nameFilter"
+                                density="compact"
+                                variant="outlined"
+                                prepend-inner-icon="mdi-magnify"
+                                placeholder="Board"
+                                hide-details
+                                clearable
+                            />
+
+                        </v-col>
+
+                        <v-col
+                            :cols="12"
+                            :sm="4"
+                            :md="3"
+                        >
+
+                            <v-select
+                                v-model="connectionFilter"
+                                :items="connectionFilterOptions"
+                                density="compact"
+                                variant="outlined"
+                                placeholder="Connection"
+                                hide-details
+                                clearable
+                                chips
+                            />
+
+                        </v-col>
+
+                        <v-col
+                            :cols="12"
+                            :sm="4"
+                            :md="3"
+                        >
+
+                            <v-select
+                                v-model="firmwareFilter"
+                                :items="firmwareFilterOptions"
+                                density="compact"
+                                variant="outlined"
+                                placeholder="Firmware"
+                                hide-details
+                                clearable
+                                chips
+                            />
+
+                        </v-col>
+
+                    </v-row>
+
+                </v-expand-transition>
 
             </v-container>
 
