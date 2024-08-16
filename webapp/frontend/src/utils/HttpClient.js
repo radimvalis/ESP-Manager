@@ -25,6 +25,11 @@ export default class HttpClient {
         return this._request(url, "PUT", data, requestConfig);
     }
 
+    async delete(url, data, requestConfig = {}) {
+
+        return this._request(url, "DELETE", data, requestConfig);
+    }
+
     async _request(url, method, data, requestConfig) {
 
         return this._requestWithRetries(url, method, data, requestConfig, this.maxRetriesCount);

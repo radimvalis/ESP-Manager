@@ -22,4 +22,9 @@ export default class BoardApi {
 
         return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);
     }
+
+    async delete(boardId) {
+
+        await this._httpClient.delete(ENDPOINT.BOARD.DELETE, { boardId });
+    }
 }

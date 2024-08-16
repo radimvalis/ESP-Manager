@@ -63,6 +63,16 @@ export default class FileService {
         await fs.mkdir(this._firmwaresDir + firmwareId);
     }
 
+    async deleteBoardDir(boardId) {
+
+        await fs.rm(this._getBoardDir(boardId), { recursive: true, force: true });
+    }
+
+    async deleteFirmwareDir(firmwareId) {
+
+        await fs.rm(this._getFirmwareDir(firmwareId), { recursive: true, force: true });
+    }
+
     async createDefaultNVS(configData, boardId) {
 
         const defaultConfigFormPath = this.getDefaultPath("config-form");

@@ -10,7 +10,7 @@ export default class BoardService {
 
     async getByIdAndUserId(boardId, userId) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
 
         if (!board || board.userId !== userId) {
 
@@ -60,5 +60,10 @@ export default class BoardService {
         const newBoard = await this._models.board.create({ name, userId });
 
         return newBoard.toJSON();
+    }
+
+    async delete(id) {
+
+        await this._models.board.destroy({ where: { id } });
     }
 }

@@ -31,7 +31,8 @@ const ENDPOINT = {
 
         GET: "/board/get",
         SUMMARY_LIST: "/board/summary-list",
-        REGISTER: "/board/register"
+        REGISTER: "/board/register",
+        DELETE: "/board/delete"
     },
 
     FIRMWARE: {

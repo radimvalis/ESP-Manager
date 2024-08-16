@@ -27,4 +27,13 @@ export default function BoardController(context) {
 
         res.json(board).end();
     });
+
+    this.delete = asyncCatch(async (req, res) => {
+
+        await context.board.delete(req.body.boardId);
+
+        await context.file.deleteBoardDir(req.body.boardId);
+
+        res.status(200).end();
+    });
 }
