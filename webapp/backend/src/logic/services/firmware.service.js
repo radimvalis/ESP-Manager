@@ -38,4 +38,20 @@ export default class FirmwareService {
 
         return newFirmware.toJSON();        
     }
+
+    async incrementVersion(firmwareId) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId);
+
+        await firmware.increment("version");
+
+        await firmware.reload();
+
+        return firmware.toJSON();
+    }
+
+    async delete(id) {
+
+        await this._models.firmware.destroy({ where: { id } });
+    }
 }

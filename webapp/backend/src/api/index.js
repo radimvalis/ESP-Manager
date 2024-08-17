@@ -52,6 +52,8 @@ export default function start(context, port) {
     app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
     app.get(ENDPOINT.FIRMWARE.SUMMARY_LIST, firmwareController.getSummaryList);
     app.put(ENDPOINT.FIRMWARE.CREATE, upload.array("files"), firmwareController.create);
+    app.post(ENDPOINT.FIRMWARE.UPDATE, upload.single("file"), firmwareController.update);
+    app.delete(ENDPOINT.FIRMWARE.DELETE, firmwareController.delete);
 
     //
 

@@ -31,4 +31,22 @@ export default class FirmwareApi {
             headers: { "Content-Type": "multipart/form-data" }
         });
     }
+
+    async update(firmwareId, updatedFirmwareFile) {
+
+        const formData = new FormData();
+
+        formData.append("firmwareId", firmwareId);
+        formData.append("file", updatedFirmwareFile);
+
+        return await this._httpClient.post(ENDPOINT.FIRMWARE.UPDATE, formData, {
+
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+    }
+
+    async delete(firmwareId) {
+
+        await this._httpClient.delete(ENDPOINT.FIRMWARE.DELETE, { firmwareId });
+    }
 }

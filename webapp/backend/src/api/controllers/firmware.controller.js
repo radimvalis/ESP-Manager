@@ -34,4 +34,24 @@ export default function FirmwareController(context) {
 
         res.json(firmware).end();
     });
+
+    this.update = asyncCatch(async (req, res) => {
+
+        const updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId);
+
+        const updatedFirmwarePath = req.file.path;
+
+        await context.file.moveFirmwareToDedicatedDir(updatedFirmware.id, updatedFirmwarePath);
+
+        res.json(updatedFirmware).end();
+    });
+
+    this.delete = asyncCatch(async (req, res) => {
+
+        await context.firmware.delete(req.body.firmwareId);
+
+        await context.file.deleteFirmwareDir(req.body.firmwareId);
+
+        res.status(200).end();
+    });
 }
