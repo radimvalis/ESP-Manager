@@ -2,6 +2,7 @@
 <script setup>
 
     import { ref, onMounted } from "vue";
+    import { useDisplay } from "vuetify";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
     import Flasher from "@/utils/Flasher";
@@ -11,26 +12,24 @@
     import ConnectProgress from "@/components/NewBoardConnectProgress.vue";
     import ConfigureStage from "@/components/NewBoardConfigureStage.vue";
     import RegisterProgress from "@/components/NewBoardRegisterProgress.vue";
-    import Alert from "@/components/Alert.vue";
     import NotSupportedInfo from "@/components/NewBoardNotSupportedInfo.vue";
     
-
     const STAGE = {
 
         CONNECT: 1,
-        CONFIGURE: 2,
-        FINISH: 3
+        CONFIGURE: 2
     };
 
     const stages = [
 
         { title: "Connect", value: STAGE.CONNECT },
-        { title: "Configure", value: STAGE.CONFIGURE },
-        { title: "Finish", value: STAGE.FINISH },
+        { title: "Configure", value: STAGE.CONFIGURE }
     ];
 
     const router = useRouter();
     const session = useSessionStore();
+
+    const { smAndUp } = useDisplay();
 
     const navigatorRef = ref(navigator);
 
@@ -38,7 +37,10 @@
     
     const isConnecting = ref(false);
     const isFlashing = ref(false);
-    const isError = ref(false);
+
+    const alert = ref(false);
+    const alertTitle = ref(null);
+    const alertText = ref(null);
 
     const form = ref(null);
     const configFormEntries = ref(null);
@@ -56,10 +58,14 @@
 
             navigator.serial.addEventListener("disconnect", () => {
         
-                if (currentStage.value !== STAGE.FINISH) {
+                isConnecting.value = false;
+                isFlashing.value = false;
 
-                    isError.value = true;
-                }
+                currentStage.value = STAGE.CONNECT;
+
+                alertTitle.value = "Board has been disconnected";
+                alertText.value = "Please unplug the board and plug it back in, then try the registration again.";
+                alert.value = true;
             });
 
             configFormEntries.value = await session.api.file.getDefaultConfigForm();
@@ -79,21 +85,24 @@
 
             await flasher.requestPort();
 
+            alert.value = false;
+
             isConnecting.value = true;
 
             await flasher.connect();
+
+            isConnecting.value = false;
 
             currentStage.value = STAGE.CONFIGURE;
         }
 
         catch(error) {
 
-            isError.value = true;
-        }
-
-        finally {
-
             isConnecting.value = false;
+
+            alertTitle.value = "Board connection failed";
+            alertText.value = "Please unplug the board and plug it back in, then try the registration again.";
+            alert.value = true;
         }
     }
 
@@ -106,6 +115,8 @@
             if (valid) {
 
                 board = await session.api.board.register(configData.value);
+
+                alert.value = false;
 
                 isFlashing.value = true;
 
@@ -121,33 +132,36 @@
 
                 await flasher.program(defaultApp, (writtenPercentage) => flashProgress.value = writtenPercentage);
 
-                currentStage.value = STAGE.FINISH;
+                await flasher.close();
+
+                router.push({ name: "BoardDetail", params: { id: board.id }, query: { new: true } });
             }
         }
 
         catch(error) {
 
-            isError.value = true;
-        }
+            if (error.response) {
 
-        finally {
+                await form.value.form.reset();
 
-            await flasher.close();
+                alertTitle.value = error.response.status + " " + error.response.statusText + " Error";
+            }
+
+            else {
+
+                await flasher.close();
+
+                alertTitle.value = "Registration failed";
+
+                currentStage.value = STAGE.CONNECT;
+            }
 
             isFlashing.value = false;
             flashProgress.value = 0;
+
+            alertText.value = null;
+            alert.value = true;
         }
-    }
-
-    function inspect() {
-
-        router.push({ name: "BoardDetail", params: { id: board.id } });
-    }
-
-    function retry() {
-
-        isError.value = false;
-        currentStage.value = STAGE.CONNECT;
     }
 
 </script>
@@ -163,17 +177,31 @@
             :steps="stages"
         />
 
+        <v-alert
+            v-if="alert"
+            @click:close="alert = false"
+            class="mx-auto"
+            :class='{ "my-4": smAndUp }'
+            :rounded="smAndUp"
+            variant="elevated"
+            max-width="600"
+            type="error"
+            :title="alertTitle"
+            :text="alertText"
+            closable
+        />
+
         <ConnectStage
-            v-if="currentStage === STAGE.CONNECT && !isConnecting && !isError"
+        v-if="currentStage === STAGE.CONNECT && !isConnecting"
             @click-connect="connect"
         />
 
         <ConnectProgress
-            v-if="currentStage === STAGE.CONNECT && isConnecting && !isError"
+        v-if="isConnecting"
         />
 
         <ConfigureStage
-            v-if="currentStage === STAGE.CONFIGURE && !isFlashing && !isError"
+        v-if="currentStage === STAGE.CONFIGURE && !isFlashing"
             @click-register="register"
         >
 
@@ -186,44 +214,9 @@
         </ConfigureStage>
 
         <RegisterProgress
-            v-if="currentStage === STAGE.CONFIGURE && isFlashing && !isError"
+        v-if="isFlashing"
             :model-value="flashProgress"
         />
-
-        <Alert
-            v-if="currentStage === STAGE.FINISH && !isError"
-            :title="'The board \'' + board.name + '\' has been successfully registered'"
-            icon="mdi-check-circle"
-            color="success"
-        >
-
-            <v-btn
-                @click="inspect"
-            >
-
-                Inspect
-
-            </v-btn>
-
-        </Alert>
-
-        <Alert
-            v-if="isError"
-            title="Something went wrong ..."
-            text="Please unplug the board and plug it back in, then try the registration again."
-            icon="mdi-close-circle"
-            color="error"
-        >
-
-            <v-btn
-                @click="retry"
-            >
-
-                Retry
-
-            </v-btn>
-
-        </Alert>
 
     </template>
 

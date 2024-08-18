@@ -2,30 +2,18 @@
 <script setup>
 
     import { ref } from "vue";
+    import { useDisplay } from "vuetify";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
-    import Stepper from "@/components/Stepper.vue"
     import UploadStage from "@/components/NewFirmwareUploadStage.vue";
-    import Alert from "@/components/Alert.vue";
-
-    const STAGE = {
-
-        UPLOAD: 1,
-        FINISH: 2
-    };
-
-    const stages = [
-
-        { title: "Upload", value: STAGE.UPLOAD },
-        { title: "Finish", value: STAGE.FINISH }
-    ];
 
     const router = useRouter();
     const session = useSessionStore();
 
-    const currentStage = ref(STAGE.UPLOAD);
+    const { smAndUp } = useDisplay();
 
-    const isError = ref(false);
+    const alert = ref(false);
+    const alertTitle = ref(null);
 
     const form = ref(null);
 
@@ -63,42 +51,49 @@
 
                 firmware = await session.api.firmware.create(name.value, firmwareFile.value, configFormFile.value);
 
-                currentStage.value = STAGE.FINISH;
+                router.push({ name: "FirmwareDetail", params: { id: firmware.id }, query: { new: true } });
             }
         }
 
         catch(error) {
 
-            isError.value = true;
+            if (error.response) {
+
+                alertTitle.value = error.response.status + " " + error.response.statusText + " Error";
+            }
+
+            else {
+
+                alertTitle.value = "Upload failed";
+            }
+
+            name.value = null;
+            firmwareFile.value = null;
+            configFormFile.value = null;
+
+            alert.value = true;
         }
-    }
-
-    function inspect() {
-
-        router.push({ name: "FirmwareDetail", params: { id: firmware.id } });
-    }
-
-    function retry() {
-
-        name.value = null;
-        firmwareFile.value = null;
-        configFormFile.value = null;
-        
-        isError.value = false;
-        currentStage.value = STAGE.UPLOAD;
     }
 
 </script>
 
 <template>
 
-    <Stepper
-        :model-value="currentStage"
-        :steps="stages"
+    <v-alert
+        v-if="alert"
+        @click:close="alert = false"
+        class="mx-auto"
+        :class='{ "mt-4": smAndUp }'
+        :rounded="smAndUp"
+        variant="elevated"
+        max-width="600"
+        type="error"
+        :title="alertTitle"
+        text="Please try the upload again."
+        closable
     />
 
     <UploadStage
-        v-if="currentStage === STAGE.UPLOAD && !isError"
         @click-upload="upload"
     >
 
@@ -133,44 +128,5 @@
         </v-form>
 
     </UploadStage>
-
-    <Alert
-        v-if="currentStage === STAGE.FINISH && !isError"
-        :title="'The firmware \'' + firmware.name + '\' has been successfully uploaded'"
-        icon="mdi-check-circle"
-        color="success"
-    >
-
-        <v-spacer/>
-
-        <v-btn
-            @click="inspect"
-        >
-
-            Inspect
-
-        </v-btn>
-
-    </Alert>
-
-    <Alert
-        v-if="isError"
-        title="Upload failed ..."
-        text="Please try it again."
-        icon="mdi-close-circle"
-        color="error"
-    >
-
-        <v-spacer/>
-
-        <v-btn
-            @click="retry"
-        >
-
-            Retry
-
-        </v-btn>
-
-    </Alert>
 
 </template>

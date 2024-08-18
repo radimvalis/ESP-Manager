@@ -13,7 +13,7 @@
 
     <v-stepper
         :model-value="modelValue"
-        class="mx-auto mt-5"
+        class="mx-auto mt-4"
         :mobile="smAndDown"
         max-width="600"
         alt-labels

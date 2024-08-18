@@ -16,6 +16,10 @@
 
     const updatedFirmwareFile = ref(null);
 
+    const alert = ref(false);
+    const alertType = ref(null);
+    const alertTitle = ref(null);
+
     const firmware = ref(null);
 
     const rules = [
@@ -24,6 +28,13 @@
     ];
 
     onMounted(async () => {
+
+        if (route.query.new) {
+
+            alertType.value = "success";
+            alertTitle.value = "Firmware has been uploaded";
+            alert.value = true;
+        }
 
         try {
 
@@ -41,11 +52,22 @@
 
             firmware.value = await session.api.firmware.update(firmware.value.id, updatedFirmwareFile.value);
 
-            updatedFirmwareFile.value = null;
+            alertType.value = "success";
+            alertTitle.value = "Update to version " + firmware.value.version + " succeeded";
+
         }
 
         catch(error) {
 
+            alertType.value = "error";
+            alertTitle.value = "Update to version " + firmware.value.version + " failed";
+        }
+
+        finally {
+
+            alert.value = true;
+
+            updatedFirmwareFile.value = null;
         }
     }
 
@@ -60,6 +82,9 @@
 
         catch(error) {
 
+            alertType.value = "error";
+            alertTitle.value = "Firmware can't be deleted now";
+            alert.value = true;
         }
     }
 
@@ -71,9 +96,22 @@
         v-if="firmware"
     >
 
+        <v-alert
+            v-if="alert"
+            @click:close="alert = false"
+            class="mx-auto"
+            :class='{ "mt-4": smAndUp }'
+            :rounded="smAndUp"
+            variant="elevated"
+            max-width="600"
+            :type="alertType"
+            :title="alertTitle"
+            closable
+        />
+
         <v-card
             class="mx-auto"
-            :class='{ "mt-5": smAndUp }'
+            :class='{ "mt-4": smAndUp }'
             :rounded="smAndUp"
             max-width="600"
         >

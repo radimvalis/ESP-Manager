@@ -12,9 +12,20 @@
 
     const { xs, smAndUp } = useDisplay();
 
+    const alert = ref(false);
+    const alertType = ref(null);
+    const alertTitle = ref(null);
+
     const board = ref(null);
 
     onMounted(async () => {
+
+        if (route.query.new) {
+
+            alertType.value = "success";
+            alertTitle.value = "Board has been registered";
+            alert.value = true;
+        }
 
         try {
 
@@ -37,6 +48,9 @@
 
         catch(error) {
 
+            alertType.value = "error";
+            alertTitle.value = "Board can't be deleted now";
+            alert.value = true;
         }
     }
 
@@ -48,9 +62,22 @@
         v-if="board"
     >
 
+        <v-alert
+            v-if="alert"
+            @click:close="alert = false"
+            class="mx-auto"
+            :class='{ "mt-4": smAndUp }'
+            :rounded="smAndUp"
+            variant="elevated"
+            max-width="600"
+            :type="alertType"
+            :title="alertTitle"
+            closable
+        />
+
         <v-card
             class="mx-auto"
-            :class='{ "mt-5": smAndUp }'
+            :class='{ "mt-4": smAndUp }'
             :rounded="smAndUp"
             max-width="600"
         >
