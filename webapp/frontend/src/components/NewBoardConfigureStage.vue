@@ -12,14 +12,9 @@
 
 <template>
 
-    <v-card
-        class="mx-auto"
-        max-width="600"
-    >
+    <v-card-main>
 
-        <v-card-title
-            class="my-6 text-wrap"
-        >
+        <v-card-title>
 
             Configure your board
 
@@ -47,6 +42,6 @@
 
         </v-card-actions>
 
-    </v-card>
+    </v-card-main>
 
 </template>

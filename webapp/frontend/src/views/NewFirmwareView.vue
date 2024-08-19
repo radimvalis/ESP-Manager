@@ -2,15 +2,11 @@
 <script setup>
 
     import { ref } from "vue";
-    import { useDisplay } from "vuetify";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
-    import UploadStage from "@/components/NewFirmwareUploadStage.vue";
 
     const router = useRouter();
     const session = useSessionStore();
-
-    const { smAndUp } = useDisplay();
 
     const alert = ref(false);
     const alertTitle = ref(null);
@@ -82,51 +78,72 @@
     <v-alert
         v-if="alert"
         @click:close="alert = false"
-        class="mx-auto"
-        :class='{ "mt-4": smAndUp }'
-        :rounded="smAndUp"
-        variant="elevated"
-        max-width="600"
         type="error"
         :title="alertTitle"
         text="Please try the upload again."
-        closable
     />
 
-    <UploadStage
-        @click-upload="upload"
-    >
+    <v-card-main>
 
-        <v-form
-            ref="form"
-        >
+        <v-card-title>
 
-            <v-text-field
-                v-model="name"
-                class="my-2"
-                label="Firmware name"
-                variant="outlined"
-                :rules="nameRules"
-            />
+            Upload your firmware
 
-            <v-file-input
-                v-model="firmwareFile"
-                class="my-2"
-                label="Firmware file"
-                variant="outlined"
-                :rules="firmwareRules"
-            />
+        </v-card-title>
 
-            <v-file-input
-                v-model="configFormFile"
-                class="my-2"
-                label="Config form file"
-                variant="outlined"
-                :rules="configFormRules"
-            />
+        <v-divider/>
 
-        </v-form>
+        <v-card-text>
 
-    </UploadStage>
+            <v-form
+                ref="form"
+            >
+
+                <v-text-field
+                    v-model="name"
+                    class="mt-2"
+                    label="Firmware name"
+                    variant="outlined"
+                    density="compact"
+                    :rules="nameRules"
+                />
+
+                <v-file-input
+                    v-model="firmwareFile"
+                    class="mt-2"
+                    label="Firmware file"
+                    variant="outlined"
+                    density="compact"
+                    :rules="firmwareRules"
+                />
+
+                <v-file-input
+                    v-model="configFormFile"
+                    class="mt-2"
+                    label="Config form file"
+                    variant="outlined"
+                    density="compact"
+                    :rules="configFormRules"
+                />
+
+            </v-form>
+
+        </v-card-text>
+
+        <v-card-actions>
+
+            <v-spacer/>
+
+            <v-btn
+                @click="upload"
+            >
+
+                Upload
+
+            </v-btn>
+
+        </v-card-actions>
+
+    </v-card-main>
 
 </template>

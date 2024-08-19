@@ -10,7 +10,7 @@
     const router = useRouter();
     const session = useSessionStore();
 
-    const { xs, smAndUp } = useDisplay();
+    const { xs } = useDisplay();
 
     const alert = ref(false);
     const alertType = ref(null);
@@ -65,40 +65,22 @@
         <v-alert
             v-if="alert"
             @click:close="alert = false"
-            class="mx-auto"
-            :class='{ "mt-4": smAndUp }'
-            :rounded="smAndUp"
-            variant="elevated"
-            max-width="600"
             :type="alertType"
             :title="alertTitle"
-            closable
         />
 
-        <v-card
-            class="mx-auto"
-            :class='{ "mt-4": smAndUp }'
-            :rounded="smAndUp"
-            max-width="600"
-        >
+        <v-card-main>
 
             <template #title>
 
-                <div
-                    class="mt-6"
-                >
-
                 {{ board.name }}
-
-
-                </div>
 
             </template>
 
             <template #append>
 
                 <v-chip
-                    class="mt-6"
+                    class="mt-4"
                     :text='board.isOnline ? "online" : "offline"'
                     :color='board.isOnline ? "success" : "error"'
                     :prepend-icon='board.isOnline ? "mdi-check-circle-outline" : "mdi-alert-circle-outline"'
@@ -106,9 +88,7 @@
 
             </template>
 
-            <v-card-subtitle
-                class="mb-6"
-            >
+            <v-card-subtitle>
 
                 {{ board.id }}
 
@@ -218,7 +198,7 @@
 
             </v-card-text>
 
-        </v-card>
+        </v-card-main>
 
     </template>
 

@@ -29,7 +29,7 @@
     const router = useRouter();
     const session = useSessionStore();
 
-    const { smAndUp } = useDisplay();
+    const { xs } = useDisplay();
 
     const navigatorRef = ref(navigator);
 
@@ -180,28 +180,22 @@
         <v-alert
             v-if="alert"
             @click:close="alert = false"
-            class="mx-auto"
-            :class='{ "my-4": smAndUp }'
-            :rounded="smAndUp"
-            variant="elevated"
-            max-width="600"
             type="error"
             :title="alertTitle"
             :text="alertText"
-            closable
         />
 
         <ConnectStage
-        v-if="currentStage === STAGE.CONNECT && !isConnecting"
+            v-if="currentStage === STAGE.CONNECT && !isConnecting"
             @click-connect="connect"
         />
 
         <ConnectProgress
-        v-if="isConnecting"
+            v-if="isConnecting"
         />
 
         <ConfigureStage
-        v-if="currentStage === STAGE.CONFIGURE && !isFlashing"
+            v-if="currentStage === STAGE.CONFIGURE && !isFlashing"
             @click-register="register"
         >
 
@@ -214,7 +208,7 @@
         </ConfigureStage>
 
         <RegisterProgress
-        v-if="isFlashing"
+            v-if="isFlashing"
             :model-value="flashProgress"
         />
 

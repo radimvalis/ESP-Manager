@@ -7,11 +7,7 @@
 
 <template>
 
-    <v-card
-        class="mx-auto text-center"
-        variant="flat"
-        color="background"
-    >
+    <v-card-info>
 
         <v-card-text>
 
@@ -34,6 +30,6 @@
 
         </v-card-title>                    
 
-    </v-card>
+    </v-card-info>
     
 </template>

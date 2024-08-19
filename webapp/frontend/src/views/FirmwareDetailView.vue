@@ -10,7 +10,7 @@
     const router = useRouter();
     const session = useSessionStore();
 
-    const { xs, smAndUp } = useDisplay();
+    const { xs } = useDisplay();
 
     const isFormValid = ref(null);
 
@@ -99,48 +99,28 @@
         <v-alert
             v-if="alert"
             @click:close="alert = false"
-            class="mx-auto"
-            :class='{ "mt-4": smAndUp }'
-            :rounded="smAndUp"
-            variant="elevated"
-            max-width="600"
             :type="alertType"
             :title="alertTitle"
-            closable
         />
 
-        <v-card
-            class="mx-auto"
-            :class='{ "mt-4": smAndUp }'
-            :rounded="smAndUp"
-            max-width="600"
-        >
+        <v-card-main>
 
             <template #title>
 
-                <div
-                    class="mt-6"
-                >
-
-                    {{ firmware.name }}
-
-
-                </div>
+                {{ firmware.name }}
 
             </template>
 
             <template #append>
 
                 <v-chip
-                    class="mt-6"
+                    class="mt-4"
                     :text='"version " + firmware.version'
                 />
 
             </template>
 
-        <v-card-subtitle
-            class="mb-6"
-        >
+        <v-card-subtitle>
 
             {{ firmware.id }}
 
@@ -152,7 +132,7 @@
 
                 <v-form
                     v-model="isFormValid"
-                    class="mb-5"
+                    class="mb-4"
                 >
 
                     <v-file-input
@@ -201,7 +181,7 @@
                 
             </v-card-text>
 
-        </v-card>
+        </v-card-main>
 
     </template>
 

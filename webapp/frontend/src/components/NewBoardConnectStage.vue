@@ -11,14 +11,9 @@
 
 <template>
 
-    <v-card
-        class="mx-auto"
-        max-width="600"
-    >
+    <v-card-main>
 
-        <v-card-title
-            class="my-6 text-wrap"
-        >
+        <v-card-title>
 
             Connect your board
 
@@ -26,9 +21,7 @@
 
         <v-divider/>
 
-        <v-card-text
-            class="text-justify"
-        >
+        <v-card-text>
 
             Connect your board to the PC using the USB cable and click the <b>CONNECT</b> button.
             You'll be then prompted to select the port your board is connected to.
@@ -49,6 +42,6 @@
 
         </v-card-actions>
 
-    </v-card>
+    </v-card-main>
 
 </template>

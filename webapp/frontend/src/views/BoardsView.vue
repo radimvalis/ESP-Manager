@@ -83,13 +83,7 @@
         :class='{ "mx-4": smAndUp }'
     >
 
-        <v-sheet
-            class="mx-auto"
-            :class='{ "mt-5": smAndUp }'
-            :max-width="1200"
-            :elevation="1"
-            :rounded="smAndUp"
-        >
+        <v-sheet-main>
 
             <v-container
                 fluid
@@ -249,7 +243,7 @@
 
             </v-data-table>
 
-        </v-sheet>
+        </v-sheet-main>
         
     </div>
 

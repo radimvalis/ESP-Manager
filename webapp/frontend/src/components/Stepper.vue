@@ -5,7 +5,7 @@
 
     defineProps({ modelValue: Number, steps: Array });
 
-    const { smAndDown } = useDisplay();
+    const { xs } = useDisplay();
 
 </script>
 
@@ -13,9 +13,9 @@
 
     <v-stepper
         :model-value="modelValue"
-        class="mx-auto mt-4"
-        :mobile="smAndDown"
-        max-width="600"
+        class="mx-auto mt-sm-4 mt-xs-0"
+        :mobile="xs"
+        :max-width="600"
         alt-labels
         flat
     >

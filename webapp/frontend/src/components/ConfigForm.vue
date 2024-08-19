@@ -32,21 +32,24 @@
                 v-if='entry.encoding === "string"'
                 v-model="configData[entry.key]"
                 v-bind="entry"
-                class="my-2"
+                class="mt-2"
+                density="compact"
             />
 
             <BlobInput
                 v-else-if='entry.encoding === "blob"'
                 v-model="configData[entry.key]"
                 v-bind="entry"
-                class="my-2"
+                class="mt-2"
+                density="compact"
             />
 
             <NumberInput
                 v-else-if='numberEncodings.includes(entry.encoding)'
                 v-model="configData[entry.key]"
                 v-bind="entry"
-                class="my-2"
+                class="mt-2"
+                density="compact"
             />
 
         </template>
