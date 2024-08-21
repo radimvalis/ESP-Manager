@@ -8,14 +8,9 @@ export default class BoardService {
         this._models = models;
     }
 
-    async getByIdAndUserId(boardId, userId) {
+    async get(boardId, userId) {
 
-        const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
-
-        if (!board || board.userId !== userId) {
-
-            throw new NotFoundError();
-        }
+        const board = await this._getByIdAndUserId(boardId, userId);
 
         return board.toJSON();
     }
@@ -62,8 +57,22 @@ export default class BoardService {
         return newBoard.toJSON();
     }
 
-    async delete(id) {
+    async delete(boardId, userId) {
 
-        await this._models.board.destroy({ where: { id } });
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        await board.destroy();
+    }
+
+    async _getByIdAndUserId(boardId, userId) {
+
+        const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
+
+        if (!board || board.userId !== userId) {
+
+            throw new NotFoundError();
+        }
+
+        return board;
     }
 }

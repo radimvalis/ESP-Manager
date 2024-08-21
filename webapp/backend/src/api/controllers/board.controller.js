@@ -5,7 +5,7 @@ export default function BoardController(context) {
 
     this.get = asyncCatch(async (req, res) => {
 
-        const board = await context.board.getByIdAndUserId(req.body.boardId, req.userId);
+        const board = await context.board.get(req.body.boardId, req.userId);
 
         res.json(board).end();
     });
@@ -30,7 +30,7 @@ export default function BoardController(context) {
 
     this.delete = asyncCatch(async (req, res) => {
 
-        await context.board.delete(req.body.boardId);
+        await context.board.delete(req.body.boardId, req.userId);
 
         await context.file.deleteBoardDir(req.body.boardId);
 

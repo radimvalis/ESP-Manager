@@ -5,7 +5,7 @@ export default function FirmwareController(context) {
 
     this.get = asyncCatch(async (req, res) => {
 
-        const firmware = await context.firmware.getByIdAndUserId(req.body.firmwareId, req.userId);
+        const firmware = await context.firmware.get(req.body.firmwareId, req.userId);
 
         res.json(firmware).end();
     });
@@ -37,7 +37,7 @@ export default function FirmwareController(context) {
 
     this.update = asyncCatch(async (req, res) => {
 
-        const updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId);
+        const updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId, req.userId);
 
         const updatedFirmwarePath = req.file.path;
 
@@ -48,7 +48,7 @@ export default function FirmwareController(context) {
 
     this.delete = asyncCatch(async (req, res) => {
 
-        await context.firmware.delete(req.body.firmwareId);
+        await context.firmware.delete(req.body.firmwareId, req.userId);
 
         await context.file.deleteFirmwareDir(req.body.firmwareId);
 

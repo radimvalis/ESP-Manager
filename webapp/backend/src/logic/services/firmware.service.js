@@ -8,14 +8,9 @@ export default class FirmwareService {
         this._models = models;
     }
 
-    async getByIdAndUserId(firmwareId, userId) {
+    async get(firmwareId, userId) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId);
-
-        if (!firmware || firmware.userId !== userId) {
-
-            throw new NotFoundError();
-        }
+        const firmware = await this._getByIdAndUserId(firmwareId, userId);
 
         return firmware.toJSON();
     }
@@ -39,9 +34,9 @@ export default class FirmwareService {
         return newFirmware.toJSON();        
     }
 
-    async incrementVersion(firmwareId) {
+    async incrementVersion(firmwareId, userId) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId);
+        const firmware = await this._getByIdAndUserId(firmwareId, userId);
 
         await firmware.increment("version");
 
@@ -50,8 +45,22 @@ export default class FirmwareService {
         return firmware.toJSON();
     }
 
-    async delete(id) {
+    async delete(firmwareId, userId) {
 
-        await this._models.firmware.destroy({ where: { id } });
+        const firmware = await this._getByIdAndUserId(firmwareId, userId);
+
+        await firmware.destroy();
+    }
+
+    async _getByIdAndUserId(firmwareId, userId) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId);
+
+        if (!firmware || firmware.userId !== userId) {
+
+            throw new NotFoundError();
+        }
+
+        return firmware;
     }
 }
