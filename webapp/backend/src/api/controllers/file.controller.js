@@ -18,4 +18,11 @@ export default function FileController(context) {
 
         res.sendFile(path);
     });
+
+    this.getConfigForm = asyncCatch(async (req, res) => {
+
+        const path = context.file.getConfigFormPath(req.body.firmwareId);
+
+        res.sendFile(path);
+    });
 }

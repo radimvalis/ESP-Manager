@@ -24,7 +24,9 @@ const ENDPOINT = {
             BOOTLOADER: "/file/default/bootloader",
             CONFIG_FORM: "/file/default/config-form",
             NVS: "/file/default/nvs"
-        }
+        },
+
+        CONFIG_FORM: "/file/config-form",
     },
 
     BOARD: {
@@ -38,6 +40,7 @@ const ENDPOINT = {
     FIRMWARE: {
 
         GET: "/firmware/get",
+        GET_PUBLIC: "/firmware/get-public",
         SUMMARY_LIST: "/firmware/summary-list",
         CREATE: "/firmware/create",
         UPDATE: "/firmware/update",

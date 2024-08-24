@@ -15,6 +15,13 @@ export default class FirmwareService {
         return firmware.toJSON();
     }
 
+    async getPublic(firmwareId) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId);
+
+        return firmware.getSanitized();
+    }
+
     async getSummaryList(userId) {
 
         return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });

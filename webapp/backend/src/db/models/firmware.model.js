@@ -27,6 +27,15 @@ export default (sequelize, DataTypes) => {
         }
     );
 
+    Firmware.prototype.getSanitized = function () {
+
+        const board = this.toJSON();
+
+        delete board.boardId;
+
+        return board;
+    }
+
     Firmware.associate = (models) => {
 
         Firmware.hasMany(models.board);

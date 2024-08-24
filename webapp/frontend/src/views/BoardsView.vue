@@ -91,7 +91,9 @@
 
                 <v-row>
 
-                    <v-col>
+                    <v-col
+                        :class='{ "flex-grow-0": !xs }'
+                    >
 
                         <v-btn
                             :to='{ name: "NewBoard" }'
@@ -103,6 +105,24 @@
                         
                             New Board
                     
+                        </v-btn>
+
+                    </v-col>
+
+                    <v-col
+                        :class='{ "flex-grow-0": !xs }'
+                    >
+
+                        <v-btn
+                            :to='{ name: "FlashBoard" }'
+                            :block="xs"
+                            prepend-icon="mdi-flash-outline"
+                            variant="flat"
+                            color="primary"
+                        >
+
+                            Flash board
+
                         </v-btn>
 
                     </v-col>

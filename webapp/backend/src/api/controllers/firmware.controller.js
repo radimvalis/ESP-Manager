@@ -10,6 +10,13 @@ export default function FirmwareController(context) {
         res.json(firmware).end();
     });
 
+    this.getPublic = asyncCatch(async (req, res) => {
+
+        const firmware = await context.firmware.getPublic(req.body.firmwareId);
+
+        res.json(firmware).end();
+    });
+
     this.getSummaryList = asyncCatch(async (req, res) => {
 
         const firmwaresSummary = await context.firmware.getSummaryList(req.userId);

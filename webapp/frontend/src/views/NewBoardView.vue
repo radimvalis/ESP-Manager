@@ -2,7 +2,6 @@
 <script setup>
 
     import { ref, onMounted } from "vue";
-    import { useDisplay } from "vuetify";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
     import Flasher from "@/utils/Flasher";
@@ -28,8 +27,6 @@
 
     const router = useRouter();
     const session = useSessionStore();
-
-    const { xs } = useDisplay();
 
     const navigatorRef = ref(navigator);
 

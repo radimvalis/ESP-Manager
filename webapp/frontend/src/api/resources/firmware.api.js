@@ -13,6 +13,11 @@ export default class FirmwareApi {
         return await this._httpClient.post(ENDPOINT.FIRMWARE.GET, { firmwareId });
     }
 
+    async getPublic(firmwareId) {
+
+        return await this._httpClient.post(ENDPOINT.FIRMWARE.GET_PUBLIC, { firmwareId });
+    }
+
     async getSummaryList() {
 
         return await this._httpClient.get(ENDPOINT.FIRMWARE.SUMMARY_LIST);

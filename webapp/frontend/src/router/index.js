@@ -38,6 +38,12 @@ const router = createRouter({
             meta: { isAuthRequired: true }
         },
         {
+            path: "/boards/flash",
+            name: "FlashBoard",
+            component: () => import("@/views/FlashBoardView.vue"),
+            meta: { isAuthRequired: true }
+        },
+        {
             path: "/firmwares",
             name: "Firmwares",
             component: () => import("@/views/FirmwaresView.vue"),

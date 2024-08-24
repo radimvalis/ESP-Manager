@@ -43,6 +43,11 @@ export default class FileApi {
         return FileApi._convertArrayBufferToString(response);        
     }
 
+    async getConfigForm(firmwareId) {
+
+        return await this._httpClient.post(ENDPOINT.FILE.CONFIG_FORM, { firmwareId });
+    }
+
     static _convertArrayBufferToString(arrayBuffer) {
 
         return new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "");

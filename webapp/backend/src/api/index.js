@@ -45,11 +45,13 @@ export default function start(context, port) {
     app.get(ENDPOINT.USER.GET, userController.get);
     app.get(ENDPOINT.FILE.DEFAULT.ANY, fileController.getDefault);
     app.post(ENDPOINT.FILE.DEFAULT.NVS, fileController.getDefaultNVS);
+    app.post(ENDPOINT.FILE.CONFIG_FORM, fileController.getConfigForm);
     app.post(ENDPOINT.BOARD.GET, boardController.get);
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
     app.delete(ENDPOINT.BOARD.DELETE, boardController.delete);
     app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
+    app.post(ENDPOINT.FIRMWARE.GET_PUBLIC, firmwareController.getPublic);
     app.get(ENDPOINT.FIRMWARE.SUMMARY_LIST, firmwareController.getSummaryList);
     app.put(ENDPOINT.FIRMWARE.CREATE, upload.array("files"), firmwareController.create);
     app.post(ENDPOINT.FIRMWARE.UPDATE, upload.single("file"), firmwareController.update);

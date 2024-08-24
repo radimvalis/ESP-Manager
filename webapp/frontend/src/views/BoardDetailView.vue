@@ -182,6 +182,19 @@
                     </v-btn>
 
                     <v-btn
+                        :class='{ "mb-2": xs, "ml-2": !xs }'
+                        :to='{ name: "FlashBoard", query: { "id": board.id } }'
+                        :block="xs"
+                        color="primary"
+                        variant="flat"
+                        slim
+                    >
+
+                        Flash
+
+                    </v-btn>
+
+                    <v-btn
                         @click="deleteBoard"
                         :class='{ "ml-auto": !xs }'
                         :block="xs"
