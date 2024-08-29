@@ -5,6 +5,9 @@ services:
             context: "./"
             dockerfile: "./mqtt-broker/Dockerfile"
             target: ${TARGET}
+            args:
+                MQTT_ADMIN_USERNAME: ${MQTT_ADMIN_USERNAME}
+                MQTT_ADMIN_PASSWORD: ${MQTT_ADMIN_PASSWORD}
         ports:
             - ${MQTT_BROKER_PORT_PUBLIC}:${MQTT_BROKER_PORT}
     reverse-proxy:
