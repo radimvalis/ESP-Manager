@@ -1,5 +1,12 @@
 
 services:
+    mqtt-broker:
+        build:
+            context: "./"
+            dockerfile: "./mqtt-broker/Dockerfile"
+            target: ${TARGET}
+        ports:
+            - ${MQTT_BROKER_PORT_PUBLIC}:${MQTT_BROKER_PORT}
     reverse-proxy:
         build:
             context: "./"
