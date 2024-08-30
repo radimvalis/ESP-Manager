@@ -57,8 +57,8 @@ esp_err_t wifi_sta_start(esp_manager_client_handle_t client)
 
     wifi_config_t wifi_config = {};
 
-    strcpy((char*)wifi_config.sta.ssid, client->ssid);
-    strcpy((char*)wifi_config.sta.password, client->password);
+    strcpy((char*)wifi_config.sta.ssid, client->wifi_ssid);
+    strcpy((char*)wifi_config.sta.password, client->wifi_password);
 
     err = esp_wifi_set_mode(WIFI_MODE_STA);
     ERROR_CHECK(err, goto _connect_failed);

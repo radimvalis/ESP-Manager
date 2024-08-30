@@ -1,5 +1,6 @@
 #include "esp_manager_priv.h"
 #include "wifi.h"
+#include "mqtt.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_heap_caps.h"
@@ -33,7 +34,29 @@ static void handle_connect_wifi_state(esp_manager_client_handle_t client)
 
     xEventGroupWaitBits(client->event_group_handle, WIFI_CONNECTED_BIT, pdTRUE, pdTRUE, portMAX_DELAY);
 
-    client->state = STATE_RUN;
+    client->state = STATE_CONNECT_MQTT;
+}
+
+static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
+{
+    esp_err_t err = mqtt_start(client);
+
+    if (err != ESP_OK) {
+
+        client->is_running = false;
+    }
+
+    EventBits_t bits = xEventGroupWaitBits(client->event_group_handle, MQTT_CONNECTED_BIT | MQTT_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+
+    if (bits & MQTT_FAIL_BIT) {
+
+        client->is_running = false;
+    }
+
+    else {
+
+        client->state = STATE_RUN;
+    }
 }
 
 static void esp_manager_task(void *pvParameters)
@@ -51,6 +74,12 @@ static void esp_manager_task(void *pvParameters)
         case STATE_CONNECT_WIFI:
 
             handle_connect_wifi_state(client);
+
+            break;
+
+        case STATE_CONNECT_MQTT:
+
+            handle_connect_mqtt_state(client);
 
             break;
 
@@ -89,14 +118,20 @@ esp_manager_client_handle_t esp_manager_init(void)
 
     // Read board's default configuration
 
-    client->id = nvs_get_str_ptr(nvs_handle, "id");
-    NULL_CHECK(client->id, goto _init_failed);
+    client->wifi_ssid = nvs_get_str_ptr(nvs_handle, "wifi_ssid");
+    NULL_CHECK(client->wifi_ssid, goto _init_failed);
 
-    client->ssid = nvs_get_str_ptr(nvs_handle, "ssid");
-    NULL_CHECK(client->ssid, goto _init_failed);
+    client->wifi_password = nvs_get_str_ptr(nvs_handle, "wifi_password");
+    NULL_CHECK(client->wifi_password, goto _init_failed);
 
-    client->password = nvs_get_str_ptr(nvs_handle, "password");
-    NULL_CHECK(client->password, goto _init_failed);
+    client->mqtt_username = nvs_get_str_ptr(nvs_handle, "mqtt_username");
+    NULL_CHECK(client->mqtt_username, goto _init_failed);
+
+    client->mqtt_password = nvs_get_str_ptr(nvs_handle, "mqtt_password");
+    NULL_CHECK(client->mqtt_password, goto _init_failed);
+
+    client->mqtt_broker_uri = nvs_get_str_ptr(nvs_handle, "mqtt_broker_uri");
+    NULL_CHECK(client->mqtt_broker_uri, goto _init_failed);
 
     nvs_close(nvs_handle);
 
@@ -132,10 +167,13 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
 {
     NULL_CHECK(client, return ESP_FAIL);
 
-    NULL_CHECK(client->id, free(client->id));
-    NULL_CHECK(client->ssid, free(client->ssid));
-    NULL_CHECK(client->password, free(client->password));
+    NULL_CHECK(client->wifi_ssid, free(client->wifi_ssid));
+    NULL_CHECK(client->wifi_password, free(client->wifi_password));
+    NULL_CHECK(client->mqtt_username, free(client->mqtt_username));
+    NULL_CHECK(client->mqtt_password, free(client->mqtt_password));
+    NULL_CHECK(client->mqtt_broker_uri, free(client->mqtt_broker_uri));
     NULL_CHECK(client->task_handle, free(client->task_handle));
+    NULL_CHECK(client->mqtt_handle, free(client->task_handle));
     NULL_CHECK(client->event_group_handle, free(client->event_group_handle));
 
     free(client);
