@@ -27,3 +27,12 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# ESP-IDF
+
+build
+
+# Data files
+
+boards
+firmwares
