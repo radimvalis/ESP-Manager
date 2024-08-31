@@ -1,7 +1,20 @@
 
+# BASE STAGE
+
+FROM nginx:1.25.3 AS base
+
+ARG REVERSE_PROXY_CRT
+
+ARG REVERSE_PROXY_KEY
+
+COPY $REVERSE_PROXY_CRT /etc/ssl/certs/server.crt
+
+COPY $REVERSE_PROXY_KEY /etc/ssl/certs/server.key
+
+
 # DEVELOPMENT STAGE
 
-FROM nginx:1.25.3 AS dev
+FROM base AS dev
 
 COPY ./reverse-proxy/config/dev.conf /etc/nginx/conf.d/default.conf
 
@@ -32,7 +45,7 @@ RUN npm run build
 
 # PRODUCTION STAGE
 
-FROM nginx:1.25.3 AS prod
+FROM base AS prod
 
 COPY ./reverse-proxy/config/prod.conf /etc/nginx/conf.d/default.conf
 

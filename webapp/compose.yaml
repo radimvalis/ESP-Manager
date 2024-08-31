@@ -15,6 +15,9 @@ services:
             context: "./"
             dockerfile: "./reverse-proxy/Dockerfile"
             target: ${TARGET}
+            args:
+                REVERSE_PROXY_CRT: ${REVERSE_PROXY_CRT}
+                REVERSE_PROXY_KEY: ${REVERSE_PROXY_KEY}
         ports:
             - ${REVERSE_PROXY_PORT_PUBLIC}:${REVERSE_PROXY_PORT}
         depends_on:
