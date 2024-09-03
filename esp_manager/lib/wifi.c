@@ -15,9 +15,11 @@ static void wifi_event_handler(void *args, esp_event_base_t event_base, int32_t 
         break;
 
     case IP_EVENT_STA_GOT_IP:
+        
+        esp_manager_event_t event = { .id = EVENT_WIFI_CONNECTED };
 
-        xEventGroupSetBits(client->event_group_handle, WIFI_CONNECTED_BIT);
-
+        xQueueSend(client->queue_handle, &event, 0);
+        
         break;
 
     case WIFI_EVENT_STA_DISCONNECTED:

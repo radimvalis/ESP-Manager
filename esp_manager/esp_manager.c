@@ -32,9 +32,19 @@ static void handle_connect_wifi_state(esp_manager_client_handle_t client)
         client->is_running = false;
     }
 
-    xEventGroupWaitBits(client->event_group_handle, WIFI_CONNECTED_BIT, pdTRUE, pdTRUE, portMAX_DELAY);
+    esp_manager_event_t event;
 
-    client->state = STATE_CONNECT_MQTT;
+    xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
+
+    if (event.id == EVENT_WIFI_CONNECTED) {
+
+        client->state = STATE_CONNECT_MQTT;
+    }
+
+    else {
+
+        client->is_running = false;
+    }
 }
 
 static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
@@ -46,17 +56,25 @@ static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
         client->is_running = false;
     }
 
-    EventBits_t bits = xEventGroupWaitBits(client->event_group_handle, MQTT_CONNECTED_BIT | MQTT_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    esp_manager_event_t event;
 
-    if (bits & MQTT_FAIL_BIT) {
+    xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
 
-        client->is_running = false;
+    if (event.id == EVENT_MQTT_CONNECTED) {
+
+        client->state = STATE_RUN;
     }
 
     else {
 
-        client->state = STATE_RUN;
+        client->is_running = false;
     }
+}
+
+static void handle_run_state(esp_manager_client_handle_t client)
+{
+            ESP_LOGI("esp_manager", "Running ...");
+            vTaskDelay(2000 / portTICK_PERIOD_MS);
 }
 
 static void esp_manager_task(void *pvParameters)
@@ -85,8 +103,7 @@ static void esp_manager_task(void *pvParameters)
 
         case STATE_RUN:
 
-            ESP_LOGI("esp_manager", "Running ...");
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
+            handle_run_state(client);
 
             break;
 
@@ -113,8 +130,8 @@ esp_manager_client_handle_t esp_manager_init(void)
     esp_manager_client_handle_t client = heap_caps_calloc(1, sizeof(struct esp_manager_client), MALLOC_CAP_DEFAULT);
     NULL_CHECK(client, goto _init_failed);
 
-    client->event_group_handle = xEventGroupCreate();
-    NULL_CHECK(client->event_group_handle, goto _init_failed);
+    client->queue_handle = xQueueCreate(5, sizeof(esp_manager_event_t));
+    NULL_CHECK(client->queue_handle, goto _init_failed);
 
     // Read board's default configuration
 
@@ -172,9 +189,9 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
     NULL_CHECK(client->mqtt_username, free(client->mqtt_username));
     NULL_CHECK(client->mqtt_password, free(client->mqtt_password));
     NULL_CHECK(client->mqtt_broker_uri, free(client->mqtt_broker_uri));
-    NULL_CHECK(client->task_handle, free(client->task_handle));
-    NULL_CHECK(client->mqtt_handle, free(client->task_handle));
-    NULL_CHECK(client->event_group_handle, free(client->event_group_handle));
+    NULL_CHECK(client->task_handle, vTaskDelete(client->task_handle));
+    NULL_CHECK(client->mqtt_handle, esp_mqtt_client_destroy(client->mqtt_handle));
+    NULL_CHECK(client->queue_handle, vQueueDelete(client->queue_handle));
 
     free(client);
 

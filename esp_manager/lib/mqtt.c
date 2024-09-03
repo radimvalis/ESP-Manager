@@ -3,7 +3,7 @@
 #include "mqtt_client.h"
 #include "esp_log.h"
 
-static char *create_topic_str(const esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
+static char *create_topic_str(esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
 {
     strcpy(topic_dest, client->mqtt_username);
 
@@ -19,27 +19,30 @@ static char *create_topic_str(const esp_manager_client_handle_t client, const ch
 
 static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-
     esp_manager_client_handle_t client = args;
 
     switch ((esp_mqtt_event_id_t)event_id) {
 
     case MQTT_EVENT_CONNECTED:
 
-        char topic[50];
-        create_topic_str(client, "#", topic);
+        char subscribe_topic[50];
+        create_topic_str(client, "#", subscribe_topic);
 
-        int msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, topic, 1);
+        int msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, subscribe_topic, 1);
 
-        if (msg_id == -1) {
+        esp_manager_event_t connect_result_event;
 
-            xEventGroupSetBits(client->event_group_handle, MQTT_FAIL_BIT);
+        if (msg_id != -1) {
+
+            connect_result_event.id = EVENT_MQTT_CONNECTED;
         }
 
         else {
 
-            xEventGroupSetBits(client->event_group_handle, MQTT_CONNECTED_BIT);
+            connect_result_event.id = EVENT_MQTT_ERROR;
         }
+
+        xQueueSend(client->queue_handle, &connect_result_event, 0);
 
         break;
     
@@ -81,10 +84,10 @@ esp_err_t mqtt_start(esp_manager_client_handle_t client)
     NULL_CHECK(client->mqtt_handle, return ESP_FAIL);
 
     err = esp_mqtt_client_register_event(client->mqtt_handle, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
-    ERROR_CHECK(err, return ESP_FAIL);
+    ERROR_CHECK(err, return err);
 
     err = esp_mqtt_client_start(client->mqtt_handle);
-    ERROR_CHECK(err, return ESP_FAIL);
+    ERROR_CHECK(err, return err);
 
     return ESP_OK;
 }
