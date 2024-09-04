@@ -11,7 +11,6 @@
 
 #define ERROR_CHECK(x, action) if((x) != ESP_OK) { action; }
 
-
 typedef enum {
 
     STATE_CONNECT_WIFI,
@@ -23,7 +22,9 @@ typedef enum {
 
     EVENT_WIFI_CONNECTED,
     EVENT_MQTT_CONNECTED,
-    EVENT_MQTT_ERROR
+    EVENT_MQTT_ERROR,
+    EVENT_UPDATE,
+    EVENT_BOOT_DEFAULT
 } esp_manager_event_id_t;
 
 typedef struct {
@@ -39,6 +40,7 @@ struct esp_manager_client {
     char *mqtt_username;
     char *mqtt_password;
     char *mqtt_broker_uri;
+    char *server_crt;
     TaskHandle_t task_handle;
     QueueHandle_t queue_handle;
     esp_mqtt_client_handle_t mqtt_handle;

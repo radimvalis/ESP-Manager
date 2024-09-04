@@ -1,7 +1,6 @@
 #include "mqtt.h"
 #include <string.h>
 #include "mqtt_client.h"
-#include "esp_log.h"
 
 static char *create_topic_str(esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
 {
@@ -15,6 +14,16 @@ static char *create_topic_str(esp_manager_client_handle_t client, const char *to
     strcat(topic_dest, topic_src);
 
     return topic_dest;
+}
+
+static char *get_data_str(esp_manager_client_handle_t client, esp_mqtt_event_handle_t mqtt_event)
+{
+    char *ret = malloc(mqtt_event->data_len);
+    NULL_CHECK(ret, return NULL);
+
+    sprintf(ret, "%.*s", mqtt_event->data_len, mqtt_event->data);
+
+    return ret;
 }
 
 static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -50,8 +59,23 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
 
         esp_mqtt_event_handle_t mqtt_event = event_data;
 
-        ESP_LOGI("mqtt", "TOPIC=%.*s", mqtt_event->topic_len, mqtt_event->topic);
-        ESP_LOGI("mqtt", "DATA=%.*s", mqtt_event->data_len, mqtt_event->data);
+        esp_manager_event_t data_event;
+
+        if (strstr(mqtt_event->topic, "update")) {
+
+            data_event.id = EVENT_UPDATE;
+            data_event.data = get_data_str(client, mqtt_event);
+
+            xQueueSend(client->queue_handle, &data_event, 0);
+        }
+
+        else if (strstr(mqtt_event->topic, "boot-default")) {
+
+            data_event.id = EVENT_BOOT_DEFAULT;
+            data_event.data = get_data_str(client, mqtt_event);
+
+            xQueueSend(client->queue_handle, &data_event, 0);   
+        }
 
         break;
 

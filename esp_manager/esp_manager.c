@@ -1,6 +1,9 @@
 #include "esp_manager_priv.h"
 #include "wifi.h"
 #include "mqtt.h"
+#include "config_update.h"
+#include "firmware_update.h"
+#include <cJSON.h>
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_heap_caps.h"
@@ -73,8 +76,51 @@ static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
 
 static void handle_run_state(esp_manager_client_handle_t client)
 {
-            ESP_LOGI("esp_manager", "Running ...");
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
+    esp_manager_event_t event;
+
+    xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
+
+    if (event.id == EVENT_UPDATE) {
+
+        cJSON *update_data = cJSON_Parse(event.data);
+
+        cJSON *firmware_url = cJSON_GetObjectItemCaseSensitive(update_data, "firmware_url");
+        cJSON *config_url = cJSON_GetObjectItemCaseSensitive(update_data, "config_url");
+
+        esp_err_t err;
+
+        if (firmware_url && firmware_url->valuestring) {
+
+            err = firmware_update(client, firmware_url->valuestring);
+
+            if (err == ESP_OK) {
+
+                if (config_url && config_url->valuestring) {
+
+                    err = config_update(client, config_url->valuestring);
+                }
+
+                if (err == ESP_OK) {
+
+                    esp_restart();
+                }
+            }
+        }
+
+        cJSON_Delete(update_data);
+    }
+
+    else if (event.id == EVENT_BOOT_DEFAULT) {
+
+        esp_err_t err = set_factory_as_boot_partition();
+        
+        if (err == ESP_OK) {
+
+            esp_restart();
+        }
+    }
+
+    NULL_CHECK(event.data, free(event.data));
 }
 
 static void esp_manager_task(void *pvParameters)
@@ -124,7 +170,7 @@ esp_manager_client_handle_t esp_manager_init(void)
     err = nvs_flash_init();
     ERROR_CHECK(err, return NULL);
 
-    err = nvs_open("esp_manager", NVS_READONLY, &nvs_handle);
+    err = nvs_open("_esp_manager", NVS_READONLY, &nvs_handle);
     ERROR_CHECK(err, return NULL);
 
     esp_manager_client_handle_t client = heap_caps_calloc(1, sizeof(struct esp_manager_client), MALLOC_CAP_DEFAULT);
@@ -150,6 +196,9 @@ esp_manager_client_handle_t esp_manager_init(void)
     client->mqtt_broker_uri = nvs_get_str_ptr(nvs_handle, "mqtt_broker_uri");
     NULL_CHECK(client->mqtt_broker_uri, goto _init_failed);
 
+    client->server_crt = nvs_get_str_ptr(nvs_handle, "server_crt");
+    NULL_CHECK(client->server_crt, goto _init_failed);
+
     nvs_close(nvs_handle);
 
     return client;
@@ -172,7 +221,7 @@ esp_err_t esp_manager_start(esp_manager_client_handle_t client)
         return ESP_ERR_INVALID_ARG;
     }
 
-    if (xTaskCreate(esp_manager_task, "esp_manager_task", 4096, client, 5, &client->task_handle) != pdTRUE) {
+    if (xTaskCreate(esp_manager_task, "esp_manager_task", 8192, client, 5, &client->task_handle) != pdTRUE) {
         
         return ESP_FAIL;
     }
@@ -189,6 +238,7 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
     NULL_CHECK(client->mqtt_username, free(client->mqtt_username));
     NULL_CHECK(client->mqtt_password, free(client->mqtt_password));
     NULL_CHECK(client->mqtt_broker_uri, free(client->mqtt_broker_uri));
+    NULL_CHECK(client->server_crt, free(client->server_crt));
     NULL_CHECK(client->task_handle, vTaskDelete(client->task_handle));
     NULL_CHECK(client->mqtt_handle, esp_mqtt_client_destroy(client->mqtt_handle));
     NULL_CHECK(client->queue_handle, vQueueDelete(client->queue_handle));
