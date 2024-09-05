@@ -2,6 +2,7 @@
 import { ENDPOINT } from "shared";
 import ApplicationContext from "./logic/index.js";
 import getDb from "./db/index.js";
+import getMqtt from "./mqtt/index.js";
 import start from "./api/index.js";
 
 (async () => {
@@ -13,10 +14,31 @@ import start from "./api/index.js";
         await db.authenticate();
     }
     
-    catch (error) {
+    catch(error) {
     
         console.error("Unable to connect to the database:", error);
         
+        return;
+    }
+
+    let mqtt;
+
+    try {
+
+        const mqttConfig = {
+
+            borkerUrl: "mqtt://mqtt-broker:" + process.env.MQTT_BROKER_PORT,
+            username: process.env.MQTT_ADMIN_USERNAME,
+            password: process.env.MQTT_ADMIN_PASSWORD
+        };
+
+        mqtt = await getMqtt(mqttConfig);
+    }
+
+    catch(error) {
+
+        console.error("Unable to connect to the MQTT broker:", error);
+
         return;
     }
 
@@ -40,7 +62,9 @@ import start from "./api/index.js";
 
         dataDirectoryPath: process.cwd() + "/data",
 
-        models: db.models
+        models: db.models,
+
+        mqtt: mqtt
     };
 
     const context = new ApplicationContext(config);
