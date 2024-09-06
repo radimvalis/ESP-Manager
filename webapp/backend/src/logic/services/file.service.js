@@ -6,15 +6,20 @@ import { NVSGenerationError } from "../../utils/errors.js";
 
 export default class FileService {
 
+    static _NVS_CSV = "nvs.csv";
+    static _NVS_BIN = "nvs.bin";
     static _DEFAULT_NVS_CSV = "default-nvs.csv";
     static _DEFAULT_NVS_BIN = "default-nvs.bin";
 
     static _FIRMWARE = "firmware.bin";
     static _CONFIG_FORM = "config-form.json";
 
-    constructor(dataDirectoryPath) {
+    constructor(config) {
 
-        this._dataDirectoryPath = dataDirectoryPath;
+        this._dataDirectoryPath = config.path.dataDirectoryPath;
+        this._serverCrtPath = config.path.serverCrtPath;
+
+        this._brokerUrl = config.url.broker;
     }
 
     getDefaultPath(filename) {
@@ -73,19 +78,42 @@ export default class FileService {
         await fs.rm(this._getFirmwareDir(firmwareId), { recursive: true, force: true });
     }
 
-    async createDefaultNVS(configData, boardId) {
+    async createNVS(configData, firmwareId, boardId) {
+
+        const configFormPath = this.getConfigFormPath(firmwareId);
+
+        const configForm = await FileService._loadConfigForm(configFormPath);
+
+        const csvPath = this._getBoardDir(boardId) + FileService._NVS_CSV;
+        const binPath = this._getBoardDir(boardId) + FileService._NVS_BIN;
+
+        await FileService._saveConfigDataAsCSV(configData, configForm, csvPath);
+
+        await this._createNVS(csvPath, binPath);        
+    }
+
+    async createDefaultNVS(configData, board) {
 
         const defaultConfigFormPath = this.getDefaultPath("config-form");
 
         const defaultConfigForm = await FileService._loadConfigForm(defaultConfigFormPath);
 
-        // Add board ID which is not part of default config form 
+        // Add config which is not part of default config form
 
-        configData.id = boardId;
-        defaultConfigForm.push({ key: "id", encoding: "string" });
+        configData.mqtt_username = board.id;
+        defaultConfigForm.push({ key: "mqtt_username", encoding: "string" });
 
-        const csvPath = this._getBoardDir(boardId) + FileService._DEFAULT_NVS_CSV;
-        const binPath = this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
+        configData.mqtt_password = board.mqttPassword;
+        defaultConfigForm.push({ key: "mqtt_password", encoding: "string" });
+
+        configData.mqtt_broker_uri = this._brokerUrl;
+        defaultConfigForm.push({ key: "mqtt_broker_uri", encoding: "string" });
+
+        configData.server_crt = (await fs.readFile(this._serverCrtPath)).toString();
+        defaultConfigForm.push({ key: "server_crt", encoding: "string" });
+
+        const csvPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_CSV;
+        const binPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_BIN;
 
         await FileService._saveConfigDataAsCSV(configData, defaultConfigForm, csvPath);
 
@@ -129,7 +157,7 @@ export default class FileService {
 
         // Define namespace
         
-        content += "esp_manager,namespace,,\n";
+        content += "_esp_manager,namespace,,\n";
 
         // Define other key-value pairs
 
@@ -157,7 +185,7 @@ export default class FileService {
 
     async _createNVS(inputPath, outputPath) {
      
-        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, 0x3000 ]);
+        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, 0x5000 ]);
 
         const result = await once(process, "exit");
         const exitCode = result[0];

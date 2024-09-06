@@ -27,5 +27,7 @@ services:
             context: "./"
             dockerfile: "./backend/Dockerfile"
             target: ${TARGET}
+            args:
+                REVERSE_PROXY_CA_CRT: ${REVERSE_PROXY_CA_CRT}
         env_file: .env
 

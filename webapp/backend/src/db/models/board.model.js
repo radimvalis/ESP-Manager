@@ -18,6 +18,11 @@ export default (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false             
             },
+            mqttPassword: {
+
+                type: DataTypes.STRING,
+                allowNull: false
+            },
             isOnline: {
                 
                 type: DataTypes.BOOLEAN,

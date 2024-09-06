@@ -23,7 +23,7 @@ export default function BoardController(context) {
 
         await context.file.createBoardDir(board.id);
 
-        await context.file.createDefaultNVS(req.body, board.id);
+        await context.file.createDefaultNVS(req.body, board);
 
         res.json(board).end();
     });

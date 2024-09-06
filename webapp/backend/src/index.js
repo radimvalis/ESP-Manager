@@ -46,6 +46,12 @@ import start from "./api/index.js";
     
     const config = {
 
+        url: {
+
+            server: process.env.REVERSE_PROXY_URL,
+            broker: process.env.MQTT_BROKER_URL
+        },
+
         auth: {
 
             accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
@@ -60,7 +66,11 @@ import start from "./api/index.js";
             refreshCookiePath: ENDPOINT.AUTH.REFRESH_TOKENS
         },
 
-        dataDirectoryPath: process.cwd() + "/data",
+        path: {
+
+            dataDirectoryPath: process.cwd() + "/data",
+            serverCrtPath: process.cwd() + "/ca.crt",
+        },
 
         models: db.models,
 

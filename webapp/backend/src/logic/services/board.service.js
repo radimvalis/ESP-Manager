@@ -1,11 +1,31 @@
 
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
+import { randomBytes } from "crypto";
 
 export default class BoardService {
 
-    constructor(models) {
+    constructor(config) {
 
-        this._models = models;
+        this._models = config.models;
+        this._mqtt = config.mqtt;
+
+        this._mqtt.on("message", async (topic, message) => {
+
+            const [ boardId, action ] = topic.split("/");
+
+            switch(action) {
+
+                case "online":
+
+                    await this._setOnline(boardId);
+                    break;
+
+                case "offline":
+
+                    await this._setOffline(boardId);
+                    break;
+            }
+        });
     }
 
     async get(boardId, userId) {
@@ -52,7 +72,11 @@ export default class BoardService {
             throw new ConflictError();
         }
 
-        const newBoard = await this._models.board.create({ name, userId });
+        const mqttPassword = randomBytes(16).toString("hex");
+
+        const newBoard = await this._models.board.create({ name, userId, mqttPassword });
+
+        await this._createMqttClient(newBoard);
 
         return newBoard.toJSON();
     }
@@ -60,6 +84,8 @@ export default class BoardService {
     async delete(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
+
+        await this._deleteMqttClient(board);
 
         await board.destroy();
     }
@@ -74,5 +100,81 @@ export default class BoardService {
         }
 
         return board;
+    }
+
+    async _setOnline(boardId) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        if (board) {
+
+            await board.update({ isOnline: true });
+        }
+    }
+
+    async _setOffline(boardId) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        if (board) {
+
+            await board.update({ isOnline: false });
+        }
+    }
+
+    async _createMqttClient(board) {
+
+        const message = {
+
+            commands: [
+                {
+                    command: "createClient",
+                    username: board.id,
+                    password: board.mqttPassword
+                },
+                {
+                    command: "createRole",
+                    rolename: board.id,
+                    acls: [
+                        {
+                            acltype: "subscribePattern",
+                            topic: board.id + "/#",
+                            allow: true
+                        },
+                        {
+                            acltype: "publishClientSend",
+                            topic: board.id + "/#",
+                            allow: true
+                        }
+                    ]
+                },
+                {
+                    command: "addClientRole",
+                    username: board.id,
+                    rolename: board.id
+                }
+            ]
+        };
+
+        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message));
+    }
+
+    async _deleteMqttClient(board) {
+
+        const message = {
+
+            commands: [
+                {
+                    command: "deleteClient",
+                    username: board.id
+                },
+                {
+                    command: "deleteRole",
+                    rolename: board.id
+                }
+            ]
+        };
+
+        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message));
     }
 }

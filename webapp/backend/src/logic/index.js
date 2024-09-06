@@ -13,8 +13,8 @@ export default class ApplicationContext {
         this.auth = new AuthService(config.auth);
         this.cookie = new CookieService(config.cookie);
         this.user = new UserService(config.models);
-        this.file = new FileService(config.dataDirectoryPath);
-        this.board = new BoardService(config.models);
+        this.file = new FileService(config);
+        this.board = new BoardService(config);
         this.firmware = new FirmwareService(config.models);
 
         Object.freeze(this);

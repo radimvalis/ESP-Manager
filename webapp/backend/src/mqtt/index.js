@@ -14,5 +14,29 @@ export default async function getMqtt(config) {
 
     await client.subscribeAsync("$CONTROL/dynamic-security/v1/#");
 
+    try {
+
+        const message = {
+
+            commands: [
+                {
+                    command: "addRoleACL",
+                    rolename: "admin",
+                    acltype: "publishClientSend",
+                    topic: "#",
+                    allow: true
+                }
+            ]
+        }
+    
+        await client.publishAsync("$CONTROL/dynamic-security/v1/#", JSON.stringify(message));
+    
+        await client.subscribeAsync("#");
+    }
+
+    catch(error) {
+
+    }
+
     return client;
 }
