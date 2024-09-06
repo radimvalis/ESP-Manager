@@ -17,13 +17,14 @@ export default class AuthService {
         return { accessToken, refreshToken };
     }
 
-    async verifyToken(token, tokenName) {
+    async verifyAccessToken(accessToken) {
 
-        const secret = tokenName === this.accessTokenSecret ? this.accessTokenSecret : this.refreshTokenSecret;
+        return (await jwtVerify(accessToken, this.accessTokenSecret)).payload;
+    }
 
-        const { payload } = await jwtVerify(token, secret);
+    async verifyRefreshToken(refreshToken) {
 
-        return payload;
+        return (await jwtVerify(refreshToken, this.refreshTokenSecret)).payload;
     }
 
     async _createAccessToken(userId) {

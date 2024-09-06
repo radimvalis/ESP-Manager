@@ -2,7 +2,7 @@
 import asyncCatch from "./error.middleware.js";
 import { MissingTokenError } from "../../utils/errors.js";
 
-export default function cookieMiddleware(context, cookieName) {
+export default function cookieMiddleware(cookieName, verifyFn) {
 
     return asyncCatch(async (req, res, next) => {
 
@@ -13,7 +13,7 @@ export default function cookieMiddleware(context, cookieName) {
             throw new MissingTokenError();
         }
 
-        const payload = await context.auth.verifyToken(token);
+        const payload = await verifyFn(token);
 
         req.userId = payload.userId;
 
