@@ -14,7 +14,7 @@
 
     defineExpose({ form });
 
-    const numberEncodings = [ "uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t" ];
+    const numberEncodings = [ "u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64" ];
 
 </script>
 

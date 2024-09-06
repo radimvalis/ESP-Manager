@@ -28,6 +28,15 @@ export default function BoardController(context) {
         res.json(board).end();
     });
 
+    this.flash = asyncCatch(async (req, res) => {
+
+        const board = await context.board.get(req.body.boardId, req.userId);
+
+        await context.file.createNVS(req.body.configData, req.body.firmwareId, board.id);
+
+        res.status(200).end();
+    });
+
     this.delete = asyncCatch(async (req, res) => {
 
         await context.board.delete(req.body.boardId, req.userId);

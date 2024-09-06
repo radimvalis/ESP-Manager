@@ -49,6 +49,7 @@ export default function start(context, port) {
     app.post(ENDPOINT.BOARD.GET, boardController.get);
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
+    app.post(ENDPOINT.BOARD.FLASH, boardController.flash);
     app.delete(ENDPOINT.BOARD.DELETE, boardController.delete);
     app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
     app.post(ENDPOINT.FIRMWARE.GET_PUBLIC, firmwareController.getPublic);

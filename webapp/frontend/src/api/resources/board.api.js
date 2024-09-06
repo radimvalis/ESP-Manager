@@ -23,6 +23,11 @@ export default class BoardApi {
         return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);
     }
 
+    async flash(boardId, firmwareId, configData) {
+
+        return await this._httpClient.post(ENDPOINT.BOARD.FLASH, { boardId, firmwareId, configData });
+    }
+
     async delete(boardId) {
 
         await this._httpClient.delete(ENDPOINT.BOARD.DELETE, { boardId });

@@ -119,7 +119,19 @@
 
     async function flash() {
 
-        // TODO
+        try {
+
+            const { valid } = await form.value.form.validate();
+
+            if (valid) {
+
+                await session.api.board.flash(boardToFlash.value.id, firmware.value.id, configData.value);
+            }
+        }
+
+        catch(error) {
+
+        }
     }
 
     function resetBoardSelection() {
