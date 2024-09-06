@@ -34,24 +34,37 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
 
     case MQTT_EVENT_CONNECTED:
 
-        char subscribe_topic[50];
-        create_topic_str(client, "#", subscribe_topic);
-
-        int msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, subscribe_topic, 1);
-
+        int msg_id;
+        char topic[50];
         esp_manager_event_t connect_result_event;
+
+        create_topic_str(client, "#", topic);
+        msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, topic, 1);
 
         if (msg_id != -1) {
 
-            connect_result_event.id = EVENT_MQTT_CONNECTED;
+            create_topic_str(client, "online", topic);
+            msg_id = esp_mqtt_client_publish(client->mqtt_handle, topic, "", 0, 1, 1);
+
+            if (msg_id != -1) {
+
+                connect_result_event.id = EVENT_MQTT_CONNECTED;
+            }
+
+            else {
+
+                connect_result_event.id = EVENT_MQTT_ERROR;
+            }
+
+            xQueueSend(client->queue_handle, &connect_result_event, 0);
         }
 
         else {
 
             connect_result_event.id = EVENT_MQTT_ERROR;
-        }
 
-        xQueueSend(client->queue_handle, &connect_result_event, 0);
+            xQueueSend(client->queue_handle, &connect_result_event, 0);
+        }
 
         break;
     
