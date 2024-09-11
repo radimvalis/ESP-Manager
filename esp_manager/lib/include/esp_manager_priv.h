@@ -11,6 +11,9 @@
 
 #define ERROR_CHECK(x, action) if((x) != ESP_OK) { action; }
 
+#define DEFAULT_FIRMWARE_ID "default"
+#define DEFAULT_FIRMWARE_VERSION -1
+
 typedef enum {
 
     STATE_CONNECT_WIFI,

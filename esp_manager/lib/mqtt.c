@@ -18,7 +18,7 @@ static char *create_topic_str(esp_manager_client_handle_t client, const char *to
 
 static char *get_data_str(esp_manager_client_handle_t client, esp_mqtt_event_handle_t mqtt_event)
 {
-    char *ret = malloc(mqtt_event->data_len);
+    char *ret = malloc(mqtt_event->data_len + 1);
     NULL_CHECK(ret, return NULL);
 
     sprintf(ret, "%.*s", mqtt_event->data_len, mqtt_event->data);
@@ -38,33 +38,30 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
         char topic[50];
         esp_manager_event_t connect_result_event;
 
-        create_topic_str(client, "#", topic);
-        msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, topic, 1);
+        const char* subscribe_topics[] = { TOPIC_CMD_UPDATE, TOPIC_CMD_BOOT_DEFAULT };
+
+        for (size_t i = 0; i < sizeof(subscribe_topics) / sizeof(subscribe_topics[0]); i++) {
+
+            create_topic_str(client, subscribe_topics[i], topic);
+            msg_id = esp_mqtt_client_subscribe(client->mqtt_handle, topic, 1);
+
+            if (msg_id == -1) {
+
+                break;
+            }
+        }
 
         if (msg_id != -1) {
 
-            create_topic_str(client, "online", topic);
-            msg_id = esp_mqtt_client_publish(client->mqtt_handle, topic, "", 0, 1, 1);
-
-            if (msg_id != -1) {
-
-                connect_result_event.id = EVENT_MQTT_CONNECTED;
-            }
-
-            else {
-
-                connect_result_event.id = EVENT_MQTT_ERROR;
-            }
-
-            xQueueSend(client->queue_handle, &connect_result_event, 0);
+            connect_result_event.id = EVENT_MQTT_CONNECTED;
         }
 
         else {
 
             connect_result_event.id = EVENT_MQTT_ERROR;
-
-            xQueueSend(client->queue_handle, &connect_result_event, 0);
         }
+
+        xQueueSend(client->queue_handle, &connect_result_event, 0);
 
         break;
     
@@ -74,7 +71,7 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
 
         esp_manager_event_t data_event;
 
-        if (strstr(mqtt_event->topic, "update")) {
+        if (strstr(mqtt_event->topic, TOPIC_CMD_UPDATE)) {
 
             data_event.id = EVENT_UPDATE;
             data_event.data = get_data_str(client, mqtt_event);
@@ -82,7 +79,7 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
             xQueueSend(client->queue_handle, &data_event, 0);
         }
 
-        else if (strstr(mqtt_event->topic, "boot-default")) {
+        else if (strstr(mqtt_event->topic, TOPIC_CMD_BOOT_DEFAULT)) {
 
             data_event.id = EVENT_BOOT_DEFAULT;
             data_event.data = get_data_str(client, mqtt_event);
@@ -98,12 +95,20 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
     }
 }
 
+int mqtt_publish(esp_manager_client_handle_t client, const char *topic, const char *data, int qos)
+{
+    char topic_with_id[60];
+    create_topic_str(client, topic, topic_with_id);
+
+    return esp_mqtt_client_publish(client->mqtt_handle, topic_with_id, data, 0, qos, 1);
+}
+
 esp_err_t mqtt_start(esp_manager_client_handle_t client)
 {
     esp_err_t err;
 
-    char last_will_topic[50];
-    create_topic_str(client, "offline", last_will_topic);
+    char last_will_topic[60];
+    create_topic_str(client, TOPIC_INFO_OFFLINE, last_will_topic);
 
     esp_mqtt_client_config_t mqtt_config = {
 

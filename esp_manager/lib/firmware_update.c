@@ -24,7 +24,8 @@ esp_err_t firmware_update(esp_manager_client_handle_t client, const char *firmwa
 
         .url = firmware_url,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
-        .cert_pem = client->server_crt
+        .cert_pem = client->server_crt,
+        .skip_cert_common_name_check = true
     };
 
     esp_https_ota_config_t ota_config = {

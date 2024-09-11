@@ -4,7 +4,6 @@
 #include "config_update.h"
 #include "firmware_update.h"
 #include <cJSON.h>
-#include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_heap_caps.h"
 
@@ -24,6 +23,75 @@ static char *nvs_get_str_ptr(nvs_handle_t handle, char *key)
     ERROR_CHECK(err, return NULL);
 
     return ret;
+}
+
+static esp_err_t get_firmware_data(char **firmware_id, int16_t *version)
+{
+    esp_err_t err;
+    nvs_handle_t nvs_handle;
+
+    err = nvs_open("esp_manager", NVS_READONLY, &nvs_handle);
+    ERROR_CHECK(err, return err);
+
+    *firmware_id = nvs_get_str_ptr(nvs_handle, "firmware_id");
+    NULL_CHECK(firmware_id, err = ESP_FAIL; goto _cleanup);
+
+    err = nvs_get_i16(nvs_handle, "version", version);
+
+_cleanup:
+
+    nvs_close(nvs_handle);
+
+    return err; 
+}
+
+static esp_err_t set_firmware_data(char *firmware_id, int version)
+{
+    esp_err_t err;
+    nvs_handle_t nvs_handle;
+
+    err = nvs_open("esp_manager", NVS_READWRITE, &nvs_handle);
+    ERROR_CHECK(err, return ESP_FAIL);
+
+    err = nvs_set_str(nvs_handle, "firmware_id", firmware_id);
+    ERROR_CHECK(err, goto _cleanup);
+
+    err = nvs_set_i16(nvs_handle, "version", version);
+    ERROR_CHECK(err, goto _cleanup);
+
+    nvs_commit(nvs_handle);
+
+_cleanup:
+
+    nvs_close(nvs_handle);
+
+    return err;
+}
+
+static int publish_update_result(esp_manager_client_handle_t client, const char *topic)
+{
+    int msg_id;
+
+    char *firmware_id;
+    int16_t version;
+
+    esp_err_t err = get_firmware_data(&firmware_id, &version);
+    ERROR_CHECK(err, return -1);
+
+    cJSON *root = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(root, "firmware_id", firmware_id);
+    cJSON_AddNumberToObject(root, "version", version);
+
+    char *message = cJSON_Print(root);
+
+    msg_id = mqtt_publish(client, topic, message, 2);
+
+    cJSON_Delete(root);
+    cJSON_free(message);
+    free(firmware_id);
+
+    return msg_id;
 }
 
 static void handle_connect_wifi_state(esp_manager_client_handle_t client)
@@ -64,6 +132,8 @@ static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
     xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
 
     if (event.id == EVENT_MQTT_CONNECTED) {
+        
+        mqtt_publish(client, TOPIC_INFO_ONLINE, NULL, 1);
 
         client->state = STATE_RUN;
     }
@@ -82,32 +152,43 @@ static void handle_run_state(esp_manager_client_handle_t client)
 
     if (event.id == EVENT_UPDATE) {
 
-        cJSON *update_data = cJSON_Parse(event.data);
+        cJSON *update_data = cJSON_Parse((char *)event.data);
 
+        cJSON *firmware_id = cJSON_GetObjectItemCaseSensitive(update_data, "firmware_id");
+        cJSON *version = cJSON_GetObjectItemCaseSensitive(update_data, "version");
         cJSON *firmware_url = cJSON_GetObjectItemCaseSensitive(update_data, "firmware_url");
         cJSON *config_url = cJSON_GetObjectItemCaseSensitive(update_data, "config_url");
 
-        esp_err_t err;
+        esp_err_t err = ESP_FAIL;
 
         if (firmware_url && firmware_url->valuestring) {
 
             err = firmware_update(client, firmware_url->valuestring);
 
-            if (err == ESP_OK) {
+            if (err == ESP_OK && config_url && config_url->valuestring) {
 
-                if (config_url && config_url->valuestring) {
-
-                    err = config_update(client, config_url->valuestring);
-                }
-
-                if (err == ESP_OK) {
-
-                    esp_restart();
-                }
+                err = config_update(client, config_url->valuestring);
             }
         }
 
+        if (err == ESP_OK) {
+
+            set_firmware_data(firmware_id->valuestring, version->valueint);
+
+            publish_update_result(client, TOPIC_INFO_UPDATE_OK);
+
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+            esp_restart();
+        }
+        
+        else {
+
+            publish_update_result(client, TOPIC_INFO_UPDATE_ERROR);
+        }
+
         cJSON_Delete(update_data);
+        cJSON_free(update_data);
     }
 
     else if (event.id == EVENT_BOOT_DEFAULT) {
@@ -116,11 +197,22 @@ static void handle_run_state(esp_manager_client_handle_t client)
         
         if (err == ESP_OK) {
 
+            set_firmware_data(DEFAULT_FIRMWARE_ID, DEFAULT_FIRMWARE_VERSION);
+
+            publish_update_result(client, TOPIC_INFO_UPDATE_OK);
+
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+
             esp_restart();
+        }
+
+        else {
+
+            publish_update_result(client, TOPIC_INFO_UPDATE_ERROR);
         }
     }
 
-    NULL_CHECK(event.data, free(event.data));
+    NULL_CHECK(!event.data, free(event.data));
 }
 
 static void esp_manager_task(void *pvParameters)
@@ -170,7 +262,7 @@ esp_manager_client_handle_t esp_manager_init(void)
     err = nvs_flash_init();
     ERROR_CHECK(err, return NULL);
 
-    err = nvs_open("_esp_manager", NVS_READONLY, &nvs_handle);
+    err = nvs_open("esp_manager", NVS_READONLY, &nvs_handle);
     ERROR_CHECK(err, return NULL);
 
     esp_manager_client_handle_t client = heap_caps_calloc(1, sizeof(struct esp_manager_client), MALLOC_CAP_DEFAULT);
@@ -233,15 +325,15 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
 {
     NULL_CHECK(client, return ESP_FAIL);
 
-    NULL_CHECK(client->wifi_ssid, free(client->wifi_ssid));
-    NULL_CHECK(client->wifi_password, free(client->wifi_password));
-    NULL_CHECK(client->mqtt_username, free(client->mqtt_username));
-    NULL_CHECK(client->mqtt_password, free(client->mqtt_password));
-    NULL_CHECK(client->mqtt_broker_uri, free(client->mqtt_broker_uri));
-    NULL_CHECK(client->server_crt, free(client->server_crt));
-    NULL_CHECK(client->task_handle, vTaskDelete(client->task_handle));
-    NULL_CHECK(client->mqtt_handle, esp_mqtt_client_destroy(client->mqtt_handle));
-    NULL_CHECK(client->queue_handle, vQueueDelete(client->queue_handle));
+    NULL_CHECK(!client->wifi_ssid, free(client->wifi_ssid));
+    NULL_CHECK(!client->wifi_password, free(client->wifi_password));
+    NULL_CHECK(!client->mqtt_username, free(client->mqtt_username));
+    NULL_CHECK(!client->mqtt_password, free(client->mqtt_password));
+    NULL_CHECK(!client->mqtt_broker_uri, free(client->mqtt_broker_uri));
+    NULL_CHECK(!client->server_crt, free(client->server_crt));
+    NULL_CHECK(!client->task_handle, vTaskDelete(client->task_handle));
+    NULL_CHECK(!client->mqtt_handle, esp_mqtt_client_destroy(client->mqtt_handle));
+    NULL_CHECK(!client->queue_handle, vQueueDelete(client->queue_handle));
 
     free(client);
 
