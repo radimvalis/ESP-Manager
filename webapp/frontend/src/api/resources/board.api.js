@@ -28,6 +28,16 @@ export default class BoardApi {
         return await this._httpClient.post(ENDPOINT.BOARD.FLASH, { boardId, firmwareId, configData });
     }
 
+    async update(boardId) {
+
+        return await this._httpClient.post(ENDPOINT.BOARD.UPDATE, { boardId });
+    }
+
+    async bootDefault(boardId) {
+
+        return await this._httpClient.post(ENDPOINT.BOARD.BOOT_DEFAULT, { boardId });
+    }
+
     async delete(boardId) {
 
         await this._httpClient.delete(ENDPOINT.BOARD.DELETE, { boardId });

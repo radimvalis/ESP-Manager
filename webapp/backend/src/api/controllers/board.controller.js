@@ -30,11 +30,27 @@ export default function BoardController(context) {
 
     this.flash = asyncCatch(async (req, res) => {
 
-        const board = await context.board.get(req.body.boardId, req.userId);
+        await context.file.createNVS(req.body.configData, req.body.firmwareId, req.body.boardId);
 
-        await context.file.createNVS(req.body.configData, req.body.firmwareId, board.id);
+        const firmware = await context.firmware.getPublic(req.body.firmwareId);
 
-        res.status(200).end();
+        const board = await context.board.flash(req.body.boardId, req.userId, firmware);
+
+        res.json(board).end();
+    });
+
+    this.update = asyncCatch(async (req, res) => {
+
+        const board = await context.board.update(req.body.boardId, req.userId);
+
+        res.json(board).end();
+    });
+
+    this.bootDefault = asyncCatch(async (req, res) => {
+
+        const board = await context.board.bootDefault(req.body.boardId, req.userId);
+
+        res.json(board).end();
     });
 
     this.delete = asyncCatch(async (req, res) => {

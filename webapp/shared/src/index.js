@@ -27,6 +27,8 @@ const ENDPOINT = {
         },
 
         CONFIG_FORM: "/file/config-form",
+        FIRMWARE_ANY: "/file/firmware/:id",
+        NVS_ANY: "/file/nvs/:id"
     },
 
     BOARD: {
@@ -35,6 +37,8 @@ const ENDPOINT = {
         SUMMARY_LIST: "/board/summary-list",
         REGISTER: "/board/register",
         FLASH: "/board/flash",
+        UPDATE: "/board/update",
+        BOOT_DEFAULT: "/board/boot-default",
         DELETE: "/board/delete"
     },
 

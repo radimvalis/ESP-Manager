@@ -8,12 +8,24 @@ export default class BoardService {
 
         this._models = config.models;
         this._mqtt = config.mqtt;
+        this._serverUrl = config.url.server;
+    }
+
+    async init() {
+
+        await this._mqtt.subscribeAsync([
+            
+            "+/info/online",
+            "+/info/offline",
+            "+/info/update=ok",
+            "+/info/update=error"
+        ]);
 
         this._mqtt.on("message", async (topic, message) => {
 
-            const [ boardId, action ] = topic.split("/");
+            const [ boardId, type, messageId ] = topic.split("/");
 
-            switch(action) {
+            switch(messageId) {
 
                 case "online":
 
@@ -23,6 +35,16 @@ export default class BoardService {
                 case "offline":
 
                     await this._setOffline(boardId);
+                    break;
+
+                case "update=ok":
+
+                    await this._finishUpdate(boardId, JSON.parse(message));
+                    break;
+
+                case "update=error":
+
+                    await this._cancelUpdate(boardId, JSON.parse(message));
                     break;
             }
         });
@@ -90,6 +112,60 @@ export default class BoardService {
         await board.destroy();
     }
 
+    async flash(boardId, userId, firmware) {
+        
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        const message = {
+
+            firmware_id: firmware.id,
+            version: firmware.version,
+            firmware_url: this._serverUrl + "/api/file/firmware/" + firmware.id,
+            config_url: this._serverUrl + "/api/file/nvs/" + board.id
+        };
+
+        await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
+
+        await board.update({ isBeingUpdated: true });
+
+        await board.reload();
+
+        return board.toJSON();
+    }
+
+    async update(boardId, userId) {
+
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        const message = {
+
+            firmware_id: board.firmware.id,
+            version: board.firmware.version,
+            firmware_url: this._serverUrl + "/api/file/firmware/" + board.firmware.id
+        };
+
+        await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
+
+        await board.update({ isBeingUpdated: true });
+
+        await board.reload();
+
+        return board.toJSON();
+    }
+
+    async bootDefault(boardId, userId) {
+
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        await this._mqtt.publishAsync(board.id + "/cmd/boot-default", null, { qos: 2 });
+
+        await board.update({ isBeingUpdated: true });
+
+        await board.reload();
+
+        return board.toJSON();
+    }
+
     async _getByIdAndUserId(boardId, userId) {
 
         const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
@@ -120,6 +196,26 @@ export default class BoardService {
 
             await board.update({ isOnline: false });
         }
+    }
+
+    async _finishUpdate(boardId, data) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        if (data.firmware_id === "default") {
+
+            data.firmware_id = null;
+            data.version = null;
+        }
+
+        await board.update({ firmwareId: data.firmware_id, firmwareVersion: data.version, isBeingUpdated: false });
+    }
+
+    async _cancelUpdate(boardId, data) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        await board.update({ isBeingUpdated: false });    
     }
 
     async _createMqttClient(board) {

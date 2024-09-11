@@ -79,5 +79,7 @@ import start from "./api/index.js";
 
     const context = new ApplicationContext(config);
 
+    await context.init();
+
     start(context, port);
 })();

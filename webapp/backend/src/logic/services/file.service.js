@@ -34,6 +34,11 @@ export default class FileService {
         return this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
     }
 
+    getNVSPath(boardId) {
+
+        return this._getBoardDir(boardId) + FileService._NVS_BIN;
+    }
+
     getFirmwarePath(firmwareId) {
 
         return this._getFirmwareDir(firmwareId) + FileService._FIRMWARE;
@@ -89,7 +94,7 @@ export default class FileService {
 
         await FileService._saveConfigDataAsCSV(configData, configForm, csvPath);
 
-        await this._createNVS(csvPath, binPath);        
+        await this._createNVS(csvPath, binPath, 0x8000);        
     }
 
     async createDefaultNVS(configData, board) {
@@ -112,12 +117,18 @@ export default class FileService {
         configData.server_crt = (await fs.readFile(this._serverCrtPath)).toString();
         defaultConfigForm.push({ key: "server_crt", encoding: "string" });
 
+        configData.firmware_id = "default";
+        defaultConfigForm.push({ key: "firmware_id", encoding: "string" });
+
+        configData.version = -1;
+        defaultConfigForm.push({ key: "version", encoding: "i16" });
+
         const csvPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_CSV;
         const binPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_BIN;
 
         await FileService._saveConfigDataAsCSV(configData, defaultConfigForm, csvPath);
 
-        await this._createNVS(csvPath, binPath);
+        await this._createNVS(csvPath, binPath, 0x5000);
     }
 
     get _boardsDir() {
@@ -157,7 +168,7 @@ export default class FileService {
 
         // Define namespace
         
-        content += "_esp_manager,namespace,,\n";
+        content += "esp_manager,namespace,,\n";
 
         // Define other key-value pairs
 
@@ -183,9 +194,9 @@ export default class FileService {
         return value;
     }
 
-    async _createNVS(inputPath, outputPath) {
+    async _createNVS(inputPath, outputPath, nvsSize) {
      
-        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, 0x5000 ]);
+        const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, nvsSize ]);
 
         const result = await once(process, "exit");
         const exitCode = result[0];

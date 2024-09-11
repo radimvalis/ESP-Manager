@@ -19,4 +19,9 @@ export default class ApplicationContext {
 
         Object.freeze(this);
     }
+
+    async init() {
+
+        await this.board.init();
+    }
 }

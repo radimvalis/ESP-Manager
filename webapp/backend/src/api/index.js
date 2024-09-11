@@ -36,6 +36,8 @@ export default function start(context, port) {
     app.post(ENDPOINT.AUTH.LOG_IN, authController.logIn);
     app.post(ENDPOINT.AUTH.SIGN_UP, authController.signUp);
     app.get(ENDPOINT.AUTH.REFRESH_TOKENS, refreshCookieMiddleware(context), authController.refreshTokens);
+    app.get(ENDPOINT.FILE.FIRMWARE_ANY, fileController.getFirmware);
+    app.get(ENDPOINT.FILE.NVS_ANY, fileController.getNVS);
 
     // Protected endpoints
 
@@ -50,6 +52,8 @@ export default function start(context, port) {
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
     app.post(ENDPOINT.BOARD.FLASH, boardController.flash);
+    app.post(ENDPOINT.BOARD.UPDATE, boardController.update);
+    app.post(ENDPOINT.BOARD.BOOT_DEFAULT, boardController.bootDefault);
     app.delete(ENDPOINT.BOARD.DELETE, boardController.delete);
     app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
     app.post(ENDPOINT.FIRMWARE.GET_PUBLIC, firmwareController.getPublic);

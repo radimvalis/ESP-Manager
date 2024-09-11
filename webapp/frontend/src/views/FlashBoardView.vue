@@ -2,7 +2,7 @@
 <script setup>
 
     import { ref, onMounted } from "vue";
-    import { useRoute } from "vue-router";
+    import { useRoute, useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
     import ConfigForm from "@/components/ConfigForm.vue";
     import Stepper from "@/components/Stepper.vue";
@@ -28,6 +28,7 @@
     const props = defineProps({ board: Object })
 
     const route = useRoute();
+    const router = useRouter();
     const session = useSessionStore();
 
     const currentStage = ref(null);
@@ -126,6 +127,8 @@
             if (valid) {
 
                 await session.api.board.flash(boardToFlash.value.id, firmware.value.id, configData.value);
+
+                router.push({ name: "BoardDetail", params: { id: boardToFlash.value.id } });
             }
         }
 

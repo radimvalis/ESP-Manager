@@ -37,6 +37,36 @@
         }
     });
 
+    async function bootDefault() {
+
+        try {
+
+            board.value = await session.api.board.bootDefault(board.value.id);
+        }
+
+        catch(error) {
+
+            alertType.value = "error";
+            alertTitle.value = "Default app can't be booted now";
+            alert.value = true;
+        }
+    }
+
+    async function update() {
+
+        try {
+
+            board.value = await session.api.board.update(board.value.id);
+        }
+
+        catch(error) {
+
+            alertType.value = "error";
+            alertTitle.value = "Board can't be updated now";
+            alert.value = true;
+        }
+    }
+
     async function deleteBoard() {
 
         try {
@@ -62,156 +92,206 @@
         v-if="board"
     >
 
-        <v-alert
-            v-if="alert"
-            @click:close="alert = false"
-            :type="alertType"
-            :title="alertTitle"
-        />
+        <template
+            v-if="!board.isBeingUpdated"
+        >
 
-        <v-card-main>
+            <v-alert
+                v-if="alert"
+                @click:close="alert = false"
+                :type="alertType"
+                :title="alertTitle"
+            />
 
-            <template #title>
+            <v-card-main>
 
-                {{ board.name }}
+                <template #title>
 
-            </template>
+                    {{ board.name }}
 
-            <template #append>
+                </template>
 
-                <v-chip
-                    class="mt-4"
-                    :text='board.isOnline ? "online" : "offline"'
-                    :color='board.isOnline ? "success" : "error"'
-                    :prepend-icon='board.isOnline ? "mdi-check-circle-outline" : "mdi-alert-circle-outline"'
-                />
+                <template #append>
 
-            </template>
+                    <v-chip
+                        class="mt-4"
+                        :text='board.isOnline ? "online" : "offline"'
+                        :color='board.isOnline ? "success" : "error"'
+                        :prepend-icon='board.isOnline ? "mdi-check-circle-outline" : "mdi-alert-circle-outline"'
+                    />
 
-            <v-card-subtitle>
+                </template>
 
-                {{ board.id }}
+                <v-card-subtitle>
 
-            </v-card-subtitle>
+                    {{ board.id }}
 
-            <v-divider/>
+                </v-card-subtitle>
 
-            <v-card-text>
+                <v-divider/>
 
-                <v-container>
+                <v-card-text>
 
-                    <v-row>
+                    <v-container>
 
-                        <v-col
-                            :cols="6"
+                        <v-row>
+
+                            <v-col
+                                :cols="6"
+                            >
+
+                                <b>Firmware</b>
+
+                            </v-col>
+
+                            <v-col>
+
+                                {{ board.firmware?.name || "default" }}
+
+                            </v-col>
+
+                        </v-row>
+
+                        <v-row>
+
+                            <v-col>
+
+                                <b>Version</b>
+
+                            </v-col>
+
+                            <v-col>
+
+                                <div
+                                    v-if="board.firmwareVersion"
+                                >
+
+                                    {{ board.firmwareVersion + " (" + board.firmware.version  + ")" }}
+
+                                </div>
+
+                                <div
+                                    v-else
+                                >
+
+                                    -
+
+                                </div>
+
+                            </v-col>
+
+                        </v-row>
+
+                    </v-container>
+
+                    <div
+                        class="d-flex"
+                        :class='{ "flex-column": xs }'
+                    >
+
+                        <v-btn
+                            @click="update"
+                            :class='{ "mb-2": xs }'
+                            :disabled='board.firmwareStatus !== "update available" || !board.isOnline'
+                            :block="xs"
+                            color="success"
+                            variant="flat"
+                            slim
                         >
 
-                            <b>Firmware</b>
+                            Update
 
-                        </v-col>
+                        </v-btn>
 
-                        <v-col>
+                        <v-btn
+                            @click="bootDefault"
+                            :class='{ "mb-2": xs, "ml-2": !xs }'
+                            :disabled="!board.isOnline || !board.firmwareId"
+                            :block="xs"
+                            color="primary"
+                            variant="flat"
+                            slim
+                        >
 
-                            {{ board.firmware?.name || "default" }}
+                            Boot default
 
-                        </v-col>
+                        </v-btn>
 
-                    </v-row>
+                        <v-btn
+                            :class='{ "mb-2": xs, "ml-2": !xs }'
+                            :to='{ name: "FlashBoard", query: { "id": board.id } }'
+                            :disabled="!board.isOnline"
+                            :block="xs"
+                            color="primary"
+                            variant="flat"
+                            slim
+                        >
 
-                    <v-row>
+                            Flash
 
-                        <v-col>
+                        </v-btn>
 
-                            <b>Version</b>
+                        <v-btn
+                            @click="deleteBoard"
+                            :class='{ "ml-auto": !xs }'
+                            :block="xs"
+                            color="error"
+                            variant="flat"
+                            slim
+                        >
 
-                        </v-col>
+                            Delete
 
-                        <v-col>
+                        </v-btn>
 
-                            <div
-                                v-if="board.firmwareVersion"
-                            >
+                    </div>
 
-                                {{ board.firmwareVersion + " (latest " + board.firmware.version  + ")" }}
+                </v-card-text>
 
-                            </div>
+            </v-card-main>
 
-                            <div
-                                v-else
-                            >
+        </template>
 
-                                -
+        <template
+            v-else
+        >
 
-                            </div>
+            <v-container
+                class="fill-height"
+            >
 
-                        </v-col>
+                <v-row>
 
-                    </v-row>
+                    <v-col>
 
-                </v-container>
+                        <v-card-info>
 
-                <div
-                    class="d-flex"
-                    :class='{ "flex-column": xs }'
-                >
+                            <v-card-text>
 
-                    <v-btn
-                        :class='{ "mb-2": xs }'
-                        :disabled='board.firmwareStatus === "latest" || !board.isOnline'
-                        :block="xs"
-                        color="success"
-                        variant="flat"
-                        slim
-                    >
+                                <v-progress-circular
+                                    indeterminate
+                                    :size="100"
+                                    :width="10"
+                                    color="primary"
+                                />
 
-                        Update
+                            </v-card-text>
 
-                    </v-btn>
+                            <v-card-title>
 
-                    <v-btn
-                        :class='{ "mb-2": xs, "ml-2": !xs }'
-                        :disabled="!board.isOnline"
-                        :block="xs"
-                        color="primary"
-                        variant="flat"
-                        slim
-                    >
+                                Updating board ...
 
-                        Boot default
+                            </v-card-title>
 
-                    </v-btn>
+                        </v-card-info>
+                    
+                    </v-col>
 
-                    <v-btn
-                        :class='{ "mb-2": xs, "ml-2": !xs }'
-                        :to='{ name: "FlashBoard", query: { "id": board.id } }'
-                        :block="xs"
-                        color="primary"
-                        variant="flat"
-                        slim
-                    >
+                </v-row>
 
-                        Flash
+            </v-container>
 
-                    </v-btn>
-
-                    <v-btn
-                        @click="deleteBoard"
-                        :class='{ "ml-auto": !xs }'
-                        :block="xs"
-                        color="error"
-                        variant="flat"
-                        slim
-                    >
-
-                        Delete
-
-                    </v-btn>
-
-                </div>
-
-            </v-card-text>
-
-        </v-card-main>
+        </template>
 
     </template>
 
