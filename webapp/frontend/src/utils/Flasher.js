@@ -32,6 +32,11 @@ export default class Flasher {
         this._chip = await this._loader.main();
     }
 
+    async eraseFlash() {
+
+        await this._loader.eraseFlash();
+    };
+
     async program(defaultApp, reportProgressPercentage) {
 
         const fileArray = [
@@ -45,12 +50,15 @@ export default class Flasher {
         const flashOptions = {
 
             fileArray: fileArray,
-            flashSize: "keep",
+            flashSize: "8MB",
             eraseAll: false,
             compress: true,
             reportProgress: (fileIndex, written, total) => {
 
-                reportProgressPercentage(Math.floor(((100 / fileArray.length) * fileIndex) + ((100 / fileArray.length) * written / total)));
+                if(fileIndex === 3) {
+
+                    reportProgressPercentage(Math.floor((written / total) * 100));
+                }
             }
         };
 

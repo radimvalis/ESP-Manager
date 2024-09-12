@@ -19,6 +19,12 @@
         CONFIGURE: 2
     };
 
+    const REGISTER_PROGRESS_STAGE = {
+
+        ERASE: 1,
+        FLASH: 2
+    };
+
     const stages = [
 
         { title: "Connect", value: STAGE.CONNECT },
@@ -33,7 +39,8 @@
     const currentStage = ref(STAGE.CONNECT);
     
     const isConnecting = ref(false);
-    const isFlashing = ref(false);
+    const isRegistering = ref(false);
+    const registerProgressStage = ref(REGISTER_PROGRESS_STAGE.ERASE);
 
     const alert = ref(false);
     const alertTitle = ref(null);
@@ -56,7 +63,7 @@
             navigator.serial.addEventListener("disconnect", () => {
         
                 isConnecting.value = false;
-                isFlashing.value = false;
+                isRegistering.value = false;
 
                 currentStage.value = STAGE.CONNECT;
 
@@ -115,10 +122,12 @@
 
                 alert.value = false;
 
-                isFlashing.value = true;
+                isRegistering.value = true;
+                registerProgressStage.value = REGISTER_PROGRESS_STAGE.ERASE;
 
-                const [ firmware, bootloader, partitionTable, config ] = await Promise.all([
+                const [ _, firmware, bootloader, partitionTable, config ] = await Promise.all([
 
+                    flasher.eraseFlash(),
                     session.api.file.getDefaultFirmware(),
                     session.api.file.getDefaultBootloader(),
                     session.api.file.getDefaultPartitionTable(),
@@ -126,6 +135,8 @@
                 ]);
 
                 const defaultApp = { firmware, bootloader, partitionTable, config };
+
+                registerProgressStage.value = REGISTER_PROGRESS_STAGE.FLASH;
 
                 await flasher.program(defaultApp, (writtenPercentage) => flashProgress.value = writtenPercentage);
 
@@ -153,8 +164,9 @@
                 currentStage.value = STAGE.CONNECT;
             }
 
-            isFlashing.value = false;
             flashProgress.value = 0;
+            isRegistering.value = false;
+            registerProgressStage.value = REGISTER_PROGRESS_STAGE.FLASH;
 
             alertText.value = null;
             alert.value = true;
@@ -192,7 +204,7 @@
         />
 
         <ConfigureStage
-            v-if="currentStage === STAGE.CONFIGURE && !isFlashing"
+            v-if="currentStage === STAGE.CONFIGURE && !isRegistering"
             @click-register="register"
         >
 
@@ -205,8 +217,9 @@
         </ConfigureStage>
 
         <RegisterProgress
-            v-if="isFlashing"
+            v-if="isRegistering"
             :model-value="flashProgress"
+            :stage="registerProgressStage"
         />
 
     </template>
