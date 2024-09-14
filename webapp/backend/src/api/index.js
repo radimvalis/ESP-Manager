@@ -51,7 +51,7 @@ export default function start(context, port) {
     app.post(ENDPOINT.BOARD.GET, boardController.get);
     app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
     app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
-    app.post(ENDPOINT.BOARD.FLASH, boardController.flash);
+    app.post(ENDPOINT.BOARD.FLASH, upload.any(), boardController.flash);
     app.post(ENDPOINT.BOARD.UPDATE, boardController.update);
     app.post(ENDPOINT.BOARD.BOOT_DEFAULT, boardController.bootDefault);
     app.delete(ENDPOINT.BOARD.DELETE, boardController.delete);

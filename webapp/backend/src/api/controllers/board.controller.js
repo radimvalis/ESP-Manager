@@ -30,7 +30,9 @@ export default function BoardController(context) {
 
     this.flash = asyncCatch(async (req, res) => {
 
-        await context.file.createNVS(req.body.configData, req.body.firmwareId, req.body.boardId);
+        req.files.forEach(f => req.body[f.fieldname] = f.path);
+
+        await context.file.createNVS(req.body, req.body.firmwareId, req.body.boardId);
 
         const firmware = await context.firmware.getPublic(req.body.firmwareId);
 

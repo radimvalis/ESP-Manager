@@ -25,7 +25,20 @@ export default class BoardApi {
 
     async flash(boardId, firmwareId, configData) {
 
-        return await this._httpClient.post(ENDPOINT.BOARD.FLASH, { boardId, firmwareId, configData });
+        const formData = new FormData();
+
+        formData.append("boardId", boardId);
+        formData.append("firmwareId", firmwareId);
+
+        for (let [key, value] of Object.entries(configData)) {
+
+            formData.append(key, value);
+        }
+
+        return await this._httpClient.post(ENDPOINT.BOARD.FLASH, formData, {
+
+            headers: { "Content-Type": "multipart/form-data" }
+        });
     }
 
     async update(boardId) {

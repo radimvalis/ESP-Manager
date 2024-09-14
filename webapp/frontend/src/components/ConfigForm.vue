@@ -2,8 +2,8 @@
 <script setup>
 
     import { ref } from "vue";
-    import StringInput from "@/components/ConfigFormStringInput.vue";
-    import BlobInput from "@/components/ConfigFormBlobInput.vue";
+    import TextInput from "@/components/ConfigFormTextInput.vue";
+    import FileInput from "@/components/ConfigFormFileInput.vue";
     import NumberInput from "@/components/ConfigFormNumberInput.vue";
 
     const configData = defineModel({ type: Object });
@@ -14,6 +14,7 @@
 
     defineExpose({ form });
 
+    const binaryEncodings = [ "string", "hex2bin", "base64", "binary" ];
     const numberEncodings = [ "u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64" ];
 
 </script>
@@ -28,16 +29,16 @@
             v-for="entry in entries"
         >
 
-            <StringInput
-                v-if='entry.encoding === "string"'
+            <TextInput
+                v-if='entry.type === "data" && binaryEncodings.includes(entry.encoding)'
                 v-model="configData[entry.key]"
                 v-bind="entry"
                 class="mt-2"
                 density="compact"
             />
 
-            <BlobInput
-                v-else-if='entry.encoding === "blob"'
+            <FileInput
+                v-else-if='entry.type === "file" && binaryEncodings.includes(entry.encoding)'
                 v-model="configData[entry.key]"
                 v-bind="entry"
                 class="mt-2"
@@ -45,7 +46,7 @@
             />
 
             <NumberInput
-                v-else-if='numberEncodings.includes(entry.encoding)'
+                v-else-if='entry.type === "data" && numberEncodings.includes(entry.encoding)'
                 v-model="configData[entry.key]"
                 v-bind="entry"
                 class="mt-2"

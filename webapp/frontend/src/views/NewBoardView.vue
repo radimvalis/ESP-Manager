@@ -78,7 +78,7 @@
 
             configFormEntries.value.forEach((entry) => {
 
-                configData.value[entry.key] = "";
+                configData.value[entry.key] = undefined;
             });
         }
     });

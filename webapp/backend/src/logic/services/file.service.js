@@ -106,22 +106,22 @@ export default class FileService {
         // Add config which is not part of default config form
 
         configData.mqtt_username = board.id;
-        defaultConfigForm.push({ key: "mqtt_username", encoding: "string" });
+        defaultConfigForm.push({ key: "mqtt_username", type: "data", encoding: "string" });
 
         configData.mqtt_password = board.mqttPassword;
-        defaultConfigForm.push({ key: "mqtt_password", encoding: "string" });
+        defaultConfigForm.push({ key: "mqtt_password", type: "data", encoding: "string" });
 
         configData.mqtt_broker_uri = this._brokerUrl;
-        defaultConfigForm.push({ key: "mqtt_broker_uri", encoding: "string" });
+        defaultConfigForm.push({ key: "mqtt_broker_uri", type: "data", encoding: "string" });
 
-        configData.server_crt = (await fs.readFile(this._serverCrtPath)).toString();
-        defaultConfigForm.push({ key: "server_crt", encoding: "string" });
+        configData.server_crt = this._serverCrtPath;
+        defaultConfigForm.push({ key: "server_crt", type: "file", encoding: "string" });
 
         configData.firmware_id = "default";
-        defaultConfigForm.push({ key: "firmware_id", encoding: "string" });
+        defaultConfigForm.push({ key: "firmware_id", type: "data", encoding: "string" });
 
         configData.version = -1;
-        defaultConfigForm.push({ key: "version", encoding: "i16" });
+        defaultConfigForm.push({ key: "version", type: "data", encoding: "i16" });
 
         const csvPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_CSV;
         const binPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_BIN;
@@ -174,9 +174,9 @@ export default class FileService {
 
         configForm.forEach(entry => {
 
-            const value = entry.encoding === "string" ? FileService._escapeCSVString(configData[entry.key]) : configData[entry.key];
+            const value = entry.encoding === "string" && entry.type === "data" ? FileService._escapeCSVString(configData[entry.key]) : configData[entry.key];
 
-            content += `${entry.key},data,${entry.encoding},${value}\n`;
+            content += `${entry.key},${entry.type},${entry.encoding},${value}\n`;
         });
 
         await fs.writeFile(outputPath, content);

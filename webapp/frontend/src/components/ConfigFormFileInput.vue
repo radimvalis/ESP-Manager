@@ -4,25 +4,29 @@
     import ConfigLabel from "@/components/ConfigFormInputLabel.vue";
     import Tooltip from "@/components/ConfigFormInputTooltip.vue";
 
-    const model = defineModel({ default: "" });
+    const model = defineModel({ default: null });
 
     const props = defineProps({
 
         label: { type: String, required: true },
         isRequired: { type: Boolean, required: true },
-        description: { type: String }
+        description: { type: String },
+        format: { type: String }
     });
+
+    console.log(props)
 
     const validationRules = [
 
-        () => props.isRequired ? (model.value === "" ? "This field is required" : true) : true
-    ];
+        () => props.isRequired ? (model.value === null ? "This field is required" : true) : true,
+        () => props.format && model.value ? (props.format !== model.value.type ? "This is not " + props.format + " file" : true) : true
+    ]
 
 </script>
 
 <template>
 
-    <v-textarea
+    <v-file-input
         v-model="model"
         :rules="validationRules"
         variant="outlined"
@@ -47,6 +51,6 @@
 
         </template>
 
-    </v-textarea>
+    </v-file-input>
 
 </template>
