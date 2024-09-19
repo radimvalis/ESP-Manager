@@ -1,18 +1,21 @@
 [
     {
         "key": "name",
+        "type": "data",
         "encoding": "string",
         "isRequired": true,
         "label": "Board name"
     },
     {
-        "key": "ssid",
+        "key": "wifi_ssid",
+        "type": "data",
         "encoding": "string",
         "isRequired": true,
         "label": "SSID"
     },
     {
-        "key": "password",
+        "key": "wifi_password",
+        "type": "data",
         "encoding": "string",
         "isRequired": true,
         "label": "Password"
