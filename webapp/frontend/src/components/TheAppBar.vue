@@ -15,7 +15,9 @@
     >
 
         <v-app-bar-title>
+
             ESP Manager
+            
         </v-app-bar-title>
 
         <template v-slot:append>
@@ -26,7 +28,9 @@
 
         <template v-slot:extension>
 
-            <v-container>
+            <v-container
+                class="mb-3"
+            >
 
                 <v-row>
 
