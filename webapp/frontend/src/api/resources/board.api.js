@@ -23,6 +23,21 @@ export default class BoardApi {
         return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);
     }
 
+    openWatchStream(boardId, onMessage) {
+
+        this._httpClient.openWatchStream("/board/watch/" + boardId, onMessage);
+    }
+
+    openWatchAllStream(onMessage) {
+        
+        this._httpClient.openWatchStream(ENDPOINT.BOARD.WATCH_ALL, onMessage);
+    }
+
+    closeWatchStream() {
+
+        this._httpClient.closeWatchStream();
+    }
+
     async flash(boardId, firmwareId, configData) {
 
         const formData = new FormData();

@@ -14,8 +14,6 @@
         format: { type: String }
     });
 
-    console.log(props)
-
     const validationRules = [
 
         () => props.isRequired ? (model.value === null ? "This field is required" : true) : true,

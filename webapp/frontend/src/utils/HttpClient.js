@@ -8,6 +8,7 @@ export default class HttpClient {
         this.baseUrl = baseUrl;
         this.refreshTokenEndpoint = refreshTokenEndpoint;
         this.maxRetriesCount = maxRetriesCount;
+        this.eventSource = null;
     }
 
     async get(url, requestConfig = {}) {
@@ -28,6 +29,21 @@ export default class HttpClient {
     async delete(url, data, requestConfig = {}) {
 
         return this._request(url, "DELETE", data, requestConfig);
+    }
+
+    openWatchStream(url, onMessage) {
+
+        this.eventSource = new EventSource(this.baseUrl + url);
+
+        this.eventSource.onmessage = (event) => {
+
+            onMessage(JSON.parse(event.data));
+        };
+    }
+
+    closeWatchStream() {
+
+        this.eventSource.close();
     }
 
     async _request(url, method, data, requestConfig) {

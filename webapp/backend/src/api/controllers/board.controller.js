@@ -3,6 +3,20 @@ import asyncCatch from "../middlewares/error.middleware.js";
 
 export default function BoardController(context) {
 
+    const _setupSSEConnection = (res, abortController) => {
+
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Connection', 'keep-alive');
+        res.flushHeaders();
+
+        res.on("close", () => {
+
+            abortController.abort();
+
+            res.end();
+        });
+    };
+
     this.get = asyncCatch(async (req, res) => {
 
         const board = await context.board.get(req.body.boardId, req.userId);
@@ -26,6 +40,28 @@ export default function BoardController(context) {
         await context.file.createDefaultNVS(req.body, board);
 
         res.json(board).end();
+    });
+
+    this.watch = asyncCatch(async (req, res) => {
+
+        const abortController = new AbortController();
+
+        const updateCb = (board) => res.write(`data: ${JSON.stringify(board)}\n\n`);
+
+        _setupSSEConnection(res, abortController);
+
+        await context.board.watch(req.params["id"], req.userId, updateCb, abortController.signal);
+    });
+
+    this.watchAll = asyncCatch(async (req, res) => {
+
+        const abortController = new AbortController();
+
+        const updateCb = (boards) => res.write(`data: ${JSON.stringify(boards)}\n\n`);
+
+        _setupSSEConnection(res, abortController);
+
+        await context.board.watchAll(req.userId, updateCb, abortController.signal);
     });
 
     this.flash = asyncCatch(async (req, res) => {

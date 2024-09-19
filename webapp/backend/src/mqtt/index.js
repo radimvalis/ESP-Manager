@@ -10,10 +10,6 @@ export default async function getMqtt(config) {
         password: config.password,
     });
 
-    // Connect to the Dynamic Security Plugin as admin
-
-    await client.subscribeAsync("$CONTROL/dynamic-security/v1/#");
-
     const message = {
 
         commands: [

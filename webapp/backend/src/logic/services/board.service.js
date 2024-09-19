@@ -1,5 +1,6 @@
 
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
+import { EventEmitter } from "events";
 import { randomBytes } from "crypto";
 
 export default class BoardService {
@@ -9,6 +10,7 @@ export default class BoardService {
         this._models = config.models;
         this._mqtt = config.mqtt;
         this._serverUrl = config.url.server;
+        this._emitter = new EventEmitter();
     }
 
     async init() {
@@ -25,27 +27,34 @@ export default class BoardService {
 
             const [ boardId, type, messageId ] = topic.split("/");
 
-            switch(messageId) {
+            const board = await this._models.board.findByPk(boardId);
 
-                case "online":
+            if (board) {
 
-                    await this._setOnline(boardId);
-                    break;
+                switch(messageId) {
 
-                case "offline":
+                    case "online":
 
-                    await this._setOffline(boardId);
-                    break;
+                        await this._setOnline(board.id);
+                        break;
 
-                case "update=ok":
+                    case "offline":
 
-                    await this._finishUpdate(boardId, JSON.parse(message));
-                    break;
+                        await this._setOffline(board.id);
+                        break;
 
-                case "update=error":
+                    case "update=ok":
 
-                    await this._cancelUpdate(boardId, JSON.parse(message));
-                    break;
+                        await this._finishUpdate(board.id, JSON.parse(message));
+                        break;
+
+                    case "update=error":
+
+                        await this._cancelUpdate(board.id, JSON.parse(message));
+                        break;
+                }
+
+                this._emitter.emit(board.userId);
             }
         });
     }
@@ -103,13 +112,34 @@ export default class BoardService {
         return newBoard.toJSON();
     }
 
-    async delete(boardId, userId) {
+    async watch(boardId, userId, updateCb, abortSignal) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
-        await this._deleteMqttClient(board);
+        const listener = async () => {
 
-        await board.destroy();
+            const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
+
+            updateCb(board.toJSON());
+        };
+
+        abortSignal.onabort = () => this._emitter.removeListener(board.userId, listener);
+
+        this._emitter.on(board.userId, listener);
+    }
+
+    async watchAll(userId, updateCb, abortSignal) {
+
+        const listener = async () => {
+
+            const summaryList = await this.getSummaryList(userId);
+
+            updateCb(summaryList);
+        };
+
+        abortSignal.onabort = () => this._emitter.removeListener(userId, listener);
+
+        this._emitter.on(userId, listener);
     }
 
     async flash(boardId, userId, firmware) {
@@ -166,6 +196,15 @@ export default class BoardService {
         return board.toJSON();
     }
 
+    async delete(boardId, userId) {
+
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        await this._deleteMqttClient(board);
+
+        await board.destroy();
+    }
+
     async _getByIdAndUserId(boardId, userId) {
 
         const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
@@ -208,14 +247,20 @@ export default class BoardService {
             data.version = null;
         }
 
-        await board.update({ firmwareId: data.firmware_id, firmwareVersion: data.version, isBeingUpdated: false });
+        if (board) {
+
+            await board.update({ firmwareId: data.firmware_id, firmwareVersion: data.version, isBeingUpdated: false });
+        }
     }
 
     async _cancelUpdate(boardId, data) {
 
         const board = await this._models.board.findByPk(boardId);
 
-        await board.update({ isBeingUpdated: false });    
+        if (board) {
+
+            await board.update({ isBeingUpdated: false });
+        }
     }
 
     async _createMqttClient(board) {

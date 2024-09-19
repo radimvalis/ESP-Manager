@@ -3,7 +3,7 @@
 
     import { ref, onMounted } from "vue";
     import { useDisplay } from "vuetify";
-    import { useRoute, useRouter } from "vue-router";
+    import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
     import { useSessionStore } from "@/stores/session";
 
     const route = useRoute();
@@ -18,6 +18,8 @@
 
     const board = ref(null);
 
+    onBeforeRouteLeave(() => session.api.board.closeWatchStream());
+
     onMounted(async () => {
 
         if (route.query.new) {
@@ -30,6 +32,10 @@
         try {
 
             board.value = await session.api.board.get(route.params.id);
+
+            const onMessage = (updatedBoard) => board.value = updatedBoard;
+
+            session.api.board.openWatchStream(board.value.id, onMessage);
         }
 
         catch(error) {

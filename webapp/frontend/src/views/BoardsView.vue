@@ -3,7 +3,7 @@
 
     import { ref, onMounted } from "vue";
     import { useDisplay } from "vuetify";
-    import { RouterLink } from "vue-router";
+    import { RouterLink, onBeforeRouteLeave  } from "vue-router";
     import { useSessionStore } from "@/stores/session";
 
     const session = useSessionStore();
@@ -55,6 +55,8 @@
         }
     ];
 
+    onBeforeRouteLeave(() => session.api.board.closeWatchStream());
+
     onMounted(async () => {
 
         try {
@@ -62,6 +64,10 @@
             isLoading.value = true;
 
             boards.value = await session.api.board.getSummaryList();
+
+            const onMessage = (updatedBoards) => boards.value = updatedBoards;
+
+            session.api.board.openWatchAllStream(onMessage);
         }
 
         catch(error) {

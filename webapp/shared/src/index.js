@@ -39,7 +39,9 @@ const ENDPOINT = {
         FLASH: "/board/flash",
         UPDATE: "/board/update",
         BOOT_DEFAULT: "/board/boot-default",
-        DELETE: "/board/delete"
+        DELETE: "/board/delete",
+        WATCH_ONE: "/board/watch/:id",
+        WATCH_ALL: "/board/watch-all"
     },
 
     FIRMWARE: {
