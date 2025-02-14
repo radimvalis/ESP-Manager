@@ -159,6 +159,8 @@
 
                 await flasher.close();
 
+                await session.api.board.delete(board.id);
+
                 alertTitle.value = "Registration failed";
 
                 currentStage.value = STAGE.CONNECT;
