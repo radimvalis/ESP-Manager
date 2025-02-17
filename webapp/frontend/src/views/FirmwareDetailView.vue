@@ -5,6 +5,7 @@
     import { useDisplay } from "vuetify";
     import { useRoute, useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
+    import CopyButton from "@/components/CopyButton.vue";
 
     const route = useRoute();
     const router = useRouter();
@@ -121,6 +122,11 @@
             </template>
 
         <v-card-subtitle>
+
+            <CopyButton
+                :text-to-copy="firmware.id"
+                size="small"
+            />
 
             {{ firmware.id }}
 

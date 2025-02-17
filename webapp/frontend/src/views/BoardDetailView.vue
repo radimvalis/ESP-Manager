@@ -5,6 +5,7 @@
     import { useDisplay } from "vuetify";
     import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
     import { useSessionStore } from "@/stores/session";
+    import CopyButton from "@/components/CopyButton.vue";
 
     const route = useRoute();
     const router = useRouter();
@@ -129,6 +130,11 @@
                 </template>
 
                 <v-card-subtitle>
+
+                    <CopyButton
+                        :text-to-copy="board.id"
+                        size="small"
+                    />
 
                     {{ board.id }}
 
