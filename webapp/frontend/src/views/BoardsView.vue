@@ -63,7 +63,7 @@
 
             isLoading.value = true;
 
-            boards.value = await session.api.board.getSummaryList();
+            boards.value = await session.api.board.getAll();
 
             const onMessage = (updatedBoards) => boards.value = updatedBoards;
 

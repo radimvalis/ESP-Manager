@@ -39,7 +39,7 @@
 
             isLoading.value = true;
 
-            firmwares.value = await session.api.firmware.getSummaryList();
+            firmwares.value = await session.api.firmware.getAll();
         }
 
         catch(error) {

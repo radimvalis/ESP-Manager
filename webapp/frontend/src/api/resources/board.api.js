@@ -1,5 +1,5 @@
 
-import { ENDPOINT } from "shared";
+import { endpoint, boardUpdateType } from "shared";
 
 export default class BoardApi {
 
@@ -8,29 +8,19 @@ export default class BoardApi {
         this._httpClient = httpClient;
     }
 
-    async get(boardId) {
-        
-        return await this._httpClient.post(ENDPOINT.BOARD.GET, { boardId });
-    }
+    async create(configData) {
 
-    async getSummaryList() {
-
-        return await this._httpClient.get(ENDPOINT.BOARD.SUMMARY_LIST);
-    }
-
-    async register(configData) {
-
-        return await this._httpClient.put(ENDPOINT.BOARD.REGISTER, configData);
-    }
-
-    openWatchStream(boardId, onMessage) {
-
-        this._httpClient.openWatchStream("/board/watch/" + boardId, onMessage);
+        return await this._httpClient.post(endpoint.boards.all(), configData);
     }
 
     openWatchAllStream(onMessage) {
-        
-        this._httpClient.openWatchStream(ENDPOINT.BOARD.WATCH_ALL, onMessage);
+
+        this._httpClient.openWatchStream(endpoint.boards.watchAll(), onMessage);
+    }
+
+    openWatchOneStream(boardId, onMessage) {
+
+        this._httpClient.openWatchStream(endpoint.boards.watchOne(boardId), onMessage);
     }
 
     closeWatchStream() {
@@ -38,11 +28,21 @@ export default class BoardApi {
         this._httpClient.closeWatchStream();
     }
 
+    async getAll() {
+
+        return await this._httpClient.get(endpoint.boards.all());
+    }
+
+    async getOne(boardId) {
+
+        return await this._httpClient.get(endpoint.boards.one(boardId));
+    }
+
     async flash(boardId, firmwareId, configData) {
 
         const formData = new FormData();
 
-        formData.append("boardId", boardId);
+        formData.append("type", boardUpdateType.flashBoard);
         formData.append("firmwareId", firmwareId);
 
         for (let [key, value] of Object.entries(configData)) {
@@ -50,24 +50,24 @@ export default class BoardApi {
             formData.append(key, value);
         }
 
-        return await this._httpClient.post(ENDPOINT.BOARD.FLASH, formData, {
+        return await this._httpClient.put(endpoint.boards.one(boardId), formData, {
 
             headers: { "Content-Type": "multipart/form-data" }
         });
     }
 
-    async update(boardId) {
+    async updateFirmware(boardId) {
 
-        return await this._httpClient.post(ENDPOINT.BOARD.UPDATE, { boardId });
+        return await this._httpClient.put(endpoint.boards.one(boardId), { type: boardUpdateType.updateFirmware });
     }
 
-    async bootDefault(boardId) {
+    async bootDefaultFirmware(boardId) {
 
-        return await this._httpClient.post(ENDPOINT.BOARD.BOOT_DEFAULT, { boardId });
+        return await this._httpClient.put(endpoint.boards.one(boardId), { type: boardUpdateType.bootDefaultFirmware });
     }
 
     async delete(boardId) {
 
-        await this._httpClient.delete(ENDPOINT.BOARD.DELETE, { boardId });
+        await this._httpClient.delete(endpoint.boards.one(boardId));
     }
 }

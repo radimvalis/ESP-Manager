@@ -31,11 +31,11 @@
 
         try {
 
-            board.value = await session.api.board.get(route.params.id);
+            board.value = await session.api.board.getOne(route.params.id);
 
             const onMessage = (updatedBoard) => board.value = updatedBoard;
 
-            session.api.board.openWatchStream(board.value.id, onMessage);
+            session.api.board.openWatchOneStream(board.value.id, onMessage);
         }
 
         catch(error) {
@@ -43,11 +43,11 @@
         }
     });
 
-    async function bootDefault() {
+    async function bootDefaultFirmware() {
 
         try {
 
-            board.value = await session.api.board.bootDefault(board.value.id);
+            board.value = await session.api.board.bootDefaultFirmware(board.value.id);
         }
 
         catch(error) {
@@ -58,11 +58,11 @@
         }
     }
 
-    async function update() {
+    async function updateFirmware() {
 
         try {
 
-            board.value = await session.api.board.update(board.value.id);
+            board.value = await session.api.board.updateFirmware(board.value.id);
         }
 
         catch(error) {
@@ -196,7 +196,7 @@
                     >
 
                         <v-btn
-                            @click="update"
+                            @click="updateFirmware"
                             :class='{ "mb-2": xs }'
                             :disabled='board.firmwareStatus !== "update available" || !board.isOnline'
                             :block="xs"
@@ -210,7 +210,7 @@
                         </v-btn>
 
                         <v-btn
-                            @click="bootDefault"
+                            @click="bootDefaultFirmware"
                             :class='{ "mb-2": xs, "ml-2": !xs }'
                             :disabled="!board.isOnline || !board.firmwareId"
                             :block="xs"

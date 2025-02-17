@@ -1,5 +1,5 @@
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 
 export default class AuthApi {
 
@@ -16,7 +16,7 @@ export default class AuthApi {
             password
         };
 
-        return this._httpClient.post(ENDPOINT.AUTH.LOG_IN, data);
+        return this._httpClient.post(endpoint.auth.logIn(), data);
     }
 
     async signUp(username, password) {
@@ -27,11 +27,11 @@ export default class AuthApi {
             password
         };
 
-        return this._httpClient.post(ENDPOINT.AUTH.SIGN_UP, data);  
+        return this._httpClient.post(endpoint.auth.signUp(), data);
     }
 
     async logOut() {
-        
-        return this._httpClient.get(ENDPOINT.AUTH.LOG_OUT);
+
+        return this._httpClient.post(endpoint.auth.logOut());
     }
 }

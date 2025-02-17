@@ -52,7 +52,7 @@
 
         try {
 
-            boards.value = await session.api.board.getSummaryList();
+            boards.value = await session.api.board.getAll();
 
             currentStage.value = STAGE.SELECT_BOARD;
 
@@ -90,7 +90,7 @@
 
             const data = await Promise.all([
 
-                session.api.firmware.getPublic(firmwareId.value),
+                session.api.firmware.getOne(firmwareId.value),
                 session.api.file.getConfigForm(firmwareId.value)
             ]);
 

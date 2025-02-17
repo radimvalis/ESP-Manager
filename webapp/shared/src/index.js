@@ -1,58 +1,55 @@
 
-const ENDPOINT = {
+const endpoint = Object.freeze({
 
-    AUTH: {
+    auth: {
 
-        LOG_IN: "/auth/login",
-        SIGN_UP: "/auth/signup",
-        LOG_OUT: "/auth/logout",
-        REFRESH_TOKENS: "/auth/refresh"
+        logIn: () => "/auth/login",
+        signUp: () => "/auth/signup",
+        logOut: () => "/auth/logout",
+        refreshTokens: () => "/auth/refresh"
     },
 
-    USER: {
+    users: {
 
-        GET: "/user/get"
+        me: () => "/users/me"
     },
 
-    FILE: {
+    files: {
 
-        DEFAULT: {
+        default: {
 
-            ANY: "/file/default/:filename",
-            FIRMWARE: "/file/default/firmware",
-            PARTITION_TABLE: "/file/default/partition-table",
-            BOOTLOADER: "/file/default/bootloader",
-            CONFIG_FORM: "/file/default/config-form",
-            NVS: "/file/default/nvs"
+            firmware: () => "/files/default/firmware",
+            configForm: () => "/files/default/config-form",
+            bootloader: () => "/files/default/bootloader",
+            partitionTable: () => "/files/default/partition-table",
+            NVS: (id=":id") => `/files/default/nvs/${id}`,
         },
 
-        CONFIG_FORM: "/file/config-form",
-        FIRMWARE_ANY: "/file/firmware/:id",
-        NVS_ANY: "/file/nvs/:id"
+        firmware: (id=":id") => `/files/firmware/${id}`,
+        configForm: (id=":id") => `/files/config-form/${id}`,
+        nvs: (id=":id") => `/files/nvs/${id}`
     },
 
-    BOARD: {
+    boards: {
 
-        GET: "/board/get",
-        SUMMARY_LIST: "/board/summary-list",
-        REGISTER: "/board/register",
-        FLASH: "/board/flash",
-        UPDATE: "/board/update",
-        BOOT_DEFAULT: "/board/boot-default",
-        DELETE: "/board/delete",
-        WATCH_ONE: "/board/watch/:id",
-        WATCH_ALL: "/board/watch-all"
+        all: () => "/boards",
+        watchAll: () => "/boards/watch",
+        one: (id=":id") => `/boards/${id}`,
+        watchOne: (id=":id") => `/boards/${id}/watch`,
     },
 
-    FIRMWARE: {
+    firmwares: {
 
-        GET: "/firmware/get",
-        GET_PUBLIC: "/firmware/get-public",
-        SUMMARY_LIST: "/firmware/summary-list",
-        CREATE: "/firmware/create",
-        UPDATE: "/firmware/update",
-        DELETE: "/firmware/delete"
+        all: () => "/firmwares",
+        one: (id=":id") => `/firmwares/${id}`
     }
-}
+});
 
-export { ENDPOINT };
+const boardUpdateType = Object.freeze({
+
+    flashBoard: "flash",
+    updateFirmware: "updateFirmware",
+    bootDefaultFirmware: "defaulFirmware"
+});
+
+export { endpoint, boardUpdateType };

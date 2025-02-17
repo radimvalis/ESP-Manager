@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 
 import multer, { diskStorage } from "multer";
 import authCookieMiddleware from "./middlewares/auth.cookie.middleware.js";
@@ -31,38 +31,65 @@ export default function start(context, port) {
 
     const upload = multer({ storage: diskStorage({}) });
 
+    // =====================
     // Unprotected endpoints
+    // =====================
 
-    app.post(ENDPOINT.AUTH.LOG_IN, authController.logIn);
-    app.post(ENDPOINT.AUTH.SIGN_UP, authController.signUp);
-    app.get(ENDPOINT.AUTH.REFRESH_TOKENS, refreshCookieMiddleware(context), authController.refreshTokens);
-    app.get(ENDPOINT.FILE.FIRMWARE_ANY, fileController.getFirmware);
-    app.get(ENDPOINT.FILE.NVS_ANY, fileController.getNVS);
+    // Auth
 
-    // Protected endpoints
+    app.post(endpoint.auth.logIn(), authController.logIn);
+    app.post(endpoint.auth.signUp(), authController.signUp);
+    app.post(endpoint.auth.refreshTokens(), refreshCookieMiddleware(context), authController.refreshTokens);
+
+    // File
+
+    app.get(endpoint.files.firmware(), fileController.getFirmware);
+    app.get(endpoint.files.nvs(), fileController.getNVS);
+
+    // Firmware
+
+    app.get(endpoint.firmwares.one(), firmwareController.getOne);
+
+    // =========================
+    // Token-protected endpoints
+    // =========================
 
     app.use(authCookieMiddleware(context));
 
-    app.get(ENDPOINT.AUTH.LOG_OUT, authController.logOut);
-    app.get(ENDPOINT.USER.GET, userController.get);
-    app.get(ENDPOINT.FILE.DEFAULT.ANY, fileController.getDefault);
-    app.post(ENDPOINT.FILE.DEFAULT.NVS, fileController.getDefaultNVS);
-    app.post(ENDPOINT.FILE.CONFIG_FORM, fileController.getConfigForm);
-    app.post(ENDPOINT.BOARD.GET, boardController.get);
-    app.get(ENDPOINT.BOARD.SUMMARY_LIST, boardController.getSummaryList);
-    app.put(ENDPOINT.BOARD.REGISTER, boardController.register);
-    app.get(ENDPOINT.BOARD.WATCH_ONE, boardController.watch);
-    app.get(ENDPOINT.BOARD.WATCH_ALL, boardController.watchAll);
-    app.post(ENDPOINT.BOARD.FLASH, upload.any(), boardController.flash);
-    app.post(ENDPOINT.BOARD.UPDATE, boardController.update);
-    app.post(ENDPOINT.BOARD.BOOT_DEFAULT, boardController.bootDefault);
-    app.delete(ENDPOINT.BOARD.DELETE, boardController.delete);
-    app.post(ENDPOINT.FIRMWARE.GET, firmwareController.get);
-    app.post(ENDPOINT.FIRMWARE.GET_PUBLIC, firmwareController.getPublic);
-    app.get(ENDPOINT.FIRMWARE.SUMMARY_LIST, firmwareController.getSummaryList);
-    app.put(ENDPOINT.FIRMWARE.CREATE, upload.array("files"), firmwareController.create);
-    app.post(ENDPOINT.FIRMWARE.UPDATE, upload.single("file"), firmwareController.update);
-    app.delete(ENDPOINT.FIRMWARE.DELETE, firmwareController.delete);
+    // Auth
+
+    app.post(endpoint.auth.logOut(), authController.logOut);
+
+    // User
+
+    app.get(endpoint.users.me(), userController.get);
+
+    // File
+
+    app.get(endpoint.files.default.firmware(), fileController.getDefaultFirmware);
+    app.get(endpoint.files.default.configForm(), fileController.getDefaultConfigForm);
+    app.get(endpoint.files.default.bootloader(), fileController.getDefaultBootloader);
+    app.get(endpoint.files.default.partitionTable(), fileController.getDefaultPartitionTable);
+    app.get(endpoint.files.default.NVS(), fileController.getDefaultNVS);
+    app.get(endpoint.files.configForm(), fileController.getConfigForm);
+
+    // Board
+
+    app.post(endpoint.boards.all(), boardController.create);
+    app.get(endpoint.boards.watchAll(), boardController.watchAll);
+    app.get(endpoint.boards.watchOne(), boardController.watchOne);
+    app.get(endpoint.boards.all(), boardController.getAll);
+    app.get(endpoint.boards.one(), boardController.getOne);
+    app.put(endpoint.boards.one(), upload.any(), boardController.update);
+    app.delete(endpoint.boards.one(), boardController.delete);
+
+    // Firmware
+    
+    app.post(endpoint.firmwares.all(), upload.array("files"), firmwareController.create);
+    app.get(endpoint.firmwares.all(), firmwareController.getAll);
+    app.get(endpoint.firmwares.one(), firmwareController.getOne);
+    app.post(endpoint.firmwares.one(), upload.single("file"), firmwareController.update);
+    app.delete(endpoint.firmwares.one(), firmwareController.delete);
 
     //
 

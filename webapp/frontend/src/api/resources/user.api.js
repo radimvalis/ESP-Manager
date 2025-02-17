@@ -1,5 +1,5 @@
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 
 export default class UserApi {
 
@@ -10,6 +10,6 @@ export default class UserApi {
 
     async get() {
 
-        return this._httpClient.get(ENDPOINT.USER.GET); 
+        return this._httpClient.get(endpoint.users.me());
     }
 }

@@ -38,7 +38,7 @@
 
         try {
 
-            firmware.value = await session.api.firmware.get(route.params.id);
+            firmware.value = await session.api.firmware.getOne(route.params.id);
         }
 
         catch(error) {

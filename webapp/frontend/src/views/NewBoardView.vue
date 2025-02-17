@@ -118,7 +118,7 @@
 
             if (valid) {
 
-                board = await session.api.board.register(configData.value);
+                board = await session.api.board.create(configData.value);
 
                 alert.value = false;
 

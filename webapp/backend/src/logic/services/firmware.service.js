@@ -8,25 +8,6 @@ export default class FirmwareService {
         this._models = models;
     }
 
-    async get(firmwareId, userId) {
-
-        const firmware = await this._getByIdAndUserId(firmwareId, userId);
-
-        return firmware.toJSON();
-    }
-
-    async getPublic(firmwareId) {
-
-        const firmware = await this._models.firmware.findByPk(firmwareId);
-
-        return firmware.getSanitized();
-    }
-
-    async getSummaryList(userId) {
-
-        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
-    }
-
     async create(name, userId) {
 
         const firmware = await this._models.firmware.findOne({ where: { name, userId } });
@@ -39,6 +20,18 @@ export default class FirmwareService {
         const newFirmware = await this._models.firmware.create({ name, userId });
 
         return newFirmware.toJSON();        
+    }
+
+    async getOne(firmwareId) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId);
+
+        return firmware.getSanitized();
+    }
+
+    async getAll(userId) {
+
+        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
     }
 
     async incrementVersion(firmwareId, userId) {

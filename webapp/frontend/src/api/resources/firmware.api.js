@@ -1,26 +1,11 @@
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 
 export default class FirmwareApi {
 
     constructor(httpClient) {
 
         this._httpClient = httpClient;
-    }
-
-    async get(firmwareId) {
-
-        return await this._httpClient.post(ENDPOINT.FIRMWARE.GET, { firmwareId });
-    }
-
-    async getPublic(firmwareId) {
-
-        return await this._httpClient.post(ENDPOINT.FIRMWARE.GET_PUBLIC, { firmwareId });
-    }
-
-    async getSummaryList() {
-
-        return await this._httpClient.get(ENDPOINT.FIRMWARE.SUMMARY_LIST);
     }
 
     async create(name, firmwareFile, configFormFile) {
@@ -31,10 +16,20 @@ export default class FirmwareApi {
         formData.append("files", firmwareFile);
         formData.append("files", configFormFile);
 
-        return await this._httpClient.put(ENDPOINT.FIRMWARE.CREATE, formData, {
+        return await this._httpClient.post(endpoint.firmwares.all(), formData, {
 
             headers: { "Content-Type": "multipart/form-data" }
         });
+    }
+
+    async getOne(firmwareId) {
+
+        return await this._httpClient.get(endpoint.firmwares.one(firmwareId));
+    }
+
+    async getAll() {
+
+        return await this._httpClient.get(endpoint.firmwares.all());
     }
 
     async update(firmwareId, updatedFirmwareFile) {
@@ -44,7 +39,7 @@ export default class FirmwareApi {
         formData.append("firmwareId", firmwareId);
         formData.append("file", updatedFirmwareFile);
 
-        return await this._httpClient.post(ENDPOINT.FIRMWARE.UPDATE, formData, {
+        return await this._httpClient.post(endpoint.firmwares.one(firmwareId), formData, {
 
             headers: { "Content-Type": "multipart/form-data" }
         });
@@ -52,6 +47,6 @@ export default class FirmwareApi {
 
     async delete(firmwareId) {
 
-        await this._httpClient.delete(ENDPOINT.FIRMWARE.DELETE, { firmwareId });
+        await this._httpClient.delete(endpoint.firmwares.one(firmwareId));
     }
 }

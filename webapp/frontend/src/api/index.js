@@ -7,14 +7,14 @@ import FileApi from "./resources/file.api";
 import BoardApi from "./resources/board.api";
 import FirmwareApi from "./resources/firmware.api";
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 
 export default class ApiProvider {
 
     constructor() {
 
         const apiBaseUrl = location.origin + "/api";
-        const httpClient = new HttpClient(apiBaseUrl, ENDPOINT.AUTH.REFRESH_TOKENS);
+        const httpClient = new HttpClient(apiBaseUrl, endpoint.auth.refreshTokens());
 
         this.auth = new AuthApi(httpClient);
         this.user = new UserApi(httpClient);

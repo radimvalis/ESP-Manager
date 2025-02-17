@@ -1,5 +1,5 @@
 
-import { ENDPOINT } from "shared";
+import { endpoint } from "shared";
 import ApplicationContext from "./logic/index.js";
 import getDb from "./db/index.js";
 import getMqtt from "./mqtt/index.js";
@@ -63,7 +63,7 @@ import start from "./api/index.js";
             accessCookieName: "accessCookie",
             refreshCookieName: "refreshCookie",
             accessCookiePath: "/",
-            refreshCookiePath: ENDPOINT.AUTH.REFRESH_TOKENS
+            refreshCookiePath: endpoint.auth.refreshTokens()
         },
 
         path: {

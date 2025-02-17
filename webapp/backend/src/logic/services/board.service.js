@@ -1,5 +1,6 @@
 
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
+import { endpoint } from "shared";
 import { EventEmitter } from "events";
 import { randomBytes } from "crypto";
 
@@ -59,14 +60,25 @@ export default class BoardService {
         });
     }
 
-    async get(boardId, userId) {
+    async create(name, userId) {
 
-        const board = await this._getByIdAndUserId(boardId, userId);
+        const board = await this._models.board.findOne({ where: { name, userId } });
 
-        return board.toJSON();
+        if (board) {
+
+            throw new ConflictError();
+        }
+
+        const mqttPassword = randomBytes(16).toString("hex");
+
+        const newBoard = await this._models.board.create({ name, userId, mqttPassword });
+
+        await this._createMqttClient(newBoard);
+
+        return newBoard.toJSON();
     }
 
-    async getSummaryList(userId) {
+    async getAll(userId) {
 
         const boards = await this._models.board.findAll({
             
@@ -94,25 +106,28 @@ export default class BoardService {
         return boardsSummary;
     }
 
-    async create(name, userId) {
+    async getOne(boardId, userId) {
 
-        const board = await this._models.board.findOne({ where: { name, userId } });
+        const board = await this._getByIdAndUserId(boardId, userId);
 
-        if (board) {
-
-            throw new ConflictError();
-        }
-
-        const mqttPassword = randomBytes(16).toString("hex");
-
-        const newBoard = await this._models.board.create({ name, userId, mqttPassword });
-
-        await this._createMqttClient(newBoard);
-
-        return newBoard.toJSON();
+        return board.toJSON();
     }
 
-    async watch(boardId, userId, updateCb, abortSignal) {
+    async watchAll(userId, updateCb, abortSignal) {
+
+        const listener = async () => {
+
+            const summaryList = await this.getAll(userId);
+
+            updateCb(summaryList);
+        };
+
+        abortSignal.onabort = () => this._emitter.removeListener(userId, listener);
+
+        this._emitter.on(userId, listener);
+    }
+
+    async watchOne(boardId, userId, updateCb, abortSignal) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
@@ -128,20 +143,6 @@ export default class BoardService {
         this._emitter.on(board.userId, listener);
     }
 
-    async watchAll(userId, updateCb, abortSignal) {
-
-        const listener = async () => {
-
-            const summaryList = await this.getSummaryList(userId);
-
-            updateCb(summaryList);
-        };
-
-        abortSignal.onabort = () => this._emitter.removeListener(userId, listener);
-
-        this._emitter.on(userId, listener);
-    }
-
     async flash(boardId, userId, firmware) {
         
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -150,8 +151,8 @@ export default class BoardService {
 
             firmware_id: firmware.id,
             version: firmware.version,
-            firmware_url: this._serverUrl + "/api/file/firmware/" + firmware.id,
-            config_url: this._serverUrl + "/api/file/nvs/" + board.id
+            firmware_url: this._serverUrl + "/api" + endpoint.files.firmware(firmware.id),
+            config_url: this._serverUrl + "/api" + endpoint.files.nvs(board.id)
         };
 
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
@@ -163,7 +164,7 @@ export default class BoardService {
         return board.toJSON();
     }
 
-    async update(boardId, userId) {
+    async updateFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
@@ -171,7 +172,7 @@ export default class BoardService {
 
             firmware_id: board.firmware.id,
             version: board.firmware.version,
-            firmware_url: this._serverUrl + "/api/file/firmware/" + board.firmware.id
+            firmware_url: this._serverUrl + "/api" + endpoint.files.firmware(board.firmwareId)
         };
 
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
@@ -183,7 +184,7 @@ export default class BoardService {
         return board.toJSON();
     }
 
-    async bootDefault(boardId, userId) {
+    async bootDefaultFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 

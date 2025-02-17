@@ -87,7 +87,7 @@ export default class HttpClient {
 
             baseURL: this.baseUrl,
             url: this.refreshTokenEndpoint,
-            method: "GET"    
+            method: "POST"    
         };
 
         await axios.request(requestConfig);

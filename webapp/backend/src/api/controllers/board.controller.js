@@ -1,5 +1,6 @@
 
 import asyncCatch from "../middlewares/error.middleware.js";
+import { boardUpdateType } from "shared";
 
 export default function BoardController(context) {
 
@@ -17,21 +18,34 @@ export default function BoardController(context) {
         });
     };
 
-    this.get = asyncCatch(async (req, res) => {
+    const _flash = async (req, res) => {
 
-        const board = await context.board.get(req.body.boardId, req.userId);
+        req.files.forEach(f => req.body[f.fieldname] = f.path);
+
+        await context.file.createNVS(req.body, req.body.firmwareId, req.params.id);
+
+        const firmware = await context.firmware.getOne(req.body.firmwareId);
+
+        const board = await context.board.flash(req.params.id, req.userId, firmware);
 
         res.json(board).end();
-    });
+    };
 
-    this.getSummaryList = asyncCatch(async (req, res) => {
+    const _updateFirmware = async (req, res) => {
 
-        const boardsSummary = await context.board.getSummaryList(req.userId);
+        const board = await context.board.updateFirmware(req.params.id, req.userId);
 
-        res.json(boardsSummary).end();
-    });
+        res.json(board).end();
+    };
 
-    this.register = asyncCatch(async (req, res) => {
+    const _bootDefaultFirmware = async (req, res) => {
+
+        const board = await context.board.bootDefaultFirmware(req.params.id, req.userId);
+
+        res.json(board).end();
+    };
+
+    this.create = asyncCatch(async (req, res) => {
 
         const board = await context.board.create(req.body.name, req.userId);
 
@@ -40,17 +54,6 @@ export default function BoardController(context) {
         await context.file.createDefaultNVS(req.body, board);
 
         res.json(board).end();
-    });
-
-    this.watch = asyncCatch(async (req, res) => {
-
-        const abortController = new AbortController();
-
-        const updateCb = (board) => res.write(`data: ${JSON.stringify(board)}\n\n`);
-
-        _setupSSEConnection(res, abortController);
-
-        await context.board.watch(req.params["id"], req.userId, updateCb, abortController.signal);
     });
 
     this.watchAll = asyncCatch(async (req, res) => {
@@ -64,38 +67,64 @@ export default function BoardController(context) {
         await context.board.watchAll(req.userId, updateCb, abortController.signal);
     });
 
-    this.flash = asyncCatch(async (req, res) => {
+    this.watchOne = asyncCatch(async (req, res) => {
 
-        req.files.forEach(f => req.body[f.fieldname] = f.path);
+        const abortController = new AbortController();
 
-        await context.file.createNVS(req.body, req.body.firmwareId, req.body.boardId);
+        const updateCb = (board) => res.write(`data: ${JSON.stringify(board)}\n\n`);
 
-        const firmware = await context.firmware.getPublic(req.body.firmwareId);
+        _setupSSEConnection(res, abortController);
 
-        const board = await context.board.flash(req.body.boardId, req.userId, firmware);
+        await context.board.watchOne(req.params.id, req.userId, updateCb, abortController.signal);
+    });
+
+    this.getAll = asyncCatch(async (req, res) => {
+
+        const boardsSummary = await context.board.getAll(req.userId);
+
+        res.json(boardsSummary).end();
+    });
+
+    this.getOne = asyncCatch(async (req, res) => {
+
+        const board = await context.board.getOne(req.params.id, req.userId);
 
         res.json(board).end();
     });
 
     this.update = asyncCatch(async (req, res) => {
 
-        const board = await context.board.update(req.body.boardId, req.userId);
+        switch(req.body.type) {
 
-        res.json(board).end();
-    });
+            case boardUpdateType.flashBoard:
 
-    this.bootDefault = asyncCatch(async (req, res) => {
+                await _flash(req, res);
 
-        const board = await context.board.bootDefault(req.body.boardId, req.userId);
+                return;
 
-        res.json(board).end();
+            case boardUpdateType.updateFirmware:
+
+                await _updateFirmware(req, res);
+
+                return;
+
+            case boardUpdateType.bootDefaultFirmware:
+
+                await _bootDefaultFirmware(req, res);
+
+                return;
+
+            default:
+
+                break;
+        }
     });
 
     this.delete = asyncCatch(async (req, res) => {
 
-        await context.board.delete(req.body.boardId, req.userId);
+        await context.board.delete(req.params.id, req.userId);
 
-        await context.file.deleteBoardDir(req.body.boardId);
+        await context.file.deleteBoardDir(req.params.id);
 
         res.status(200).end();
     });
