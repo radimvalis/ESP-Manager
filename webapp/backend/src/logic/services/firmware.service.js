@@ -26,6 +26,11 @@ export default class FirmwareService {
 
         const firmware = await this._models.firmware.findByPk(firmwareId);
 
+        if (!firmware) {
+
+            throw new NotFoundError();
+        }
+
         return firmware.getSanitized();
     }
 
