@@ -1,5 +1,5 @@
 
-import { ConflictError, NotFoundError } from "../../utils/errors.js";
+import { InvalidInputError, NotFoundError, ConflictError } from "../../utils/errors.js";
 
 export default class FirmwareService {
 
@@ -9,6 +9,20 @@ export default class FirmwareService {
     }
 
     async create(name, userId) {
+
+        // Validate input
+
+        if (typeof name !== "string") {
+
+            throw new InvalidInputError("Firmware name must be a string");
+        }
+
+        if (name.length < 3 || name.length > 10) {
+
+            throw new InvalidInputError("Firmware name must be between 3 and 10 characters");
+        }
+
+        // Create new firmware
 
         const firmware = await this._models.firmware.findOne({ where: { name, userId } });
 
@@ -22,6 +36,11 @@ export default class FirmwareService {
         return newFirmware.toJSON();        
     }
 
+    async getAll(userId) {
+
+        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
+    }
+
     async getOne(firmwareId) {
 
         const firmware = await this._models.firmware.findByPk(firmwareId);
@@ -32,11 +51,6 @@ export default class FirmwareService {
         }
 
         return firmware.getSanitized();
-    }
-
-    async getAll(userId) {
-
-        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
     }
 
     async incrementVersion(firmwareId, userId) {

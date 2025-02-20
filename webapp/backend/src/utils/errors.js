@@ -2,32 +2,22 @@
 import { errors } from "jose";
 import { Sequelize } from "sequelize";
 
-class MissingTokenError extends Error {
-    
+class InvalidInputError extends Error {
+
     constructor(...params) {
 
         super(...params);
-        this.name = "MissingTokenError";
+        this.name = "InvalidInputError";
         this.statusCode = 400;
     }
 }
 
-class CredentialsValidationError extends Error {
+class AuthorizationError extends Error {
 
     constructor(...params) {
 
         super(...params);
-        this.name = "CredentialsValidationError";
-        this.statusCode = 400;
-    }
-}
-
-class WrongPasswordError extends Error {
-
-    constructor(...params) {
-
-        super(...params);
-        this.name = "WrongPasswordError";
+        this.name = "AuthorizationError";
         this.statusCode = 401;
     }
 }
@@ -67,10 +57,9 @@ class NVSGenerationError extends Error {
 }
 
 export {
-    MissingTokenError,
+    InvalidInputError,
+    AuthorizationError,
     NotFoundError,
-    WrongPasswordError,
-    CredentialsValidationError,
     ConflictError,
     NVSGenerationError
 };

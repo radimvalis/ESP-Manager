@@ -1,13 +1,14 @@
 
 import asyncCatch from "../middlewares/error.middleware.js";
+import { InvalidInputError } from "../../utils/errors.js";
 import { boardUpdateType } from "shared";
 
 export default function BoardController(context) {
 
     const _setupSSEConnection = (res, abortController) => {
 
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Connection', 'keep-alive');
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Connection", "keep-alive");
         res.flushHeaders();
 
         res.on("close", () => {
@@ -49,9 +50,18 @@ export default function BoardController(context) {
 
         const board = await context.board.create(req.body.name, req.userId);
 
-        await context.file.createBoardDir(board.id);
+        try {
 
-        await context.file.createDefaultNVS(req.body, board);
+            await context.file.createBoardDir(board.id);
+            await context.file.createDefaultNVS(req.body, board);
+        }
+
+        catch(e) {
+
+            await context.board.delete(board.id, req.userId);
+
+            throw e;           
+        }
 
         res.json(board).end();
     });
@@ -116,7 +126,7 @@ export default function BoardController(context) {
 
             default:
 
-                break;
+                throw new InvalidInputError("Unknown update type");
         }
     });
 

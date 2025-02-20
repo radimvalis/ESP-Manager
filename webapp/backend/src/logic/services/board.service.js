@@ -1,5 +1,5 @@
 
-import { ConflictError, NotFoundError } from "../../utils/errors.js";
+import { InvalidInputError, ConflictError, NotFoundError } from "../../utils/errors.js";
 import { endpoint } from "shared";
 import { EventEmitter } from "events";
 import { randomBytes } from "crypto";
@@ -62,6 +62,20 @@ export default class BoardService {
 
     async create(name, userId) {
 
+        // Validate input
+
+        if (typeof name !== "string") {
+
+            throw new InvalidInputError("Board name must be a string");
+        }
+
+        if (name.length < 3 || name.length > 10) {
+
+            throw new InvalidInputError("Board name must be between 3 and 10 characters");
+        }
+
+        // Create new board
+
         const board = await this._models.board.findOne({ where: { name, userId } });
 
         if (board) {
@@ -72,6 +86,8 @@ export default class BoardService {
         const mqttPassword = randomBytes(16).toString("hex");
 
         const newBoard = await this._models.board.create({ name, userId, mqttPassword });
+
+        // Create new MQTT client for given board
 
         await this._createMqttClient(newBoard);
 
@@ -147,6 +163,11 @@ export default class BoardService {
         
         const board = await this._getByIdAndUserId(boardId, userId);
 
+        if (board.isBeingUpdated) {
+
+            throw new ConflictError();
+        }
+
         const message = {
 
             firmware_id: firmware.id,
@@ -168,6 +189,11 @@ export default class BoardService {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
+        if (board.isBeingUpdated) {
+
+            throw new ConflictError();
+        }
+
         const message = {
 
             firmware_id: board.firmware.id,
@@ -187,6 +213,11 @@ export default class BoardService {
     async bootDefaultFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
+
+        if (board.isBeingUpdated) {
+
+            throw new ConflictError();
+        }
 
         await this._mqtt.publishAsync(board.id + "/cmd/boot-default", null, { qos: 2 });
 
@@ -298,7 +329,7 @@ export default class BoardService {
             ]
         };
 
-        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message));
+        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message), { qos: 2 });
     }
 
     async _deleteMqttClient(board) {
@@ -317,6 +348,6 @@ export default class BoardService {
             ]
         };
 
-        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message));
+        await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message), { qos: 2 });
     }
 }

@@ -1,6 +1,6 @@
 
 import asyncCatch from "./error.middleware.js";
-import { MissingTokenError } from "../../utils/errors.js";
+import { InvalidInputError } from "../../utils/errors.js";
 
 export default function cookieMiddleware(cookieName, verifyFn) {
 
@@ -10,11 +10,16 @@ export default function cookieMiddleware(cookieName, verifyFn) {
 
         if (!token) {
 
-            throw new MissingTokenError();
+            throw new InvalidInputError("Authentication token is missing");
         }
 
         const payload = await verifyFn(token);
 
+        if (!Object.hasOwn(payload, "userId")) {
+        
+            throw new InvalidInputError("Authentication token payload is in an invalid format");
+        }
+      
         req.userId = payload.userId;
 
         next();

@@ -1,9 +1,9 @@
 
 import bcrypt from "bcrypt";
 import {
-    NotFoundError,
-    WrongPasswordError,
-    CredentialsValidationError
+    InvalidInputError,
+    AuthorizationError,
+    NotFoundError
 } from "../../utils/errors.js";
 
 export default class UserService {
@@ -17,10 +17,24 @@ export default class UserService {
 
     async create(username, password) {
 
+        // Validate credentials
+
+        if (typeof username !== "string" || typeof password !== "string") {
+
+            throw new InvalidInputError("Username and password mus be strings");
+        }
+
+        if (username.length < 3 || username.length > 10) {
+
+            throw new InvalidInputError("Username must be between 3 and 10 characters");
+        }
+
         if (!/^[a-z0-9]+$/i.test(username)) {
 
-            throw new CredentialsValidationError();
+            throw new InvalidInputError("Username can only contain alnum characters");
         }
+
+        // Create new user
 
         const hashedPassword = await bcrypt.hash(password, UserService._saltRounds);
 
@@ -42,7 +56,7 @@ export default class UserService {
 
         if (!comparisonResult) {
 
-            throw new WrongPasswordError();
+            throw new AuthorizationError();
         }
 
         return user.getSanitized();
