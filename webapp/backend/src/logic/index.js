@@ -22,6 +22,7 @@ export default class ApplicationContext {
 
     async init() {
 
+        await this.file.init();
         await this.board.init();
     }
 }

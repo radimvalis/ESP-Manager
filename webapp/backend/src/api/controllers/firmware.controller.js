@@ -7,16 +7,27 @@ export default function FirmwareController(context) {
 
         const firmware = await context.firmware.create(req.body.name, req.userId);
 
-        const firmwarePath = req.files[0].path;
-        const configFormPath = req.files[1].path;
-
         await context.file.createFirmwareDir(firmware.id);
 
-        await Promise.all([
+        try {
 
-            context.file.moveFirmwareToDedicatedDir(firmware.id, firmwarePath),
-            context.file.moveConfigFormToDedicatedDir(firmware.id, configFormPath)
-        ]);
+            await Promise.all([
+
+                context.file.saveFirmware(firmware.id, req.files[0]),
+                context.file.saveConfigForm(firmware.id, req.files[1])
+            ]);
+        }
+
+        catch(e) {
+
+            const firmwareId = firmware.id;
+
+            await context.firmware.delete(firmwareId, req.userId);
+
+            await context.file.deleteFirmwareDir(firmwareId);
+
+            throw e;
+        }
 
         res.json(firmware).end();
     });
@@ -39,9 +50,17 @@ export default function FirmwareController(context) {
 
         const updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId, req.userId);
 
-        const updatedFirmwarePath = req.file.path;
+        try {
 
-        await context.file.moveFirmwareToDedicatedDir(updatedFirmware.id, updatedFirmwarePath);
+            await context.file.saveFirmware(updatedFirmware.id, req.file);
+        }
+
+        catch(e) {
+
+            await context.firmware.decrementVersion(req.body.firmwareId, req.userId);
+
+            throw e;
+        }
 
         res.json(updatedFirmware).end();
     });

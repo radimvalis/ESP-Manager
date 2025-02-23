@@ -1,5 +1,7 @@
 
 import fs from "fs/promises";
+import Ajv2019 from "ajv/dist/2019.js";
+import { InvalidInputError } from "../../utils/errors.js";
 import { spawn } from "child_process";
 import { once } from "events";
 import { NVSGenerationError } from "../../utils/errors.js";
@@ -14,12 +16,25 @@ export default class FileService {
     static _FIRMWARE = "firmware.bin";
     static _CONFIG_FORM = "config-form.json";
 
+    static _CONFIG_FORM_SCHEMA = "config-form.schema.json";
+
     constructor(config) {
 
         this._dataDirectoryPath = config.path.dataDirectoryPath;
         this._serverCrtPath = config.path.serverCrtPath;
 
         this._brokerUrl = config.url.broker;
+
+        this._validateConfigForm = null;
+    }
+
+    async init() {
+
+        const ajv = new Ajv2019();
+        const schema = await fs.readFile(this._dataDirectoryPath + "/default/" + FileService._CONFIG_FORM_SCHEMA, "utf8");
+        const schemaAsObject = JSON.parse(schema);
+
+        this._validateConfigForm = ajv.compile(schemaAsObject);
     }
 
     getDefaultPath(filename) {
@@ -49,18 +64,51 @@ export default class FileService {
         return this._getFirmwareDir(firmwareId) + FileService._CONFIG_FORM;
     }
 
-    async moveFirmwareToDedicatedDir(firmwareId, oldFirmwarePath) {
+    async saveFirmware(firmwareId, firmwareFile) {
 
-        const newFirmwarePath = this.getFirmwarePath(firmwareId);
+        // Validate
 
-        await fs.copyFile(oldFirmwarePath, newFirmwarePath);
+        if (firmwareFile.mimetype !== "application/octet-stream") {
+
+            throw new InvalidInputError("The firmware file is not valid");
+        }
+
+        // Move from tmp directory to firmware directory
+
+        const newPath = this.getFirmwarePath(firmwareId);
+
+        await fs.copyFile(firmwareFile.path, newPath);
+        await fs.unlink(firmwareFile.path);
     }
+    
+    async saveConfigForm(firmwareId, configFormFile) {
 
-    async moveConfigFormToDedicatedDir(firmwareId, oldConfigFormPath) {
+        // Validate
 
-        const newConfigFormPath = this.getConfigFormPath(firmwareId);
+        let configFormAsObject;
+        const configForm = await fs.readFile(configFormFile.path, "utf8");
 
-        await fs.copyFile(oldConfigFormPath, newConfigFormPath);
+        try {
+            
+            configFormAsObject = JSON.parse(configForm);
+        }
+
+        catch(e) {
+
+            throw new InvalidInputError("The configuration file is not a valid JSON");
+        }
+
+        if (!this._validateConfigForm(configFormAsObject)) {
+
+            throw new InvalidInputError("The configuration file does not conform to the schema");
+        }
+
+        // Move from tmp directory to firmware directory
+
+        const newPath = this.getConfigFormPath(firmwareId);
+
+       await fs.copyFile(configFormFile.path, newPath);
+       await fs.unlink(configFormFile.path);
     }
 
     async createBoardDir(boardId) {

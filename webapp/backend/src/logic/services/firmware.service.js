@@ -64,6 +64,17 @@ export default class FirmwareService {
         return firmware.toJSON();
     }
 
+    async decrementVersion(firmwareId, userId) {
+
+        const firmware = await this._getByIdAndUserId(firmwareId, userId);
+
+        await firmware.decrement("version");
+
+        await firmware.reload();
+
+        return firmware.toJSON();
+    }
+
     async delete(firmwareId, userId) {
 
         const firmware = await this._getByIdAndUserId(firmwareId, userId);

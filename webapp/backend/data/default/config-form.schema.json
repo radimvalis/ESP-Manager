@@ -1,0 +1,130 @@
+{
+    "type": "array",
+    "minItems": 1,
+    "items": {
+        "anyOf": [
+            { "$ref": "#/$defs/textInput" },
+            { "$ref": "#/$defs/textOptions" },
+            { "$ref": "#/$defs/numberInput" },
+            { "$ref": "#/$defs/numberOptions" },
+            { "$ref": "#/$defs/file" }
+        ]
+    },
+    "$defs": {
+        "base": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "maxLength": 15
+                },
+                "isRequired": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [ "key", "isRequired", "label" ]
+        },
+        "textBase": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/base" } ],
+            "properties": {
+                "type": {
+                    "const": "data"
+                },
+                "encoding": {
+                    "const": "string"
+                }
+            },
+            "required": [ "type", "encoding" ]
+        },
+        "numberBase": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/base" } ],
+            "properties": {
+                "type": {
+                    "const": "data"
+                },
+                "encoding": {
+                    "enum": [ "u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64" ]
+                }
+            },
+            "required": [ "type", "encoding" ]
+        },
+        "textInput": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/textBase" } ],
+            "properties": {
+                "pattern": {
+                    "type": "string"
+                }                
+            },
+            "unevaluatedProperties": false
+        },
+        "textOptions": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/textBase" } ],
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [ "options" ],
+            "unevaluatedProperties": false
+        },
+        "numberInput": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/numberBase" } ],
+            "properties": {
+                "minimum": {
+                    "type": "integer"
+                } ,
+                "maximum": {
+                    "type": "integer"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "numberOptions": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/numberBase" } ],
+            "properties": {
+                "options": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "required": [ "options" ],
+            "unevaluatedProperties": false
+        },
+        "file": {
+            "type": "object",
+            "allOf": [ { "$ref": "#/$defs/base" } ],
+            "properties": {
+                "type": {
+                    "const": "file"
+                },
+                "encoding": {
+                    "enum": [ "hex2bin", "base64", "string", "binary" ]
+                },
+                "format": {
+                    "type": "string"
+                }
+            },
+            "required": [ "type", "encoding" ],
+            "unevaluatedProperties": false
+        }
+    }
+}
