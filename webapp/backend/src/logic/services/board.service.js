@@ -165,7 +165,7 @@ export default class BoardService {
 
         if (board.isBeingUpdated) {
 
-            throw new ConflictError();
+            throw new ConflictError("Update in progress - wait until completion");
         }
 
         const message = {
@@ -191,7 +191,7 @@ export default class BoardService {
 
         if (board.isBeingUpdated) {
 
-            throw new ConflictError();
+            throw new ConflictError("Update in progress - wait until completion");
         }
 
         const message = {
@@ -216,7 +216,7 @@ export default class BoardService {
 
         if (board.isBeingUpdated) {
 
-            throw new ConflictError();
+            throw new ConflictError("Update in progress - wait until completion");
         }
 
         await this._mqtt.publishAsync(board.id + "/cmd/boot-default", null, { qos: 2 });
