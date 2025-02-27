@@ -34,9 +34,9 @@ export default function FirmwareController(context) {
 
     this.getAll = asyncCatch(async (req, res) => {
 
-        const firmwaresSummary = await context.firmware.getAll(req.userId);
+        const firmwares = await context.firmware.getAll(req.userId);
 
-        res.json(firmwaresSummary).end();
+        res.json(firmwares).end();
     });
 
     this.getOne = asyncCatch(async (req, res) => {

@@ -33,7 +33,7 @@ export default class FirmwareService {
 
         if (firmware) {
 
-            throw new ConflictError();
+            throw new ConflictError("This firmware name already exists");
         }
 
         const newFirmware = await this._models.firmware.create({ name, userId });

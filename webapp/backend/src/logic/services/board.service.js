@@ -85,7 +85,7 @@ export default class BoardService {
 
         if (board) {
 
-            throw new ConflictError();
+            throw new ConflictError("This board name already exists");
         }
 
         const mqttPassword = randomBytes(16).toString("hex");
@@ -114,7 +114,7 @@ export default class BoardService {
             attributes: [ "id", "name", "isOnline", "firmwareVersion", "firmwareStatus" ]
         });
 
-        const boardsSummary = boards.map((board) => {
+        const boardsSanitized = boards.map((board) => {
             
             const sanitized = board.getSanitized();
 
@@ -124,7 +124,7 @@ export default class BoardService {
             return sanitized;
         });
 
-        return boardsSummary;
+        return boardsSanitized;
     }
 
     async getOne(boardId, userId) {

@@ -90,9 +90,9 @@ export default function BoardController(context) {
 
     this.getAll = asyncCatch(async (req, res) => {
 
-        const boardsSummary = await context.board.getAll(req.userId);
+        const boards = await context.board.getAll(req.userId);
 
-        res.json(boardsSummary).end();
+        res.json(boards).end();
     });
 
     this.getOne = asyncCatch(async (req, res) => {
