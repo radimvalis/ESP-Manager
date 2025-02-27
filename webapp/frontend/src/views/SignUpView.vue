@@ -13,18 +13,22 @@
     const password = ref("");
     const passwordConfirmed = ref("");
 
+    const alert = ref(false);
+    const alertText = ref(null);
+
     const usernameRules = [
 
-        (x) => !!x || "Username is required",
-        (x) => /^[a-z0-9]+$/i.test(x) || "Only alphanumeric characters are allowed",
+        (x) => !!x,
+        (x) => 3 <= x.length && x.length <= 20 || "Username must be 3-20 characters",
+        (x) => /^[a-z0-9-_.]+$/i.test(x) || "Only letters, numbers, -, _ and . are allowed",
     ];
     const passwordRules = [
                     
-        (x) => !!x || "Password is required",
+        (x) => !!x,
     ];
     const passwordConfirmRules = [
 
-        (x) => !!x || 'Password confirmation is required',
+        (x) => !!x,
         (x) => !password.value || (password.value && x === password.value) || "Passwords must match"
     ];
 
@@ -34,11 +38,20 @@
 
         if (valid) {
 
-            await session.api.auth.signUp(username.value, password.value);
+            try {
 
-            session.logIn(username.value);
-            
-            router.push({ name: "Boards" });
+                await session.api.auth.signUp(username.value, password.value);
+
+                session.logIn(username.value);
+
+                router.push({ name: "Boards" });
+            }
+
+            catch(error) {
+  
+                alertText.value = error.response.data.message;
+                alert.value = true;
+            }
         }
     }
 
@@ -56,9 +69,18 @@
                 class="justify-center align-center"
             >
 
+                <v-alert
+                    v-if="alert"
+                    @click:close="alert = false"
+                    type="error"
+                    :text="alertText"
+                    max-width="400"
+                    style="border-radius:4px !important"
+                />
+
                 <v-card
                     max-width="400"
-                    class="mx-auto"
+                    class="mx-auto mt-4"
                 >
 
                     <v-card-title

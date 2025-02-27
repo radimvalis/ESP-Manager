@@ -69,9 +69,14 @@ export default class BoardService {
             throw new InvalidInputError("Board name must be a string");
         }
 
-        if (name.length < 3 || name.length > 10) {
+        if (name.length < 3 || name.length > 20) {
 
-            throw new InvalidInputError("Board name must be between 3 and 10 characters");
+            throw new InvalidInputError("Board name must be between 3 and 20 characters");
+        }
+
+        if (!/^[a-z0-9-_.]+$/i.test(name)) {
+
+            throw new InvalidInputError("Board name can only contain alnum characters, -, _ and .");
         }
 
         // Create new board
@@ -163,10 +168,7 @@ export default class BoardService {
         
         const board = await this._getByIdAndUserId(boardId, userId);
 
-        if (board.isBeingUpdated) {
-
-            throw new ConflictError("Update in progress - wait until completion");
-        }
+        this._ensureBoardIsReadyForUpdate(board);
 
         const message = {
 
@@ -189,9 +191,11 @@ export default class BoardService {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
-        if (board.isBeingUpdated) {
+        this._ensureBoardIsReadyForUpdate(board);
 
-            throw new ConflictError("Update in progress - wait until completion");
+        if (board.firmwareStatus !== "update available") {
+
+            throw new ConflictError("Update not possible - firmware is already up to date");
         }
 
         const message = {
@@ -214,9 +218,11 @@ export default class BoardService {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
-        if (board.isBeingUpdated) {
+        this._ensureBoardIsReadyForUpdate(board);
 
-            throw new ConflictError("Update in progress - wait until completion");
+        if (board.firmwareStatus !== "default") {
+
+            throw new ConflictError("Update not possible - default firmware is already booted");
         }
 
         await this._mqtt.publishAsync(board.id + "/cmd/boot-default", null, { qos: 2 });
@@ -247,6 +253,19 @@ export default class BoardService {
         }
 
         return board;
+    }
+
+    _ensureBoardIsReadyForUpdate(board) {
+
+        if (!board.isOnline) {
+
+            throw new ConflictError("Update not possible - board is offline");
+        }
+    
+        if (board.isBeingUpdated) {
+
+            throw new ConflictError("Update in progress - wait until completion");
+        }
     }
 
     async _setOnline(boardId) {

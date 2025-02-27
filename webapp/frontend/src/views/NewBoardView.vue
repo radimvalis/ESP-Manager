@@ -150,9 +150,8 @@
 
             if (error.response) {
 
-                await form.value.form.reset();
-
-                alertTitle.value = error.response.status + " " + error.response.statusText + " Error";
+                alertTitle.value = error.response.status + ": " + error.response.statusText;
+                alertText.value = error.response.data.message;
             }
 
             else {
@@ -162,6 +161,7 @@
                 await session.api.board.delete(board.id);
 
                 alertTitle.value = "Registration failed";
+                alertText.value = null;
 
                 currentStage.value = STAGE.CONNECT;
             }
@@ -170,7 +170,6 @@
             isRegistering.value = false;
             registerProgressStage.value = REGISTER_PROGRESS_STAGE.FLASH;
 
-            alertText.value = null;
             alert.value = true;
         }
     }

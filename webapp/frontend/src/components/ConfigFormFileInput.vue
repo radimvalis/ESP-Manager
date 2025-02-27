@@ -16,7 +16,7 @@
 
     const validationRules = [
 
-        () => props.isRequired ? (model.value === null ? "This field is required" : true) : true,
+        () => props.isRequired ? (model.value !== null) : true,
         () => props.format && model.value ? (props.format !== model.value.type ? "This is not " + props.format + " file" : true) : true
     ]
 

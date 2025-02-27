@@ -52,6 +52,19 @@
                         :items-per-page="-1"
                         :search="filter"
                     >
+                        <template #no-data>
+
+                            <div
+                                class="d-flex justify-center align-center"
+                                style="height: 202px"
+                                :style='{ color: "#B00020" }'
+                            >
+
+                                No board found
+
+                            </div>
+
+                        </template>
 
                         <template #default="{ items }">
 

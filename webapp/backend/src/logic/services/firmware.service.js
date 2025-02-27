@@ -17,9 +17,14 @@ export default class FirmwareService {
             throw new InvalidInputError("Firmware name must be a string");
         }
 
-        if (name.length < 3 || name.length > 10) {
+        if (name.length < 3 || name.length > 20) {
 
-            throw new InvalidInputError("Firmware name must be between 3 and 10 characters");
+            throw new InvalidInputError("Firmware name must be between 3 and 20 characters");
+        }
+
+        if (!/^[a-z0-9-_.]+$/i.test(name)) {
+
+            throw new InvalidInputError("Firmware name can only contain alnum characters, -, _ and .");
         }
 
         // Create new firmware

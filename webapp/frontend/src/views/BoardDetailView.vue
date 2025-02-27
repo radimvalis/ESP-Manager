@@ -17,9 +17,17 @@
     const alertType = ref(null);
     const alertTitle = ref(null);
 
+    const loadError = ref(false);
+
     const board = ref(null);
 
-    onBeforeRouteLeave(() => session.api.board.closeWatchStream());
+    onBeforeRouteLeave(() => {
+
+        if (!loadError.value) {
+        
+            session.api.board.closeWatchStream();
+        }
+    });
 
     onMounted(async () => {
 
@@ -39,8 +47,9 @@
             session.api.board.openWatchOneStream(board.value.id, onMessage);
         }
 
-        catch(error) {
+        catch {
 
+            loadError.value = true;
         }
     });
 
@@ -94,6 +103,14 @@
 </script>
 
 <template>
+
+    <v-empty-state
+        v-if="loadError"
+        icon="mdi-close-circle"
+        color="error"
+        title="Board not found"
+        text="The board you were looking for does not exist, or you do not have permission to access it."
+    />
 
     <template
         v-if="board"

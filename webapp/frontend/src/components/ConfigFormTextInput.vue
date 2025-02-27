@@ -21,7 +21,7 @@
 
     const validationRules = [
 
-        () => props.isRequired ? (model.value === "" ? "This field is required" : true) : true,
+        () => props.isRequired ? (model.value !== "") : true,
         (x) => regExp ? ( !regExp.test(x) ? "This input does not match the pattern: " + props.pattern : true ) : true
     ];
 

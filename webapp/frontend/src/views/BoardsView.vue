@@ -75,10 +75,7 @@
             noDataText.value = "Loading failed";
         }
 
-        finally {
-
-            isLoading.value = false;
-        }
+        isLoading.value = false;
     });
 
 </script>

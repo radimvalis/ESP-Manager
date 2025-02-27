@@ -25,7 +25,7 @@
 
     const validationRules = [
 
-        () => props.isRequired ? (model.value === EMPTY ? "This field is required" : true) : true,
+        () => props.isRequired ? (model.value !== EMPTY) : true,
         () => model.value === INVALID ? "Not a valid number" : true,
         () => props.minimum !== undefined && model.value !== INVALID && model.value !== EMPTY ? (model.value < props.minimum ? "The number must not be less than " + props.minimum : true) : true,
         () => props.maximum !== undefined && model.value !== INVALID && model.value !== EMPTY ? (model.value > props.maximum ? "The number must not be greater than " + props.maximum : true) : true

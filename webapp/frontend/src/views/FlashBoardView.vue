@@ -34,10 +34,12 @@
     const currentStage = ref(null);
 
     const alert = ref(false);
-    const alertType = ref(null);
     const alertTitle = ref(null);
+    const alertText = ref(null);
 
-    const boards = ref([]);
+    const loadError = ref(false);
+
+    const boards = ref(null);
 
     const boardToFlash = ref(null);
 
@@ -74,6 +76,7 @@
 
         catch(error) {
 
+            loadError.value = true;
         }
     });
 
@@ -113,7 +116,6 @@
             firmwareId.value = null;
 
             alertTitle.value = "Firmware not found";
-            alertType.value = "error";
             alert.value = true;
         }
     }
@@ -134,6 +136,18 @@
 
         catch(error) {
 
+            if (error.response) {
+
+                alertTitle.value = error.response.status + ": " + error.response.statusText;
+                alertText.value = error.response.data.message;
+            }
+
+            else {
+
+                alertTitle.value = "Board can't be flashed now"
+            }
+
+            alert.value = true;
         }
     }
 
@@ -161,50 +175,64 @@
 
 <template>
 
-    <Stepper
-        :model-value="currentStage"
-        :steps="stages"
+    <v-empty-state
+        v-if="loadError"
+        icon="mdi-close-circle"
+        color="error"
+        title="Board can't be flashed now"
     />
 
-    <v-alert
-        v-if="alert"
-        @click:close="alert = false"
-        :type="alertType"
-        :title="alertTitle"
-    />
-
-    <Overview
-        :board-name="boardToFlash?.name"
-        :firmware-name="firmware?.name"
-    />
-
-    <SelectBoard
-        v-if="currentStage === STAGE.SELECT_BOARD"
-        v-model="boardToFlash"
-        :boards="boards"
-        @click-select="selectBoard"
-    />
-
-    <SelectFirmware
-        v-if="currentStage === STAGE.SELECT_FIRMWARE"
-        v-model="firmwareId"
-        @click-select="selectFirmware"
-        @click-back="resetBoardSelection"
-    />
-
-    <ConfigureFirmware
-        v-if="currentStage === STAGE.CONFIGURE"
-        :firmware="firmware"
-        @click-flash="flash"
-        @click-back="resetFirmwareSelection"
+    <template
+        v-if="!loadError"
     >
 
-        <ConfigForm
-            ref="form"
-            v-model="configData"
-            :entries="configFormEntries"
+        <Stepper
+            :model-value="currentStage"
+            :steps="stages"
         />
 
-    </ConfigureFirmware>
+        <Overview
+            :board-name="boardToFlash?.name"
+            :firmware-name="firmware?.name"
+        />
+
+        <v-alert
+            v-if="alert"
+            @click:close="alert = false"
+            type="error"
+            :title="alertTitle"
+            :text="alertText"
+        />
+
+        <SelectBoard
+            v-if="currentStage === STAGE.SELECT_BOARD"
+            v-model="boardToFlash"
+            :boards="boards"
+            @click-select="selectBoard"
+        />
+
+        <SelectFirmware
+            v-if="currentStage === STAGE.SELECT_FIRMWARE"
+            v-model="firmwareId"
+            @click-select="selectFirmware"
+            @click-back="resetBoardSelection"
+        />
+
+        <ConfigureFirmware
+            v-if="currentStage === STAGE.CONFIGURE"
+            :firmware="firmware"
+            @click-flash="flash"
+            @click-back="resetFirmwareSelection"
+        >
+
+            <ConfigForm
+                ref="form"
+                v-model="configData"
+                :entries="configFormEntries"
+            />
+
+        </ConfigureFirmware>
+
+    </template>
 
 </template>

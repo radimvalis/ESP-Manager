@@ -10,6 +10,7 @@
 
     const alert = ref(false);
     const alertTitle = ref(null);
+    const alertText = ref(null);
 
     const form = ref(null);
 
@@ -21,19 +22,20 @@
 
     const nameRules = [
                     
-        (x) => !!x || "Firmware name is required",
-        (x) => /^[a-z0-9]+$/i.test(x) || "Only alphanumeric characters are allowed"
+        (x) => !!x,
+        (x) => 3 <= x.length && x.length <= 20 || "Name must be 3-20 characters",
+        (x) => /^[a-z0-9-_.]+$/i.test(x) || "Only letters, numbers, -, _ and . are allowed"
     ];
 
     const firmwareRules = [
 
-        () => !!firmwareFile.value || "Firmware is required",
+        () => !!firmwareFile.value,
         () => firmwareFile.value.type === "application/octet-stream" || "This is not a .bin file"
     ]
 
     const configFormRules = [
 
-        () => !!configFormFile.value || "Config form is required",
+        () => !!configFormFile.value,
         () => configFormFile.value.type === "application/json" || "This is not a .json file" 
     ];
 
@@ -55,12 +57,14 @@
 
             if (error.response) {
 
-                alertTitle.value = error.response.status + " " + error.response.statusText + " Error";
+                alertTitle.value = error.response.status + ": " + error.response.statusText;
+                alertText.value = error.response.data.message;
             }
 
             else {
 
                 alertTitle.value = "Upload failed";
+                alertText.value = "Please try the upload again"
             }
 
             name.value = null;
@@ -80,7 +84,7 @@
         @click:close="alert = false"
         type="error"
         :title="alertTitle"
-        text="Please try the upload again."
+        :text="alertText"
     />
 
     <v-card-main>
