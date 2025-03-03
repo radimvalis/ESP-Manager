@@ -113,6 +113,8 @@ esp_err_t mqtt_start(esp_manager_client_handle_t client)
     esp_mqtt_client_config_t mqtt_config = {
 
         .broker.address.uri = client->mqtt_broker_uri,
+        .broker.verification.certificate = client->ca_bundle,
+        .broker.verification.skip_cert_common_name_check = true,
 
         .credentials.username = client->id,
         .credentials.authentication.password = client->mqtt_password,

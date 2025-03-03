@@ -6,6 +6,8 @@ services:
             dockerfile: "./mqtt-broker/Dockerfile"
             target: ${TARGET}
             args:
+                MQTT_BROKER_CRT: ${MQTT_BROKER_CRT}
+                MQTT_BROKER_KEY: ${MQTT_BROKER_KEY}
                 MQTT_ADMIN_USERNAME: ${MQTT_ADMIN_USERNAME}
                 MQTT_ADMIN_PASSWORD: ${MQTT_ADMIN_PASSWORD}
         ports:
@@ -28,6 +30,6 @@ services:
             dockerfile: "./backend/Dockerfile"
             target: ${TARGET}
             args:
-                REVERSE_PROXY_CA_CRT: ${REVERSE_PROXY_CA_CRT}
+                CA_BUNDLE: ${CA_BUNDLE}
         env_file: .env
 

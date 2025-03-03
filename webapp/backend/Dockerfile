@@ -3,7 +3,7 @@
 
 FROM node:20.11-bullseye-slim AS base
 
-ARG REVERSE_PROXY_CA_CRT
+ARG CA_BUNDLE
 
 EXPOSE $BACKEND_PORT
 
@@ -15,8 +15,7 @@ WORKDIR /usr/local/backend
 
 COPY ./backend/package*.json ./
 
-COPY $REVERSE_PROXY_CA_CRT ./ca.crt
-
+COPY $CA_BUNDLE ./ca-bundle.crt
 
 # DEVELOPMENT STAGE
 
@@ -37,7 +36,7 @@ COPY ./backend/src ./src
 
 COPY ./backend/data ./data
 
-COPY $REVERSE_PROXY_CA_CRT ./ca.crt
+COPY $CA_BUNDLE ./ca-bundle.crt
 
 COPY ./shared ../shared
 

@@ -3,8 +3,10 @@ import { connectAsync } from "mqtt";
 
 export default async function getMqtt(config) {
 
-    const client = await connectAsync(config.borkerUrl, {
+    const client = await connectAsync(config.brokerUrl, {
 
+        ca: config.caBundle,
+        rejectUnauthorized: false,
         clientId: "esp-manager",
         username: config.username,
         password: config.password,

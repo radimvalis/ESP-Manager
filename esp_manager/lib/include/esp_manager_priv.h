@@ -44,7 +44,7 @@ struct esp_manager_client {
     char *http_password;
     char *mqtt_password;
     char *mqtt_broker_uri;
-    char *server_crt;
+    char *ca_bundle;
     TaskHandle_t task_handle;
     QueueHandle_t queue_handle;
     esp_mqtt_client_handle_t mqtt_handle;

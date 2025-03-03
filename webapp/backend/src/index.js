@@ -1,5 +1,6 @@
 
 import { endpoint } from "shared";
+import fs from "fs/promises";
 import ApplicationContext from "./logic/index.js";
 import getDb from "./db/index.js";
 import getMqtt from "./mqtt/index.js";
@@ -25,9 +26,12 @@ import start from "./api/index.js";
 
     try {
 
+        const caBundle = await fs.readFile(process.cwd() + "/ca-bundle.crt", "utf8");
+
         const mqttConfig = {
 
-            borkerUrl: "mqtt://mqtt-broker:" + process.env.MQTT_BROKER_PORT,
+            brokerUrl: "mqtts://mqtt-broker:" + process.env.MQTT_BROKER_PORT,
+            caBundle: caBundle,
             username: process.env.MQTT_ADMIN_USERNAME,
             password: process.env.MQTT_ADMIN_PASSWORD
         };
@@ -69,7 +73,7 @@ import start from "./api/index.js";
         path: {
 
             dataDirectoryPath: process.cwd() + "/data",
-            serverCrtPath: process.cwd() + "/ca.crt",
+            caBundlePath: process.cwd() + "/ca-bundle.crt"
         },
 
         models: db.models,

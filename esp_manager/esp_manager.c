@@ -291,8 +291,8 @@ esp_manager_client_handle_t esp_manager_init(void)
     client->mqtt_broker_uri = nvs_get_str_ptr(nvs_handle, "mqtt_broker_uri");
     NULL_CHECK(client->mqtt_broker_uri, goto _init_failed);
 
-    client->server_crt = nvs_get_str_ptr(nvs_handle, "server_crt");
-    NULL_CHECK(client->server_crt, goto _init_failed);
+    client->ca_bundle = nvs_get_str_ptr(nvs_handle, "ca_bundle");
+    NULL_CHECK(client->ca_bundle, goto _init_failed);
 
     nvs_close(nvs_handle);
 
@@ -334,7 +334,7 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
     NULL_CHECK(!client->http_password, free(client->http_password));
     NULL_CHECK(!client->mqtt_password, free(client->mqtt_password));
     NULL_CHECK(!client->mqtt_broker_uri, free(client->mqtt_broker_uri));
-    NULL_CHECK(!client->server_crt, free(client->server_crt));
+    NULL_CHECK(!client->ca_bundle, free(client->ca_bundle));
     NULL_CHECK(!client->task_handle, vTaskDelete(client->task_handle));
     NULL_CHECK(!client->mqtt_handle, esp_mqtt_client_destroy(client->mqtt_handle));
     NULL_CHECK(!client->queue_handle, vQueueDelete(client->queue_handle));

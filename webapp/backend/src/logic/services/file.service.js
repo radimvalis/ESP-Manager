@@ -21,7 +21,7 @@ export default class FileService {
     constructor(config) {
 
         this._dataDirectoryPath = config.path.dataDirectoryPath;
-        this._serverCrtPath = config.path.serverCrtPath;
+        this._caBundlePath = config.path.caBundlePath;
 
         this._brokerUrl = config.url.broker;
 
@@ -165,8 +165,8 @@ export default class FileService {
         configData.mqtt_broker_uri = this._brokerUrl;
         defaultConfigForm.push({ key: "mqtt_broker_uri", type: "data", encoding: "string" });
 
-        configData.server_crt = this._serverCrtPath;
-        defaultConfigForm.push({ key: "server_crt", type: "file", encoding: "string" });
+        configData.ca_bundle = this._caBundlePath;
+        defaultConfigForm.push({ key: "ca_bundle", type: "file", encoding: "string" });
 
         configData.firmware_id = "default";
         defaultConfigForm.push({ key: "firmware_id", type: "data", encoding: "string" });
