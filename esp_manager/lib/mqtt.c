@@ -4,7 +4,7 @@
 
 static char *create_topic_str(esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
 {
-    strcpy(topic_dest, client->mqtt_username);
+    strcpy(topic_dest, client->id);
 
     if (*topic_src != '/') {
 
@@ -114,7 +114,7 @@ esp_err_t mqtt_start(esp_manager_client_handle_t client)
 
         .broker.address.uri = client->mqtt_broker_uri,
 
-        .credentials.username = client->mqtt_username,
+        .credentials.username = client->id,
         .credentials.authentication.password = client->mqtt_password,
 
         .session.keepalive = 10,

@@ -38,9 +38,10 @@ typedef struct {
 
 struct esp_manager_client {
 
+    char *id;
     char *wifi_ssid;
     char *wifi_password;
-    char *mqtt_username;
+    char *http_password;
     char *mqtt_password;
     char *mqtt_broker_uri;
     char *server_crt;

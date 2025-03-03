@@ -153,8 +153,11 @@ export default class FileService {
 
         // Add config which is not part of default config form
 
-        configData.mqtt_username = board.id;
-        defaultConfigForm.push({ key: "mqtt_username", type: "data", encoding: "string" });
+        configData.id = board.id;
+        defaultConfigForm.push({ key: "id", type: "data", encoding: "string" });
+
+        configData.http_password = board.httpPassword;
+        defaultConfigForm.push({ key: "http_password", type: "data", encoding: "string" });
 
         configData.mqtt_password = board.mqttPassword;
         defaultConfigForm.push({ key: "mqtt_password", type: "data", encoding: "string" });

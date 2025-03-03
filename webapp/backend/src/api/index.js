@@ -6,8 +6,9 @@ import cookieParser from "cookie-parser";
 import { endpoint } from "shared";
 
 import multer, { diskStorage } from "multer";
-import authCookieMiddleware from "./middlewares/auth.cookie.middleware.js";
-import refreshCookieMiddleware from "./middlewares/refresh.cookie.middleware.js";
+import authSessionMiddleware from "./middlewares/auth.session.middleware.js";
+import authRefreshMiddleware from "./middlewares/auth.refresh.middleware.js";
+import authBoardMiddleware from "./middlewares/auth.board.middleware.js";
 
 import AuthController from "./controllers/auth.controller.js";
 import UserController from "./controllers/user.controller.js";
@@ -39,22 +40,22 @@ export default function start(context, port) {
 
     app.post(endpoint.auth.logIn(), authController.logIn);
     app.post(endpoint.auth.signUp(), authController.signUp);
-    app.post(endpoint.auth.refreshTokens(), refreshCookieMiddleware(context), authController.refreshTokens);
+    app.post(endpoint.auth.refreshTokens(), authRefreshMiddleware(context), authController.refreshTokens);
+
+    // ============================
+    // Password-protected endpoints
+    // ============================
 
     // File
 
-    app.get(endpoint.files.firmware(), fileController.getFirmware);
-    app.get(endpoint.files.nvs(), fileController.getNVS);
-
-    // Firmware
-
-    app.get(endpoint.firmwares.one(), firmwareController.getOne);
+    app.get(endpoint.files.firmware(),authBoardMiddleware(context), fileController.getFirmware);
+    app.get(endpoint.files.nvs(), authBoardMiddleware(context), fileController.getNVS);
 
     // =========================
     // Token-protected endpoints
     // =========================
 
-    app.use(authCookieMiddleware(context));
+    app.use(authSessionMiddleware(context));
 
     // Auth
 
@@ -84,7 +85,7 @@ export default function start(context, port) {
     app.delete(endpoint.boards.one(), boardController.delete);
 
     // Firmware
-    
+
     app.post(endpoint.firmwares.all(), upload.array("files"), firmwareController.create);
     app.get(endpoint.firmwares.all(), firmwareController.getAll);
     app.get(endpoint.firmwares.one(), firmwareController.getOne);

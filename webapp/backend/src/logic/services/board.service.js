@@ -88,9 +88,10 @@ export default class BoardService {
             throw new ConflictError("This board name already exists");
         }
 
+        const httpPassword = randomBytes(16).toString("hex");
         const mqttPassword = randomBytes(16).toString("hex");
 
-        const newBoard = await this._models.board.create({ name, userId, mqttPassword });
+        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword });
 
         // Create new MQTT client for given board
 
@@ -132,6 +133,23 @@ export default class BoardService {
         const board = await this._getByIdAndUserId(boardId, userId);
 
         return board.toJSON();
+    }
+
+    async getByHttpCredentials(boardId, httpPassword) {
+
+        const board = await this._models.board.findByPk(boardId);
+
+        if (!board) {
+
+            throw new NotFoundError("Board not found");
+        }
+
+        if (board.httpPassword !== httpPassword) {
+
+            throw new InvalidInputError("Wrong password");
+        }
+
+        return board;
     }
 
     async watchAll(userId, updateCb, abortSignal) {
@@ -220,7 +238,7 @@ export default class BoardService {
 
         this._ensureBoardIsReadyForUpdate(board);
 
-        if (board.firmwareStatus !== "default") {
+        if (board.firmwareStatus === "default") {
 
             throw new ConflictError("Update not possible - default firmware is already booted");
         }

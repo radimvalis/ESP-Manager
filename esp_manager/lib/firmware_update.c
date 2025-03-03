@@ -23,6 +23,9 @@ esp_err_t firmware_update(esp_manager_client_handle_t client, const char *firmwa
     esp_http_client_config_t http_config = {
 
         .url = firmware_url,
+        .username = client->id,
+        .password = client->http_password,
+        .auth_type = HTTP_AUTH_TYPE_BASIC,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .cert_pem = client->server_crt,
         .skip_cert_common_name_check = true

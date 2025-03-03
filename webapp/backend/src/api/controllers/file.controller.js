@@ -56,7 +56,7 @@ export default function FileController(context) {
 
     this.getNVS = asyncCatch(async (req, res) => {
 
-        const path = context.file.getNVSPath(req.params.id);
+        const path = context.file.getNVSPath(req.boardId);
 
         res.sendFile(path);
     });

@@ -279,8 +279,11 @@ esp_manager_client_handle_t esp_manager_init(void)
     client->wifi_password = nvs_get_str_ptr(nvs_handle, "wifi_password");
     NULL_CHECK(client->wifi_password, goto _init_failed);
 
-    client->mqtt_username = nvs_get_str_ptr(nvs_handle, "mqtt_username");
-    NULL_CHECK(client->mqtt_username, goto _init_failed);
+    client->id = nvs_get_str_ptr(nvs_handle, "id");
+    NULL_CHECK(client->id, goto _init_failed);
+
+    client->http_password = nvs_get_str_ptr(nvs_handle, "http_password");
+    NULL_CHECK(client->http_password, goto _init_failed);
 
     client->mqtt_password = nvs_get_str_ptr(nvs_handle, "mqtt_password");
     NULL_CHECK(client->mqtt_password, goto _init_failed);
@@ -327,7 +330,8 @@ esp_err_t esp_manager_destroy(esp_manager_client_handle_t client)
 
     NULL_CHECK(!client->wifi_ssid, free(client->wifi_ssid));
     NULL_CHECK(!client->wifi_password, free(client->wifi_password));
-    NULL_CHECK(!client->mqtt_username, free(client->mqtt_username));
+    NULL_CHECK(!client->id, free(client->id));
+    NULL_CHECK(!client->http_password, free(client->http_password));
     NULL_CHECK(!client->mqtt_password, free(client->mqtt_password));
     NULL_CHECK(!client->mqtt_broker_uri, free(client->mqtt_broker_uri));
     NULL_CHECK(!client->server_crt, free(client->server_crt));
