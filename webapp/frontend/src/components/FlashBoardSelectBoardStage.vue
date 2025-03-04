@@ -60,7 +60,7 @@
                                 :style='{ color: "#B00020" }'
                             >
 
-                                No board found
+                                No available board found
 
                             </div>
 

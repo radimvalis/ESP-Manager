@@ -56,6 +56,10 @@
 
             boards.value = await session.api.board.getAll();
 
+            // Filter out offline boards
+
+            boards.value = boards.value.filter((b) => b.isOnline);
+
             currentStage.value = STAGE.SELECT_BOARD;
 
             if (route.query.id) {
