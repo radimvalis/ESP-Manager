@@ -28,9 +28,7 @@
 
         <template v-slot:extension>
 
-            <v-container
-                class="mb-3"
-            >
+            <v-container>
 
                 <v-row>
 
@@ -38,6 +36,7 @@
 
                         <v-tabs
                             fixed-tabs
+                            hide-slider
                             align-tabs="center"
                         >
 
