@@ -18,11 +18,15 @@
 
     <v-empty-state
         headline="Whoops, 404"
-        title="Page not found"
-        text="The page you were looking for does not exist"
-        action-text="Return Home"
-        color="primary"
-        @click:action="returnHome"
-    />
+        text="The page you were looking for does not exist."
+    >
+
+        <v-btn
+            @click="returnHome()"
+            icon="mdi-home"
+            variant="plain"
+        />
+
+    </v-empty-state>
 
 </template>

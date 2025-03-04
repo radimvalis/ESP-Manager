@@ -11,7 +11,6 @@
     import ConnectProgress from "@/components/NewBoardConnectProgress.vue";
     import ConfigureStage from "@/components/NewBoardConfigureStage.vue";
     import RegisterProgress from "@/components/NewBoardRegisterProgress.vue";
-    import NotSupportedInfo from "@/components/NewBoardNotSupportedInfo.vue";
     
     const STAGE = {
 
@@ -229,7 +228,34 @@
         v-else
     >
 
-        <NotSupportedInfo/>
+        <v-empty-state
+            title="Board registration is not possible"
+            text="Try a browser that supports Web Serial API:"
+        >
+
+            <v-btn
+                color="gray"
+                icon="mdi-google-chrome"
+                variant="plain"
+                href="https://www.google.com/chrome/"
+                target="_blank"
+            />
+
+            <v-btn
+                icon="mdi-microsoft-edge"
+                variant="plain"
+                href="https://www.microsoft.com/edge"
+                target="_blank"
+            />
+
+            <v-btn
+                icon="mdi-opera"
+                variant="plain"
+                href="https://www.opera.com/"
+                target="_blank"
+            />
+
+        </v-empty-state>
 
     </template>
 

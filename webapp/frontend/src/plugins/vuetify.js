@@ -71,6 +71,11 @@ const vuetify = createVuetify({
             maxWidth: 600,
             variant: "elevated",
             closable: true
+        },
+        VEmptyState: {
+
+            icon: "mdi-close-circle",
+            color: "error"
         }
     },
     theme: {

@@ -95,8 +95,6 @@
 
     <v-empty-state
         v-if="loadError"
-        icon="mdi-close-circle"
-        color="error"
         title="Firmware not found"
         text="The firmware you were looking for does not exist, or you do not have permission to access it."
     />

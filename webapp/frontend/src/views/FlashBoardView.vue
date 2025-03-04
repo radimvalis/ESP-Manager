@@ -181,8 +181,6 @@
 
     <v-empty-state
         v-if="loadError"
-        icon="mdi-close-circle"
-        color="error"
         title="Board can't be flashed now"
     />
 
