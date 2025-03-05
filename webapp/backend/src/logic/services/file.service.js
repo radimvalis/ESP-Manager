@@ -15,7 +15,6 @@ export default class FileService {
 
     static _FIRMWARE = "firmware.bin";
     static _CONFIG_FORM = "config-form.json";
-
     static _CONFIG_FORM_SCHEMA = "config-form.schema.json";
 
     constructor(config) {
@@ -31,7 +30,7 @@ export default class FileService {
     async init() {
 
         const ajv = new Ajv2019();
-        const schema = await fs.readFile(this._dataDirectoryPath + "/default/" + FileService._CONFIG_FORM_SCHEMA, "utf8");
+        const schema = await fs.readFile(this._defaultsDir + FileService._CONFIG_FORM_SCHEMA, "utf8");
         const schemaAsObject = JSON.parse(schema);
 
         this._validateConfigForm = ajv.compile(schemaAsObject);
@@ -41,7 +40,7 @@ export default class FileService {
 
         const fileExtension = filename === "config-form" ? ".json" : ".bin";
 
-        return this._dataDirectoryPath + "/default/" + filename + fileExtension;
+        return this._defaultsDir + filename + fileExtension;
     }
 
     getDefaultNVSPath(boardId) {
@@ -190,6 +189,11 @@ export default class FileService {
     get _firmwaresDir() {
 
         return this._dataDirectoryPath + "/firmwares/";
+    }
+
+    get _defaultsDir() {
+
+        return this._dataDirectoryPath + "/default/";
     }
 
     _getBoardDir(boardId) {
