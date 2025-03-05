@@ -226,7 +226,7 @@
                 :search="nameFilter"
                 :no-data-text="noDataText"
                 items-per-page-text="Boards per page:"
-                loading-text="Loading boards ..."
+                loading-text=""
                 hover
             >
 

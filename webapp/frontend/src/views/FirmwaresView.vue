@@ -136,7 +136,7 @@
                 :search="nameFilter"
                 :no-data-text="noDataText"
                 items-per-page-text="Firmwares per page:"
-                loading-text="Loading firmwares ..."
+                loading-text=""
                 hover
             >
 
