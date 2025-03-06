@@ -2,7 +2,7 @@
 <script setup>
 
     import { RouterView } from "vue-router";
-    import TheAppBar from "@/components/TheAppBar.vue";
+    import TheNavigation from "@/components/TheNavigation.vue";
 
 </script>
 
@@ -10,7 +10,7 @@
 
     <v-app>
 
-        <TheAppBar/>
+        <TheNavigation/>
 
         <v-main>
 
