@@ -1,5 +1,4 @@
 
-import { errors } from "jose";
 import { Sequelize } from "sequelize";
 
 class InvalidInputError extends Error {
@@ -22,7 +21,6 @@ class AuthorizationError extends Error {
     }
 }
 
-errors.JWTExpired.prototype.statusCode = 401;
 
 class NotFoundError extends Error {
 
