@@ -25,7 +25,7 @@ export default async function getMqtt(config) {
         ]
     };
 
-    await client.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message));
+    await client.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message), { qos: 1 });
 
     return client;
 }
