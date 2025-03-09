@@ -44,20 +44,9 @@ class ConflictError extends Error {
     }
 }
 
-class NVSGenerationError extends Error {
-
-    constructor(...params) {
-
-        super(...params);
-        this.name = "NVSGenerationError";
-        this.statusCode = 500;
-    }    
-}
-
 export {
     InvalidInputError,
     AuthorizationError,
     NotFoundError,
-    ConflictError,
-    NVSGenerationError
+    ConflictError
 };

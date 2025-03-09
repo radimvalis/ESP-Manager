@@ -4,7 +4,6 @@ import Ajv2019 from "ajv/dist/2019.js";
 import { InvalidInputError } from "../../utils/errors.js";
 import { spawn } from "child_process";
 import { once } from "events";
-import { NVSGenerationError } from "../../utils/errors.js";
 
 export default class FileService {
 
@@ -229,9 +228,17 @@ export default class FileService {
 
         configForm.forEach(entry => {
 
-            const value = entry.encoding === "string" && entry.type === "data" ? FileService._escapeCSVString(configData[entry.key]) : configData[entry.key];
+            if (entry.isRequired && typeof configData[entry.key] === "undefined") {
 
-            content += `${entry.key},${entry.type},${entry.encoding},${value}\n`;
+                throw new InvalidInputError(`${entry.label} must be defined`);
+            }
+
+            if (typeof configData[entry.key] !== "undefined") {
+
+                const value = entry.encoding === "string" && entry.type === "data" ? FileService._escapeCSVString(configData[entry.key]) : configData[entry.key];
+
+                content += `${entry.key},${entry.type},${entry.encoding},${value}\n`;
+            }
         });
 
         await fs.writeFile(outputPath, content);
@@ -258,7 +265,7 @@ export default class FileService {
 
         if (exitCode !== 0) {
 
-            throw new NVSGenerationError();
+            throw new InvalidInputError("Configuration is not valid");
         }
     }
 }

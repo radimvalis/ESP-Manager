@@ -1,7 +1,7 @@
 
 <script setup>
 
-    import { onMounted } from "vue";
+    import { onMounted, watch } from "vue";
     import OptionsInput from "@/components/ConfigFormOptionsInput.vue";
     import ConfigLabel from "@/components/ConfigFormInputLabel.vue";
     import Tooltip from "@/components/ConfigFormInputTooltip.vue";
@@ -22,7 +22,7 @@
     const validationRules = [
 
         () => props.isRequired ? (model.value !== "") : true,
-        (x) => regExp ? ( !regExp.test(x) ? "This input does not match the pattern: " + props.pattern : true ) : true
+        (x) => regExp && model.value !== "" ? ( !regExp.test(x) ? "This input does not match the pattern: " + props.pattern : true ) : true
     ];
 
     onMounted(() => {
@@ -39,6 +39,11 @@
                 regExp = null;
             }
         }
+    });
+
+    watch(model, (newValue) => {
+
+        model.value = newValue === "" ? undefined : newValue;
     });
 
 </script>

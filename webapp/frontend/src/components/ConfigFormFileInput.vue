@@ -1,6 +1,7 @@
 
 <script setup>
 
+    import { watch } from "vue";
     import ConfigLabel from "@/components/ConfigFormInputLabel.vue";
     import Tooltip from "@/components/ConfigFormInputTooltip.vue";
 
@@ -19,6 +20,11 @@
         () => props.isRequired ? (model.value !== null) : true,
         () => props.format && model.value ? (props.format !== model.value.type ? "This is not " + props.format + " file" : true) : true
     ]
+
+    watch(model, (newValue) => {
+
+        model.value = newValue === null ? undefined : newValue;
+    });
 
 </script>
 

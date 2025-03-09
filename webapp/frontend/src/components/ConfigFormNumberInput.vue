@@ -46,6 +46,11 @@
         }
     });
 
+    watch(model, (newValue) => {
+
+        model.value = newValue === "" ? undefined : newValue; 
+    });
+
     function validateBeforeInput(event) {
 
         if (event.inputType === "insertFromPaste" && !/^0$|^-?([1-9]\d*)$/.test(event.data)) {

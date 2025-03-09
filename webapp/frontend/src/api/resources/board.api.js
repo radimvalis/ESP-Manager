@@ -47,7 +47,10 @@ export default class BoardApi {
 
         for (let [key, value] of Object.entries(configData)) {
 
-            formData.append(key, value);
+            if (typeof value !== "undefined") {
+
+                formData.append(key, value);
+            }
         }
 
         return await this._httpClient.put(endpoint.boards.one(boardId), formData, {
