@@ -43,7 +43,7 @@
             v-if="stage === 1"
         >
 
-            Erasing flash ...
+            Erasing flash
 
         </v-card-title>
 
@@ -51,10 +51,16 @@
             v-else
         >
 
-            Flashing board ...
+            Flashing board
 
-        </v-card-title> 
+        </v-card-title>
+
+        <v-card-subtitle>
+
+            Do not leave this page
+
+        </v-card-subtitle>
         
     </v-card-info>
-    
+
 </template>
