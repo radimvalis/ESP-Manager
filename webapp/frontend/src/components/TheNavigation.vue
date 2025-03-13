@@ -11,6 +11,8 @@
 
     async function logOut() {
 
+        window.dispatchEvent(new Event("logout"));
+
         await useSessionStore().api.auth.logOut();
 
         useSessionStore().logOut();

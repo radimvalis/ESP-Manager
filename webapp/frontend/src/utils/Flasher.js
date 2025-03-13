@@ -6,9 +6,8 @@ export default class Flasher {
     _device = null;
     _transport = null;
     _loader = null;
-    _chip = null;
 
-    constructor(baudRate = 115200) {
+    constructor(baudRate = 921600) {
 
         this._baudRate = baudRate;
     }
@@ -20,7 +19,7 @@ export default class Flasher {
 
     async connect() {
 
-        this._transport = new Transport(this._device, true);
+        this._transport = new Transport(this._device, false);
 
         const loaderOptions = {
 
@@ -29,7 +28,8 @@ export default class Flasher {
         };
 
         this._loader = new ESPLoader(loaderOptions);
-        this._chip = await this._loader.main();
+
+        await this._loader.main();
     }
 
     async eraseFlash() {
@@ -63,10 +63,21 @@ export default class Flasher {
         };
 
         await this._loader.writeFlash(flashOptions);
+        await this._loader.after();
     }
 
-    async close() {
+    async disconnect() {
 
-        await this._device.close();
-    }
+        if (this._transport) {
+
+            await this._transport.disconnect();
+        }
+   }
+
+   cleanUp() {
+
+        this._device = null;
+        this._transport = null;
+        this._loader = null;
+   }
 }

@@ -2,7 +2,7 @@
 <script setup>
 
     import { ref, onMounted } from "vue";
-    import { useRouter } from "vue-router";
+    import { useRouter, onBeforeRouteLeave } from "vue-router";
     import { useSessionStore } from "@/stores/session";
     import Flasher from "@/utils/Flasher";
     import ConfigForm from "@/components/ConfigForm.vue";
@@ -15,7 +15,9 @@
     const STAGE = {
 
         CONNECT: 1,
-        CONFIGURE: 2
+        CONFIGURE: 2,
+        REGISTER: 3,
+        FINISHED: 4
     };
 
     const REGISTER_PROGRESS_STAGE = {
@@ -27,11 +29,14 @@
     const stages = [
 
         { title: "Connect", value: STAGE.CONNECT },
-        { title: "Configure", value: STAGE.CONFIGURE }
+        { title: "Configure", value: STAGE.CONFIGURE },
+        { title: "Register", value: STAGE.REGISTER }
     ];
 
     const router = useRouter();
     const session = useSessionStore();
+
+    let isRoutePushed = false;
 
     const navigatorRef = ref(navigator);
 
@@ -60,15 +65,20 @@
         if (navigator.serial) {
 
             navigator.serial.addEventListener("disconnect", () => {
+
+                flasher.cleanUp();
         
-                isConnecting.value = false;
-                isRegistering.value = false;
+                if (currentStage.value === STAGE.CONFIGURE) {
 
-                currentStage.value = STAGE.CONNECT;
+                    isConnecting.value = false;
+                    isRegistering.value = false;
 
-                alertTitle.value = "Board has been disconnected";
-                alertText.value = "Please unplug the board and plug it back in, then try the registration again.";
-                alert.value = true;
+                    currentStage.value = STAGE.CONNECT;
+
+                    alertTitle.value = "Board has been disconnected";
+                    alertText.value = null;
+                    alert.value = true;
+                }
             });
 
             configFormEntries.value = await session.api.file.getDefaultConfigForm();
@@ -81,6 +91,29 @@
             });
         }
     });
+
+    window.addEventListener("logout", onLogOut);
+
+    onBeforeRouteLeave(async () => {
+
+        isRoutePushed = true;
+
+        await flasher.disconnect();
+
+        flasher.cleanUp();
+
+        window.removeEventListener("logout", onLogOut);
+    });
+
+    async function onLogOut() {
+        
+        try {
+
+            await session.api.board.delete(board.id);
+        }
+
+        catch {}
+    }
 
     async function connect() {
 
@@ -103,7 +136,7 @@
 
             isConnecting.value = false;
 
-            alertTitle.value = "Board connection failed";
+            alertTitle.value = "Board failed to connect";
             alertText.value = "Please unplug the board and plug it back in, then try the registration again.";
             alert.value = true;
         }
@@ -116,6 +149,8 @@
             const { valid } = await form.value.form.validate();
 
             if (valid) {
+
+                currentStage.value = STAGE.REGISTER;
 
                 board = await session.api.board.create(configData.value);
 
@@ -139,7 +174,7 @@
 
                 await flasher.program(defaultApp, (writtenPercentage) => flashProgress.value = writtenPercentage);
 
-                await flasher.close();
+                currentStage.value = STAGE.FINISHED;
 
                 router.push({ name: "BoardDetail", params: { id: board.id }, query: { new: true } });
             }
@@ -147,17 +182,29 @@
 
         catch(error) {
 
+            try {
+
+                await session.api.board.delete(board.id);
+            }
+
+            catch {}
+
+            if (isRoutePushed) {
+
+                // Don't show error message if location is about to change
+
+                return;
+            }
+
             if (error.response) {
 
                 alertTitle.value = error.response.status + ": " + error.response.statusText;
                 alertText.value = error.response.data.message;
+
+                currentStage.value = STAGE.CONFIGURE;
             }
 
             else {
-
-                await flasher.close();
-
-                await session.api.board.delete(board.id);
 
                 alertTitle.value = "Registration failed";
                 alertText.value = null;

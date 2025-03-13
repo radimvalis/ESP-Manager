@@ -55,8 +55,6 @@
         }
     ];
 
-    onBeforeRouteLeave(() => session.api.board.closeWatchStream());
-
     onMounted(async () => {
 
         try {
@@ -77,6 +75,8 @@
 
         isLoading.value = false;
     });
+
+    onBeforeRouteLeave(() => session.api.board.closeWatchStream());
 
 </script>
 

@@ -16,7 +16,7 @@
 
         <v-card-title>
 
-            Connecting board ...
+            Connecting board
 
         </v-card-title>
 
