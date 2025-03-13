@@ -12,6 +12,7 @@ export default defineConfig({
     ],
     server: {
         port: parseInt(process.env.FRONTEND_PORT),
+        allowedHosts: ["frontend"],
     },
     resolve: {
         alias: {
