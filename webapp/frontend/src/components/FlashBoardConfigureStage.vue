@@ -3,8 +3,6 @@
     const CLICK_FLASH_EVENT = "click-flash";
     const CLICK_BACK_EVENT = "click-back";
 
-    defineProps({ firmware: Object });
-
     defineEmits([ CLICK_FLASH_EVENT, CLICK_BACK_EVENT ]);
 
 </script>

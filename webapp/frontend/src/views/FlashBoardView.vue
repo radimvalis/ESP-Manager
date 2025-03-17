@@ -95,22 +95,19 @@
 
             alert.value = false;
 
-            const data = await Promise.all([
-
-                session.api.firmware.getOne(firmwareId.value),
-                session.api.file.getConfigForm(firmwareId.value)
-            ]);
-
-            firmware.value = data[0];
-
-            configFormEntries.value = data[1];
+            firmware.value = await session.api.firmware.getOne(firmwareId.value);
 
             configData.value = {};
 
-            configFormEntries.value.forEach((entry) => {
+            if (firmware.value.hasConfig) {
 
-                configData.value[entry.key] = undefined;
-            });
+                configFormEntries.value = await session.api.file.getConfigForm(firmwareId.value);
+
+                configFormEntries.value.forEach((entry) => {
+
+                    configData.value[entry.key] = undefined;
+                });
+            }
 
             currentStage.value = STAGE.CONFIGURE;
         }
@@ -222,7 +219,6 @@
 
         <ConfigureFirmware
             v-if="currentStage === STAGE.CONFIGURE"
-            :firmware="firmware"
             @click-flash="flash"
             @click-back="resetFirmwareSelection"
         >
@@ -232,6 +228,14 @@
                 v-model="configData"
                 :entries="configFormEntries"
             />
+
+            <div
+                v-if="!firmware.hasConfig"
+            >
+
+                No configuration needed. Click <b>FLASH</b> to start the registration.
+
+            </div>
 
         </ConfigureFirmware>
 

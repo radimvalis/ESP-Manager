@@ -142,9 +142,33 @@
 
             <v-card-text>
 
+                <v-container>
+
+                    <v-row>
+
+                        <v-col
+                            :cols="6"
+                        >
+
+                            <b>Configuration</b>
+
+                        </v-col>
+
+                        <v-col>
+
+                            {{ firmware.hasConfig ? "yes" : "no" }}
+
+                        </v-col>
+
+                    </v-row>
+                
+                </v-container>
+
+                <v-divider/>
+
                 <v-form
                     v-model="isFormValid"
-                    class="mb-4"
+                    class="mt-8 mb-4"
                 >
 
                     <v-file-input

@@ -8,7 +8,7 @@ export default class FirmwareService {
         this._models = models;
     }
 
-    async create(name, userId) {
+    async create(name, userId, hasConfig) {
 
         // Validate input
 
@@ -36,7 +36,7 @@ export default class FirmwareService {
             throw new ConflictError("This firmware name already exists");
         }
 
-        const newFirmware = await this._models.firmware.create({ name, userId });
+        const newFirmware = await this._models.firmware.create({ name, userId, hasConfig });
 
         return newFirmware.toJSON();        
     }

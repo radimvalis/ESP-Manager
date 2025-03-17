@@ -192,9 +192,13 @@ export default class BoardService {
 
             firmware_id: firmware.id,
             version: firmware.version,
-            firmware_url: this._serverUrl + "/api" + endpoint.files.firmware(firmware.id),
-            config_url: this._serverUrl + "/api" + endpoint.files.nvs(board.id)
+            firmware_url: this._serverUrl + "/api" + endpoint.files.firmware(firmware.id)
         };
+
+        if (firmware.hasConfig) {
+
+            message.config_url = this._serverUrl + "/api" + endpoint.files.nvs(board.id);
+        }
 
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
 

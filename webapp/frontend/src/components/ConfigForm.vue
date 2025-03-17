@@ -5,6 +5,7 @@
     import TextInput from "@/components/ConfigFormTextInput.vue";
     import FileInput from "@/components/ConfigFormFileInput.vue";
     import NumberInput from "@/components/ConfigFormNumberInput.vue";
+    import RequiredFieldsInfo from "@/components/RequiredFieldsInfo.vue";
 
     const configData = defineModel({ type: Object });
 
@@ -55,13 +56,9 @@
 
         </template>
 
-        <p
-            class="text-medium-emphasis"
-        >
-
-            Fields marked with an <span :style='{ color: "#B00020" }'>*</span> are required.
-
-        </p>
+        <RequiredFieldsInfo
+            v-if="entries"
+        />
 
     </v-form>
 

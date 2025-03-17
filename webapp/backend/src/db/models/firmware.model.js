@@ -23,6 +23,12 @@ export default (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 defaultValue: 1,
                 allowNull: false
+            },
+            hasConfig: {
+
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+                allowNull: false
             }
         }
     );

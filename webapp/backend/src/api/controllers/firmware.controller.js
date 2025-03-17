@@ -5,7 +5,9 @@ export default function FirmwareController(context) {
 
     this.create = asyncCatch(async (req, res) => {
 
-        const firmware = await context.firmware.create(req.body.name, req.userId);
+        const hasConfig = typeof req.files[1] !== "undefined";
+
+        const firmware = await context.firmware.create(req.body.name, req.userId, hasConfig);
 
         await context.file.createFirmwareDir(firmware.id);
 
@@ -14,7 +16,7 @@ export default function FirmwareController(context) {
             await Promise.all([
 
                 context.file.saveFirmware(firmware.id, req.files[0]),
-                context.file.saveConfigForm(firmware.id, req.files[1])
+                hasConfig ? context.file.saveConfigForm(firmware.id, req.files[1]) : Promise.resolve()
             ]);
         }
 

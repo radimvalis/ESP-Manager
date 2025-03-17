@@ -4,6 +4,8 @@
     import { ref } from "vue";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
+    import ConfigLabel from "@/components/ConfigFormInputLabel.vue";
+    import RequiredFieldsInfo from "@/components/RequiredFieldsInfo.vue";
 
     const router = useRouter();
     const session = useSessionStore();
@@ -35,8 +37,7 @@
 
     const configFormRules = [
 
-        () => !!configFormFile.value,
-        () => configFormFile.value.type === "application/json" || "This is not a .json file" 
+        () => configFormFile.value ? configFormFile.value.type === "application/json" || "This is not a .json file" : true
     ];
 
     async function upload() {
@@ -106,20 +107,40 @@
                 <v-text-field
                     v-model="name"
                     class="mt-2"
-                    label="Firmware name"
                     variant="outlined"
                     density="compact"
                     :rules="nameRules"
-                />
+                >
+
+                    <template #label>
+
+                        <ConfigLabel
+                            text="Firmware name"
+                            is-required
+                        />
+
+                    </template>
+
+                </v-text-field>
 
                 <v-file-input
                     v-model="firmwareFile"
                     class="mt-2"
-                    label="Firmware file"
                     variant="outlined"
                     density="compact"
                     :rules="firmwareRules"
-                />
+                >
+
+                    <template #label>
+
+                        <ConfigLabel
+                            text="Firmware file"
+                            is-required
+                        />
+
+                    </template>
+
+                </v-file-input>
 
                 <v-file-input
                     v-model="configFormFile"
@@ -129,6 +150,8 @@
                     density="compact"
                     :rules="configFormRules"
                 />
+
+                <RequiredFieldsInfo/>
 
             </v-form>
 
