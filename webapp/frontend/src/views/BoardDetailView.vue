@@ -42,7 +42,69 @@
 
             board.value = await session.api.board.getOne(route.params.id);
 
-            const onMessage = (updatedBoard) => board.value = updatedBoard;
+            const onMessage = (updatedBoard) => {
+
+                if (!updatedBoard.isBeingUpdated && board.value.isBeingUpdated) {
+
+                    if (!updatedBoard.firmwareId && !board.value.firmwareId) {
+
+                        // Flash fail
+
+                        alertType.value = "error";
+                        alertTitle.value = "Firmware flashing failed";
+                    }
+
+                    else if (updatedBoard.firmwareId && !board.value.firmwareId) {
+
+                        // Flash ok
+
+                        alertType.value = "success";
+                        alertTitle.value = updatedBoard.firmware.name + " flashed successfully";
+                    }
+                    
+                    else if (!updatedBoard.firmwareId && board.value.firmwareId) {
+
+                        // Boot default ok
+
+                        alertType.value = "success";
+                        alertTitle.value = "Default app booted successfully"
+                    }
+
+                    else if (updatedBoard.firmwareId && board.value.firmwareId) {
+
+                        if (updatedBoard.firmwareId !== board.value.firmwareId) {
+
+                            // Flash ok
+
+                            alertType.value = "success";
+                            alertTitle.value = updatedBoard.firmware.name + " flashed successfully";
+                        }
+
+                        else {
+
+                            if (updatedBoard.firmwareVersion > board.value.firmwareVersion) {
+
+                                // Update ok
+
+                                alertType.value = "success";
+                                alertTitle.value = "Update to version " + updatedBoard.firmwareVersion + " succeeded";
+                            }
+
+                            else {
+
+                                // Update / boot default fail
+
+                                alertType.value = "error";
+                                alertTitle.value = "Update failed";
+                            }
+                        }
+                    }
+
+                    alert.value = true;
+                }
+
+                board.value = updatedBoard
+            };
 
             session.api.board.openWatchOneStream(board.value.id, onMessage);
         }
