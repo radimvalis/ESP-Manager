@@ -188,7 +188,6 @@ static void handle_run_state(esp_manager_client_handle_t client)
         }
 
         cJSON_Delete(update_data);
-        cJSON_free(update_data);
     }
 
     else if (event.id == EVENT_BOOT_DEFAULT) {
