@@ -87,9 +87,25 @@ export default class FirmwareService {
         await firmware.destroy();
     }
 
-    async _getByIdAndUserId(firmwareId, userId) {
+    async tryForceDelete(firmwareId) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId);
+        const firmware = await this._models.firmware.findByPk(firmwareId, { paranoid: false });
+
+        // Must be soft deleted and must not be flashed
+
+        if (!firmware || firmware.deletedAt === null || await this._isFlashed(firmwareId)) {
+
+            return false;
+        }
+
+        await firmware.destroy({ force: true });
+
+        return true;
+    }
+
+    async _getByIdAndUserId(firmwareId, userId, paranoid=true) {
+
+        const firmware = await this._models.firmware.findByPk(firmwareId, { paranoid });
 
         if (!firmware || firmware.userId !== userId) {
 
@@ -97,5 +113,10 @@ export default class FirmwareService {
         }
 
         return firmware;
+    }
+
+    async _isFlashed(firmwareId) {
+
+        return (await this._models.board.count({ where: { firmwareId } })) > 0;
     }
 }

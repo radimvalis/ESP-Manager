@@ -5,50 +5,6 @@ import { boardUpdateType } from "shared";
 
 export default function BoardController(context) {
 
-    const _setupSSEConnection = (res, abortController) => {
-
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Connection", "keep-alive");
-        res.flushHeaders();
-
-        res.on("close", () => {
-
-            abortController.abort();
-
-            res.end();
-        });
-    };
-
-    const _flash = async (req, res) => {
-
-        const firmware = await context.firmware.getOne(req.body.firmwareId);
-
-        if (firmware.hasConfig) {
-
-            req.files.forEach(f => req.body[f.fieldname] = f.path);
-
-            await context.file.createNVS(req.body, req.body.firmwareId, req.params.id);
-        }
-
-        const board = await context.board.flash(req.params.id, req.userId, firmware);
-
-        res.json(board).end();
-    };
-
-    const _updateFirmware = async (req, res) => {
-
-        const board = await context.board.updateFirmware(req.params.id, req.userId);
-
-        res.json(board).end();
-    };
-
-    const _bootDefaultFirmware = async (req, res) => {
-
-        const board = await context.board.bootDefaultFirmware(req.params.id, req.userId);
-
-        res.json(board).end();
-    };
-
     this.create = asyncCatch(async (req, res) => {
 
         const board = await context.board.create(req.body.name, req.userId);
@@ -107,38 +63,98 @@ export default function BoardController(context) {
 
     this.update = asyncCatch(async (req, res) => {
 
+        const firmwareId = (await context.board.getOne(req.params.id, req.userId)).firmwareId;
+
         switch(req.body.type) {
 
             case boardUpdateType.flashBoard:
 
                 await _flash(req, res);
 
-                return;
+                break;
 
             case boardUpdateType.updateFirmware:
 
                 await _updateFirmware(req, res);
 
-                return;
+                break;
 
             case boardUpdateType.bootDefaultFirmware:
 
                 await _bootDefaultFirmware(req, res);
 
-                return;
+                break;
 
             default:
 
                 throw new InvalidInputError("Unknown update type");
         }
+
+        await this._tryForceDeleteFirmware(firmwareId);
     });
 
     this.delete = asyncCatch(async (req, res) => {
+
+        const firmwareId = (await context.board.getOne(req.params.id, req.userId)).firmwareId;
 
         await context.board.delete(req.params.id, req.userId);
 
         await context.file.deleteBoardDir(req.params.id);
 
+        await this._tryForceDeleteFirmware(firmwareId);
+
         res.status(200).end();
     });
+
+    const _setupSSEConnection = (res, abortController) => {
+
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Connection", "keep-alive");
+        res.flushHeaders();
+
+        res.on("close", () => {
+
+            abortController.abort();
+
+            res.end();
+        });
+    };
+
+    const _flash = async (req, res) => {
+
+        const firmware = await context.firmware.getOne(req.body.firmwareId);
+
+        if (firmware.hasConfig) {
+
+            req.files.forEach(f => req.body[f.fieldname] = f.path);
+
+            await context.file.createNVS(req.body, req.body.firmwareId, req.params.id);
+        }
+
+        const board = await context.board.flash(req.params.id, req.userId, firmware);
+
+        res.json(board).end();
+    };
+
+    const _updateFirmware = async (req, res) => {
+
+        const board = await context.board.updateFirmware(req.params.id, req.userId);
+
+        res.json(board).end();
+    };
+
+    const _bootDefaultFirmware = async (req, res) => {
+
+        const board = await context.board.bootDefaultFirmware(req.params.id, req.userId);
+
+        res.json(board).end();
+    };
+
+    this._tryForceDeleteFirmware = async (firmwareId) => {
+
+        if (await context.firmware.tryForceDelete(firmwareId)) {
+
+            await context.file.deleteFirmwareDir(firmwareId);
+        }
+    }
 }

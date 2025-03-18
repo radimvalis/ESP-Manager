@@ -71,7 +71,10 @@ export default function FirmwareController(context) {
 
         await context.firmware.delete(req.params.id, req.userId);
 
-        await context.file.deleteFirmwareDir(req.params.id);
+        if (await context.firmware.tryForceDelete(req.params.id)) {
+
+            await context.file.deleteFirmwareDir(req.params.id);
+        }
 
         res.status(200).end();
     });

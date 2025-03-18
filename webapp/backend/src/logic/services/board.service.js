@@ -109,7 +109,8 @@ export default class BoardService {
 
                 {
                     model: this._models.firmware,
-                    attributes:  [ "version" ]
+                    attributes:  [ "version" ],
+                    paranoid: false
                 }
             ],
             attributes: [ "id", "name", "isOnline", "firmwareVersion", "firmwareStatus" ]
@@ -172,7 +173,7 @@ export default class BoardService {
 
         const listener = async () => {
 
-            const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
+            const board = await this._getByIdAndUserId(boardId, userId);
 
             updateCb(board.toJSON());
         };
@@ -267,7 +268,7 @@ export default class BoardService {
 
     async _getByIdAndUserId(boardId, userId) {
 
-        const board = await this._models.board.findByPk(boardId, { include: [ this._models.firmware ] });
+        const board = await this._models.board.findByPk(boardId, { include: [ { model: this._models.firmware, paranoid: false } ] });
 
         if (!board || board.userId !== userId) {
 
