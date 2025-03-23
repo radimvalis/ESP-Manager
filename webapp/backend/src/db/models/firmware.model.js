@@ -29,6 +29,12 @@ export default (sequelize, DataTypes) => {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
                 allowNull: false
+            },
+            sizeB: {
+
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+                allowNull: false
             }
         },
         {

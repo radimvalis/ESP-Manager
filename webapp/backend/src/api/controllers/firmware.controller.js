@@ -7,7 +7,7 @@ export default function FirmwareController(context) {
 
         const hasConfig = typeof req.files[1] !== "undefined";
 
-        const firmware = await context.firmware.create(req.body.name, req.userId, hasConfig);
+        let firmware = await context.firmware.create(req.body.name, req.userId, hasConfig);
 
         await context.file.createFirmwareDir(firmware.id);
 
@@ -18,6 +18,10 @@ export default function FirmwareController(context) {
                 context.file.saveFirmware(firmware.id, req.files[0]),
                 hasConfig ? context.file.saveConfigForm(firmware.id, req.files[1]) : Promise.resolve()
             ]);
+
+            const sizeB = req.files[0].size;
+
+            firmware = await context.firmware.setSizeB(firmware.id, req.userId, sizeB);
         }
 
         catch(e) {
@@ -50,11 +54,13 @@ export default function FirmwareController(context) {
 
     this.update = asyncCatch(async (req, res) => {
 
-        const updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId, req.userId);
+        let updatedFirmware = await context.firmware.incrementVersion(req.body.firmwareId, req.userId);
 
         try {
 
             await context.file.saveFirmware(updatedFirmware.id, req.file);
+
+            updatedFirmware = await context.firmware.setSizeB(updatedFirmware.id, req.userId, req.file.size);
         }
 
         catch(e) {

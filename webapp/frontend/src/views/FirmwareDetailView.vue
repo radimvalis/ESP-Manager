@@ -64,7 +64,7 @@
         catch(error) {
 
             alertType.value = "error";
-            alertTitle.value = "Update to version " + firmware.value.version + " failed";
+            alertTitle.value = "Update to version " + (firmware.value.version + 1) + " failed";
         }
 
         updatedFirmwareFile.value = null;
@@ -143,6 +143,24 @@
             <v-card-text>
 
                 <v-container>
+
+                    <v-row>
+
+                        <v-col
+                            :cols="6"
+                        >
+
+                            <b>Size</b>
+
+                        </v-col>
+
+                        <v-col>
+
+                            {{ (firmware.sizeB / (1024 * 1024)).toFixed(2) + " MiB (" + firmware.sizeB + ")" }}
+
+                        </v-col>
+
+                    </v-row>
 
                     <v-row>
 
