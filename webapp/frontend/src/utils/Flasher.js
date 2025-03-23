@@ -32,6 +32,11 @@ export default class Flasher {
         await this._loader.main();
     }
 
+    async getFlashSizeMB() {
+
+        return await this._loader.getFlashSize() / 1024;
+    }
+
     async eraseFlash() {
 
         await this._loader.eraseFlash();
@@ -50,7 +55,7 @@ export default class Flasher {
         const flashOptions = {
 
             fileArray: fileArray,
-            flashSize: "8MB",
+            flashSize: "keep",
             eraseAll: false,
             compress: true,
             reportProgress: (fileIndex, written, total) => {

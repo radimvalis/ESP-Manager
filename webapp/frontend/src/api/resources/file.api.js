@@ -17,16 +17,16 @@ export default class FileApi {
         return FileApi._convertArrayBufferToString(response);
     }
 
-    async getDefaultPartitionTable() {
+    async getDefaultPartitionTable(boardId) {
 
-        const response = await this._httpClient.get(endpoint.files.default.partitionTable(), FileApi._binFileRequestConfig);
+        const response = await this._httpClient.get(endpoint.files.default.partitionTable(boardId), FileApi._binFileRequestConfig);
 
         return FileApi._convertArrayBufferToString(response);
     }
 
-    async getDefaultBootloader() {
+    async getDefaultBootloader(boardId) {
 
-        const response = await this._httpClient.get(endpoint.files.default.bootloader(), FileApi._binFileRequestConfig);
+        const response = await this._httpClient.get(endpoint.files.default.bootloader(boardId), FileApi._binFileRequestConfig);
 
         return FileApi._convertArrayBufferToString(response);
     }

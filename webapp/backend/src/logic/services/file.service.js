@@ -42,6 +42,26 @@ export default class FileService {
         return this._defaultsDir + filename + fileExtension;
     }
 
+    getDefaultFirmwarePath() {
+
+        return this._defaultsDir + FileService._FIRMWARE;
+    }
+
+    getDefaultConfigFormPath() {
+
+        return this._defaultsDir + FileService._CONFIG_FORM;
+    }
+
+    getDefaultPartitionTablePath(flashSizeMB) {
+
+        return this._defaultPartitionTablesDir + "partition_table_" + flashSizeMB + "MB.bin";
+    }
+
+    getDefaultBootloaderPath(flashSizeMB) {
+
+        return this._defaultBootloadersDir + "bootloader_" + flashSizeMB + "MB.bin";
+    }
+
     getDefaultNVSPath(boardId) {
 
         return this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
@@ -194,6 +214,16 @@ export default class FileService {
 
         return this._dataDirectoryPath + "/default/";
     }
+
+    get _defaultBootloadersDir() {
+
+        return this._defaultsDir + "bootloader/";
+    }
+
+    get _defaultPartitionTablesDir() {
+
+        return this._defaultsDir + "partition_table/";
+    }    
 
     _getBoardDir(boardId) {
 

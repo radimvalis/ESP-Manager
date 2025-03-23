@@ -150,6 +150,10 @@
 
             if (valid) {
 
+                const flashSizeMB = await flasher.getFlashSizeMB();
+
+                configData.value.flashSizeMB = flashSizeMB;
+
                 currentStage.value = STAGE.REGISTER;
 
                 board = await session.api.board.create(configData.value);
@@ -163,8 +167,8 @@
 
                     flasher.eraseFlash(),
                     session.api.file.getDefaultFirmware(),
-                    session.api.file.getDefaultBootloader(),
-                    session.api.file.getDefaultPartitionTable(),
+                    session.api.file.getDefaultBootloader(board.id),
+                    session.api.file.getDefaultPartitionTable(board.id),
                     session.api.file.getDefaultNVS(board.id)
                 ]);
 

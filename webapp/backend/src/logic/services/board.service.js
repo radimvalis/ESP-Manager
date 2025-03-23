@@ -60,7 +60,7 @@ export default class BoardService {
         });
     }
 
-    async create(name, userId) {
+    async create(name, userId, flashSizeMB) {
 
         // Validate input
 
@@ -91,7 +91,7 @@ export default class BoardService {
         const httpPassword = randomBytes(16).toString("hex");
         const mqttPassword = randomBytes(16).toString("hex");
 
-        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword });
+        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword, flashSizeMB });
 
         // Create new MQTT client for given board
 

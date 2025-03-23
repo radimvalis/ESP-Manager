@@ -40,6 +40,11 @@ export default (sequelize, DataTypes) => {
                 defaultValue: false,
                 allowNull: false
             },
+            flashSizeMB: {
+
+                type: DataTypes.INTEGER,
+                allowNull: false
+            },
             firmwareVersion: {
 
                 type: DataTypes.INTEGER

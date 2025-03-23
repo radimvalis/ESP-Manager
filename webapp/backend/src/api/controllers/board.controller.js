@@ -7,7 +7,7 @@ export default function BoardController(context) {
 
     this.create = asyncCatch(async (req, res) => {
 
-        const board = await context.board.create(req.body.name, req.userId);
+        const board = await context.board.create(req.body.name, req.userId, req.body.flashSizeMB);
 
         try {
 

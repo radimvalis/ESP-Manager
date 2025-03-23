@@ -12,21 +12,25 @@ export default function FileController(context) {
 
     this.getDefaultConfigForm = asyncCatch(async (req, res) => {
 
-        const path = context.file.getDefaultPath("config-form");
+        const path = context.file.getDefaultConfigFormPath();
 
         res.sendFile(path);
     });
 
     this.getDefaultBootloader = asyncCatch(async (req, res) => {
 
-        const path = context.file.getDefaultPath("bootloader");
+        const board = await context.board.getOne(req.params.id, req.userId);
+
+        const path = context.file.getDefaultBootloaderPath(board.flashSizeMB);
 
         res.sendFile(path);
     });
 
     this.getDefaultPartitionTable = asyncCatch(async (req, res) => {
 
-        const path = context.file.getDefaultPath("partition-table");
+        const board = await context.board.getOne(req.params.id, req.userId);
+
+        const path = context.file.getDefaultPartitionTablePath(board.flashSizeMB);
 
         res.sendFile(path);
     });
