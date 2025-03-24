@@ -2,6 +2,7 @@
 import fs from "fs/promises";
 import Ajv2019 from "ajv/dist/2019.js";
 import { InvalidInputError } from "../../utils/errors.js";
+import firmwareSizeLimit from "../../utils/limits.js";
 import { spawn } from "child_process";
 import { once } from "events";
 
@@ -89,6 +90,11 @@ export default class FileService {
         if (firmwareFile.mimetype !== "application/octet-stream") {
 
             throw new InvalidInputError("The firmware file is not valid");
+        }
+
+        if (firmwareFile.size > firmwareSizeLimit["16MB"]) {
+
+            throw new InvalidInputError(`Firmware exceeds the maximum size of ${(firmwareSizeLimit["16MB"]/ (1024 * 1024)).toFixed(2)}MiB`);
         }
 
         // Move from tmp directory to firmware directory

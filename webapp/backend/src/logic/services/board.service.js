@@ -1,5 +1,6 @@
 
 import { InvalidInputError, ConflictError, NotFoundError } from "../../utils/errors.js";
+import firmwareSizeLimit from "../../utils/limits.js";
 import { endpoint } from "shared";
 import { EventEmitter } from "events";
 import { randomBytes } from "crypto";
@@ -188,6 +189,7 @@ export default class BoardService {
         const board = await this._getByIdAndUserId(boardId, userId);
 
         this._ensureBoardIsReadyForUpdate(board);
+        this._ensureFirmwareFits(board, firmware);
 
         const message = {
 
@@ -215,6 +217,7 @@ export default class BoardService {
         const board = await this._getByIdAndUserId(boardId, userId);
 
         this._ensureBoardIsReadyForUpdate(board);
+        this._ensureFirmwareFits(board, board.firmware);
 
         if (board.firmwareStatus !== "update available") {
 
@@ -288,6 +291,14 @@ export default class BoardService {
         if (board.isBeingUpdated) {
 
             throw new ConflictError("Update in progress - wait until completion");
+        }
+    }
+
+    _ensureFirmwareFits(board, firmware) {
+
+        if (firmware.sizeB > firmwareSizeLimit[board.flashSizeMB + "MB"]) {
+
+            throw new InvalidInputError("Firmware exceeds the available memory on the board");
         }
     }
 
