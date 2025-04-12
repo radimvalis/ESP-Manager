@@ -8,11 +8,12 @@ export default class FirmwareApi {
         this._httpClient = httpClient;
     }
 
-    async create(name, firmwareFile, configFormFile) {
+    async create(name, target, firmwareFile, configFormFile) {
 
         const formData = new FormData();
 
         formData.append("name", name);
+        formData.append("target", target);
         formData.append("files", firmwareFile);
         formData.append("files", configFormFile);
 

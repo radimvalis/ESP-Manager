@@ -5,7 +5,9 @@ export default function FileController(context) {
 
     this.getDefaultFirmware = asyncCatch(async (req, res) => {
 
-        const path = context.file.getDefaultPath("firmware");
+        const board = await context.board.getOne(req.params.id, req.userId);
+
+        const path = context.file.getDefaultFirmwarePath(board.chipName);
 
         res.sendFile(path);
     });
@@ -21,7 +23,7 @@ export default function FileController(context) {
 
         const board = await context.board.getOne(req.params.id, req.userId);
 
-        const path = context.file.getDefaultBootloaderPath(board.flashSizeMB);
+        const path = context.file.getBootloaderPath(board.chipName, board.flashSizeMB);
 
         res.sendFile(path);
     });
@@ -30,7 +32,7 @@ export default function FileController(context) {
 
         const board = await context.board.getOne(req.params.id, req.userId);
 
-        const path = context.file.getDefaultPartitionTablePath(board.flashSizeMB);
+        const path = context.file.getPartitionTablePath(board.flashSizeMB);
 
         res.sendFile(path);
     });

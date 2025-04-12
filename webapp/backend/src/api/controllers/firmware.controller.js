@@ -7,7 +7,7 @@ export default function FirmwareController(context) {
 
         const hasConfig = typeof req.files[1] !== "undefined";
 
-        let firmware = await context.firmware.create(req.body.name, req.userId, hasConfig);
+        let firmware = await context.firmware.create(req.body.name, req.userId, req.body.target, hasConfig);
 
         await context.file.createFirmwareDir(firmware.id);
 

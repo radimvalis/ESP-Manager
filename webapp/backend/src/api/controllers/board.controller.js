@@ -5,9 +5,16 @@ import { boardUpdateType } from "shared";
 
 export default function BoardController(context) {
 
+    this.getSupportedChips = asyncCatch(async (req, res) => {
+
+        const targets = context.board.getSupportedChips();
+        
+        res.json(targets).end();
+    });
+
     this.create = asyncCatch(async (req, res) => {
 
-        const board = await context.board.create(req.body.name, req.userId, req.body.flashSizeMB);
+        const board = await context.board.create(req.body.name, req.userId, req.body.chipName, req.body.flashSizeMB);
 
         try {
 

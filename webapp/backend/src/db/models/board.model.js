@@ -40,6 +40,11 @@ export default (sequelize, DataTypes) => {
                 defaultValue: false,
                 allowNull: false
             },
+            chipName: {
+
+                type: DataTypes.STRING,
+                allowNull: false
+            },
             flashSizeMB: {
 
                 type: DataTypes.INTEGER,
@@ -84,6 +89,11 @@ export default (sequelize, DataTypes) => {
     Board.prototype.getSanitized = function () {
 
         const board = this.toJSON();
+
+        delete board.httpPassword;
+        delete board.mqttPassword;
+        delete board.createdAt;
+        delete board.updatedAt;
 
         if (!board.firmwareStatus) {
 

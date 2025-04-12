@@ -32,6 +32,11 @@ export default class Flasher {
         await this._loader.main();
     }
 
+    getChipName() {
+
+        return this._loader.chip.CHIP_NAME.toLowerCase();
+    }
+
     async getFlashSizeMB() {
 
         return await this._loader.getFlashSize() / 1024;
@@ -46,7 +51,7 @@ export default class Flasher {
 
         const fileArray = [
 
-            { data: defaultApp.bootloader, address: 0x1000 },
+            { data: defaultApp.bootloader, address: this._loader.chip.BOOTLOADER_FLASH_OFFSET },
             { data: defaultApp.partitionTable, address: 0x8000 },
             { data: defaultApp.config, address: 0x9000 },
             { data: defaultApp.firmware, address: 0x10000 }

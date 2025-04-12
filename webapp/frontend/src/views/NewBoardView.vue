@@ -150,8 +150,10 @@
 
             if (valid) {
 
+                const chipName = flasher.getChipName();
                 const flashSizeMB = await flasher.getFlashSizeMB();
 
+                configData.value.chipName = chipName;
                 configData.value.flashSizeMB = flashSizeMB;
 
                 currentStage.value = STAGE.REGISTER;
@@ -166,7 +168,7 @@
                 const [ _, firmware, bootloader, partitionTable, config ] = await Promise.all([
 
                     flasher.eraseFlash(),
-                    session.api.file.getDefaultFirmware(),
+                    session.api.file.getDefaultFirmware(board.id),
                     session.api.file.getDefaultBootloader(board.id),
                     session.api.file.getDefaultPartitionTable(board.id),
                     session.api.file.getDefaultNVS(board.id)

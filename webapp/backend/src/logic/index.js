@@ -15,7 +15,7 @@ export default class ApplicationContext {
         this.user = new UserService(config.models);
         this.file = new FileService(config);
         this.board = new BoardService(config);
-        this.firmware = new FirmwareService(config.models);
+        this.firmware = new FirmwareService(config);
 
         Object.freeze(this);
     }

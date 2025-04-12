@@ -3,12 +3,13 @@ import { InvalidInputError, NotFoundError, ConflictError } from "../../utils/err
 
 export default class FirmwareService {
 
-    constructor(models) {
+    constructor(config) {
 
-        this._models = models;
+        this._models = config.models;
+        this._targets = config.targets;
     }
 
-    async create(name, userId, hasConfig) {
+    async create(name, userId, target, hasConfig) {
 
         // Validate input
 
@@ -27,6 +28,11 @@ export default class FirmwareService {
             throw new InvalidInputError("Firmware name can only contain alnum characters, -, _ and .");
         }
 
+        if (!this._targets[target]) {
+
+            throw new InvalidInputError("Target: " + target.toUpperCase() + " not supported");
+        }
+
         // Create new firmware
 
         const firmware = await this._models.firmware.findOne({ where: { name, userId } });
@@ -36,14 +42,16 @@ export default class FirmwareService {
             throw new ConflictError("This firmware name already exists");
         }
 
-        const newFirmware = await this._models.firmware.create({ name, userId, hasConfig });
+        const newFirmware = await this._models.firmware.create({ name, userId, target, hasConfig });
 
         return newFirmware.toJSON();        
     }
 
     async getAll(userId) {
 
-        return await this._models.firmware.findAll({ where: { userId }, attributes: [ "id", "name", "version" ] });
+        const firmwares = await this._models.firmware.findAll({ where: { userId } });
+
+        return firmwares.map((f) => f.getSanitized());
     }
 
     async getOne(firmwareId) {

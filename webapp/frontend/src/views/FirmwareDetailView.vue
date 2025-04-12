@@ -150,6 +150,24 @@
                             :cols="6"
                         >
 
+                            <b>Target</b>
+
+                        </v-col>
+
+                        <v-col>
+
+                            {{ firmware.target.toUpperCase() }}
+
+                        </v-col>
+
+                    </v-row>
+
+                    <v-row>
+
+                        <v-col
+                            :cols="6"
+                        >
+
                             <b>Size</b>
 
                         </v-col>

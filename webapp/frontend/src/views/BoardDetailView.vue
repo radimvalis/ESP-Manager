@@ -229,6 +229,42 @@
                                 :cols="6"
                             >
 
+                                <b>Chip</b>
+
+                            </v-col>
+
+                            <v-col>
+
+                                {{ board.chipName.toUpperCase() }}
+
+                            </v-col>
+
+                        </v-row>
+
+                        <v-row>
+
+                            <v-col
+                                :cols="6"
+                            >
+
+                                <b>Flash</b>
+
+                            </v-col>
+
+                            <v-col>
+
+                                {{ board.flashSizeMB }} MiB
+
+                            </v-col>
+
+                        </v-row>
+
+                        <v-row>
+
+                            <v-col
+                                :cols="6"
+                            >
+
                                 <b>Firmware</b>
 
                             </v-col>
@@ -368,7 +404,7 @@
 
                             <v-card-title>
 
-                                Updating board ...
+                                Updating board
 
                             </v-card-title>
 

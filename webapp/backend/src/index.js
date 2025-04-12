@@ -1,6 +1,7 @@
 
 import { endpoint } from "shared";
 import fs from "fs/promises";
+import path from "path";
 import ApplicationContext from "./logic/index.js";
 import getDb from "./db/index.js";
 import getMqtt from "./mqtt/index.js";
@@ -26,7 +27,7 @@ import start from "./api/index.js";
 
     try {
 
-        const caBundle = await fs.readFile(process.cwd() + "/ca-bundle.crt", "utf8");
+        const caBundle = await fs.readFile(path.join(process.cwd(), "ca-bundle.crt"), "utf8");
 
         const mqttConfig = {
 
@@ -42,6 +43,29 @@ import start from "./api/index.js";
     catch(error) {
 
         console.error("Unable to connect to the MQTT broker:", error);
+
+        return;
+    }
+
+    // Determine supported targets and their flash sizes
+
+    const targets = {};
+
+    try {
+        
+        const targetsDir = path.join(process.cwd(), "data", "default", "targets");
+
+        for (const t of (await fs.readdir(targetsDir, { withFileTypes: true })).filter(t => t.isDirectory())) {
+
+            targets[t.name] = (await fs.readdir(path.join(targetsDir, t.name, "bootloaders"), { withFileTypes: true }))
+                .filter(b => b.isFile() && /^bootloader_\d+MB\.bin$/.test(b.name))
+                .map(b => Number(b.name.match(/\d+/)[0]));
+        }
+    }
+
+    catch(error) {
+
+        console.error("Unable to determine targets:", error);
 
         return;
     }
@@ -72,13 +96,15 @@ import start from "./api/index.js";
 
         path: {
 
-            dataDirectoryPath: process.cwd() + "/data",
-            caBundlePath: process.cwd() + "/ca-bundle.crt"
+            dataDirectoryPath: path.join(process.cwd(), "data"),
+            caBundlePath: path.join(process.cwd(), "ca-bundle.crt")
         },
 
         models: db.models,
 
-        mqtt: mqtt
+        mqtt: mqtt,
+
+        targets: targets
     };
 
     const context = new ApplicationContext(config);

@@ -1,7 +1,7 @@
 
 <script setup>
 
-    import { ref } from "vue";
+    import { ref, watch, onMounted } from "vue";
     import { useRouter } from "vue-router";
     import { useSessionStore } from "@/stores/session";
     import ConfigLabel from "@/components/ConfigFormInputLabel.vue";
@@ -14,19 +14,28 @@
     const alertTitle = ref(null);
     const alertText = ref(null);
 
+    const supportedTargets = ref([]);
+
     const form = ref(null);
 
     const name = ref(null);
+    const target = ref(null);
     const firmwareFile = ref(null);
     const configFormFile = ref(null);
 
     let firmware = null;
+
 
     const nameRules = [
                     
         (x) => !!x,
         (x) => 3 <= x.length && x.length <= 20 || "Name must be 3-20 characters",
         (x) => /^[a-z0-9-_.]+$/i.test(x) || "Only letters, numbers, -, _ and . are allowed"
+    ];
+
+    const targetRules = [
+
+        (x) => !!x
     ];
 
     const firmwareRules = [
@@ -40,6 +49,21 @@
         () => configFormFile.value ? configFormFile.value.type === "application/json" || "This is not a .json file" : true
     ];
 
+    watch(target, (newValue) => {
+
+        target.value = newValue === null ? "" : newValue; 
+    });
+
+    onMounted(async () => {
+
+        try {
+
+            supportedTargets.value = await session.api.board.getSupportedChips();
+        }
+
+        catch {}
+    });
+
     async function upload() {
         
         try {
@@ -48,7 +72,7 @@
 
             if (valid) {
 
-                firmware = await session.api.firmware.create(name.value, firmwareFile.value, configFormFile.value);
+                firmware = await session.api.firmware.create(name.value, target.value, firmwareFile.value, configFormFile.value);
 
                 router.push({ name: "FirmwareDetail", params: { id: firmware.id }, query: { new: true } });
             }
@@ -122,6 +146,26 @@
                     </template>
 
                 </v-text-field>
+
+                <v-select
+                    v-model="target"
+                    class="mt-2"
+                    variant="outlined"
+                    density="compact"
+                    :rules="targetRules"
+                    :items='supportedTargets'
+                >
+
+                    <template #label>
+
+                        <ConfigLabel
+                            text="Target"
+                            is-required
+                        />
+
+                    </template>
+
+                </v-select>
 
                 <v-file-input
                     v-model="firmwareFile"

@@ -18,6 +18,11 @@ export default (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false             
             },
+            target: {
+
+                type: DataTypes.STRING,
+                allowNull: false  
+            },
             version: {
 
                 type: DataTypes.INTEGER,
@@ -44,11 +49,13 @@ export default (sequelize, DataTypes) => {
 
     Firmware.prototype.getSanitized = function () {
 
-        const board = this.toJSON();
+        const firmware = this.toJSON();
 
-        delete board.boardId;
+        delete firmware.createdAt;
+        delete firmware.updatedAt;
+        delete firmware.deletedAt;
 
-        return board;
+        return firmware;
     }
 
     Firmware.associate = (models) => {

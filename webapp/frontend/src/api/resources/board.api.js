@@ -8,6 +8,11 @@ export default class BoardApi {
         this._httpClient = httpClient;
     }
 
+    async getSupportedChips() {
+
+        return await this._httpClient.get(endpoint.boards.supportedChips());
+    }
+
     async create(configData) {
 
         return await this._httpClient.post(endpoint.boards.all(), configData);

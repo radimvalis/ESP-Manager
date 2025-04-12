@@ -76,6 +76,7 @@ export default function start(context, port) {
 
     // Board
 
+    app.get(endpoint.boards.supportedChips(), boardController.getSupportedChips);
     app.post(endpoint.boards.all(), boardController.create);
     app.get(endpoint.boards.watchAll(), boardController.watchAll);
     app.get(endpoint.boards.watchOne(), boardController.watchOne);

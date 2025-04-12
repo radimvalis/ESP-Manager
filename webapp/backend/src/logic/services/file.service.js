@@ -1,5 +1,6 @@
 
 import fs from "fs/promises";
+import path from "path";
 import Ajv2019 from "ajv/dist/2019.js";
 import { InvalidInputError } from "../../utils/errors.js";
 import firmwareSizeLimit from "../../utils/limits.js";
@@ -17,6 +18,9 @@ export default class FileService {
     static _CONFIG_FORM = "config-form.json";
     static _CONFIG_FORM_SCHEMA = "config-form.schema.json";
 
+    static _NVS_SIZE =  0x10000;
+    static _DEFAULT_NVS_SIZE =  0x5000;
+
     constructor(config) {
 
         this._dataDirectoryPath = config.path.dataDirectoryPath;
@@ -29,58 +33,53 @@ export default class FileService {
 
     async init() {
 
+        // Compile config-form schema
+
         const ajv = new Ajv2019();
-        const schema = await fs.readFile(this._defaultsDir + FileService._CONFIG_FORM_SCHEMA, "utf8");
+        const schema = await fs.readFile(path.join(this._defaultDir, FileService._CONFIG_FORM_SCHEMA), "utf8");
         const schemaAsObject = JSON.parse(schema);
 
         this._validateConfigForm = ajv.compile(schemaAsObject);
     }
 
-    getDefaultPath(filename) {
+    getDefaultFirmwarePath(target) {
 
-        const fileExtension = filename === "config-form" ? ".json" : ".bin";
-
-        return this._defaultsDir + filename + fileExtension;
-    }
-
-    getDefaultFirmwarePath() {
-
-        return this._defaultsDir + FileService._FIRMWARE;
+        return path.join(this._getTargetDir(target), FileService._FIRMWARE);
     }
 
     getDefaultConfigFormPath() {
 
-        return this._defaultsDir + FileService._CONFIG_FORM;
+        return path.join(this._defaultDir, FileService._CONFIG_FORM);
     }
 
-    getDefaultPartitionTablePath(flashSizeMB) {
+    getPartitionTablePath(flashSizeMB) {
 
-        return this._defaultPartitionTablesDir + "partition_table_" + flashSizeMB + "MB.bin";
+        return path.join(this._partitionTablesDir, "partition_table_" + flashSizeMB + "MB.bin");
     }
 
-    getDefaultBootloaderPath(flashSizeMB) {
+    getBootloaderPath(taget, flashSizeMB) {
 
-        return this._defaultBootloadersDir + "bootloader_" + flashSizeMB + "MB.bin";
+        return path.join(this._getBootloadersDir(taget), "bootloader_" + flashSizeMB + "MB.bin");
     }
 
     getDefaultNVSPath(boardId) {
 
-        return this._getBoardDir(boardId) + FileService._DEFAULT_NVS_BIN;
+        return path.join(this._getBoardDir(boardId), FileService._DEFAULT_NVS_BIN);
     }
 
     getNVSPath(boardId) {
 
-        return this._getBoardDir(boardId) + FileService._NVS_BIN;
+        return path.join(this._getFirmwareDir(boardId), FileService._NVS_BIN);
     }
 
     getFirmwarePath(firmwareId) {
 
-        return this._getFirmwareDir(firmwareId) + FileService._FIRMWARE;
+        return path.join(this._getFirmwareDir(firmwareId), FileService._FIRMWARE);
     }
 
     getConfigFormPath(firmwareId) {
 
-        return this._getFirmwareDir(firmwareId) + FileService._CONFIG_FORM;
+        return path.join(this._getFirmwareDir(firmwareId), FileService._CONFIG_FORM);
     }
 
     async saveFirmware(firmwareId, firmwareFile) {
@@ -92,9 +91,11 @@ export default class FileService {
             throw new InvalidInputError("The firmware file is not valid");
         }
 
-        if (firmwareFile.size > firmwareSizeLimit["16MB"]) {
+        const maxFirmwareSizeB = firmwareSizeLimit["32MB"];
 
-            throw new InvalidInputError(`Firmware exceeds the maximum size of ${(firmwareSizeLimit["16MB"]/ (1024 * 1024)).toFixed(2)}MiB`);
+        if (firmwareFile.size > maxFirmwareSizeB) {
+
+            throw new InvalidInputError(`Firmware exceeds the maximum size of ${(maxFirmwareSizeB / (1024 * 1024)).toFixed(2)}MiB`);
         }
 
         // Move from tmp directory to firmware directory
@@ -130,19 +131,19 @@ export default class FileService {
         // Move from tmp directory to firmware directory
 
         const newPath = this.getConfigFormPath(firmwareId);
-
+ 
        await fs.copyFile(configFormFile.path, newPath);
        await fs.unlink(configFormFile.path);
     }
 
     async createBoardDir(boardId) {
 
-        await fs.mkdir(this._boardsDir + boardId);
+        await fs.mkdir(path.join(this._boardsDir, boardId));
     }
 
     async createFirmwareDir(firmwareId) {
 
-        await fs.mkdir(this._firmwaresDir + firmwareId);
+        await fs.mkdir(path.join(this._firmwaresDir, firmwareId));
     }
 
     async deleteBoardDir(boardId) {
@@ -161,19 +162,17 @@ export default class FileService {
 
         const configForm = await FileService._loadConfigForm(configFormPath);
 
-        const csvPath = this._getBoardDir(boardId) + FileService._NVS_CSV;
-        const binPath = this._getBoardDir(boardId) + FileService._NVS_BIN;
+        const csvPath = path.join(this._getBoardDir(boardId), FileService._NVS_CSV);
+        const binPath = path.join(this._getBoardDir(boardId), FileService._NVS_BIN);
 
         await FileService._saveConfigDataAsCSV(configData, configForm, csvPath);
 
-        await this._createNVS(csvPath, binPath, 0x8000);        
+        await this._createNVS(csvPath, binPath, FileService._NVS_SIZE);        
     }
 
     async createDefaultNVS(configData, board) {
 
-        const defaultConfigFormPath = this.getDefaultPath("config-form");
-
-        const defaultConfigForm = await FileService._loadConfigForm(defaultConfigFormPath);
+        const defaultConfigForm = await FileService._loadConfigForm(path.join(this._defaultDir, FileService._CONFIG_FORM));
 
         // Add config which is not part of default config form
 
@@ -198,47 +197,57 @@ export default class FileService {
         configData.version = -1;
         defaultConfigForm.push({ key: "version", type: "data", encoding: "i16" });
 
-        const csvPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_CSV;
-        const binPath = this._getBoardDir(board.id) + FileService._DEFAULT_NVS_BIN;
+        const csvPath = path.join(this._getBoardDir(board.id), FileService._DEFAULT_NVS_CSV);
+        const binPath = path.join(this._getBoardDir(board.id), FileService._DEFAULT_NVS_BIN);
 
         await FileService._saveConfigDataAsCSV(configData, defaultConfigForm, csvPath);
 
-        await this._createNVS(csvPath, binPath, 0x5000);
+        await this._createNVS(csvPath, binPath, FileService._DEFAULT_NVS_SIZE);
     }
 
     get _boardsDir() {
 
-        return this._dataDirectoryPath + "/boards/";
+        return path.join(this._dataDirectoryPath, "boards");
     }
 
     get _firmwaresDir() {
 
-        return this._dataDirectoryPath + "/firmwares/";
+        return path.join(this._dataDirectoryPath, "firmwares");
     }
 
-    get _defaultsDir() {
+    get _defaultDir() {
 
-        return this._dataDirectoryPath + "/default/";
+        return path.join(this._dataDirectoryPath, "default");
     }
 
-    get _defaultBootloadersDir() {
+    get _targetsDir() {
 
-        return this._defaultsDir + "bootloader/";
+        return path.join(this._defaultDir, "targets");
     }
 
-    get _defaultPartitionTablesDir() {
+    get _partitionTablesDir() {
 
-        return this._defaultsDir + "partition_table/";
-    }    
+        return path.join(this._defaultDir, "partition_tables");
+    }
+
+    _getTargetDir(target) {
+
+        return path.join(this._targetsDir, target);
+    }
+
+    _getBootloadersDir(target) {
+
+        return path.join(this._getTargetDir(target), "bootloaders");
+    }
 
     _getBoardDir(boardId) {
 
-        return this._boardsDir + boardId + "/";
+        return path.join(this._boardsDir, boardId);
     }
 
     _getFirmwareDir(firmwareId) {
 
-        return this._firmwaresDir + firmwareId + "/";
+        return path.join(this._firmwaresDir, firmwareId);
     }
 
     static async _loadConfigForm(configFormPath) {

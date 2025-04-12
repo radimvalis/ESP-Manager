@@ -13,6 +13,7 @@ export default class BoardService {
         this._mqtt = config.mqtt;
         this._serverUrl = config.url.server;
         this._emitter = new EventEmitter();
+        this._targets = config.targets;
     }
 
     async init() {
@@ -61,7 +62,12 @@ export default class BoardService {
         });
     }
 
-    async create(name, userId, flashSizeMB) {
+    getSupportedChips() {
+
+        return Object.keys(this._targets);
+    }
+
+    async create(name, userId, chipName, flashSizeMB) {
 
         // Validate input
 
@@ -80,6 +86,16 @@ export default class BoardService {
             throw new InvalidInputError("Board name can only contain alnum characters, -, _ and .");
         }
 
+        if (!this._targets[chipName]) {
+
+            throw new InvalidInputError("Chip: " + chipName.toUpperCase() + " not supported");
+        }
+
+        if (!this._targets[chipName].includes(flashSizeMB)) {
+
+            throw new InvalidInputError("Chip and flash size combination not supported");
+        }
+
         // Create new board
 
         const board = await this._models.board.findOne({ where: { name, userId } });
@@ -92,7 +108,9 @@ export default class BoardService {
         const httpPassword = randomBytes(16).toString("hex");
         const mqttPassword = randomBytes(16).toString("hex");
 
-        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword, flashSizeMB });
+        chipName = chipName.toLowerCase();
+
+        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword, chipName, flashSizeMB });
 
         // Create new MQTT client for given board
 
@@ -113,8 +131,7 @@ export default class BoardService {
                     attributes:  [ "version" ],
                     paranoid: false
                 }
-            ],
-            attributes: [ "id", "name", "isOnline", "firmwareVersion", "firmwareStatus" ]
+            ]
         });
 
         const boardsSanitized = boards.map((board) => {
@@ -134,7 +151,7 @@ export default class BoardService {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
-        return board.toJSON();
+        return board.getSanitized();
     }
 
     async getByHttpCredentials(boardId, httpPassword) {
@@ -295,6 +312,11 @@ export default class BoardService {
     }
 
     _ensureFirmwareFits(board, firmware) {
+
+        if (firmware.target !== board.chipName) {
+
+            throw new InvalidInputError("Firmware is not compatible");
+        }
 
         if (firmware.sizeB > firmwareSizeLimit[board.flashSizeMB + "MB"]) {
 

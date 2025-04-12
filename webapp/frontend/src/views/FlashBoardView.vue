@@ -97,6 +97,16 @@
 
             firmware.value = await session.api.firmware.getOne(firmwareId.value);
 
+            if (firmware.value.target !== boardToFlash.value.chipName) {
+
+                firmware.value = null;
+
+                alertTitle.value = "Firmware not compatible";
+                alert.value = true;
+
+                return;
+            }
+
             configData.value = {};
 
             if (firmware.value.hasConfig) {

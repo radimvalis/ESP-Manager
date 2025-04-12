@@ -10,9 +10,9 @@ export default class FileApi {
         this._httpClient = httpClient;
     }
 
-    async getDefaultFirmware() {
+    async getDefaultFirmware(boardId) {
 
-        const response = await this._httpClient.get(endpoint.files.default.firmware(), FileApi._binFileRequestConfig);
+        const response = await this._httpClient.get(endpoint.files.default.firmware(boardId), FileApi._binFileRequestConfig);
 
         return FileApi._convertArrayBufferToString(response);
     }

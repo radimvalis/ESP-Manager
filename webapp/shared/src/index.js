@@ -18,7 +18,7 @@ const endpoint = Object.freeze({
 
         default: {
 
-            firmware: () => "/files/default/firmware",
+            firmware: (id=":id") => `/files/default/firmware/${id}`,
             configForm: () => "/files/default/config-form",
             bootloader: (id=":id") => `/files/default/bootloader/${id}`,
             partitionTable: (id=":id") => `/files/default/partition-table/${id}`,
@@ -32,6 +32,7 @@ const endpoint = Object.freeze({
 
     boards: {
 
+        supportedChips: () => "/boards/chips",
         all: () => "/boards",
         watchAll: () => "/boards/watch",
         one: (id=":id") => `/boards/${id}`,
