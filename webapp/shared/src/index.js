@@ -20,14 +20,14 @@ const endpoint = Object.freeze({
 
             firmware: (id=":id") => `/files/default/firmware/${id}`,
             configForm: () => "/files/default/config-form",
+            NVS: (id=":id") => `/files/default/nvs/${id}`,
             bootloader: (id=":id") => `/files/default/bootloader/${id}`,
             partitionTable: (id=":id") => `/files/default/partition-table/${id}`,
-            NVS: (id=":id") => `/files/default/nvs/${id}`,
         },
 
         firmware: (id=":id") => `/files/firmware/${id}`,
         configForm: (id=":id") => `/files/config-form/${id}`,
-        nvs: (id=":id") => `/files/nvs/${id}`
+        NVS: (id=":id") => `/files/nvs/${id}`
     },
 
     boards: {

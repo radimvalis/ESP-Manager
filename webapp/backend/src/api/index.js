@@ -49,7 +49,7 @@ export default function start(context, port) {
     // File
 
     app.get(endpoint.files.firmware(),authBoardMiddleware(context), fileController.getFirmware);
-    app.get(endpoint.files.nvs(), authBoardMiddleware(context), fileController.getNVS);
+    app.get(endpoint.files.NVS(), authBoardMiddleware(context), fileController.getNVS);
 
     // =========================
     // Token-protected endpoints
@@ -69,9 +69,9 @@ export default function start(context, port) {
 
     app.get(endpoint.files.default.firmware(), fileController.getDefaultFirmware);
     app.get(endpoint.files.default.configForm(), fileController.getDefaultConfigForm);
-    app.get(endpoint.files.default.bootloader(), fileController.getDefaultBootloader);
-    app.get(endpoint.files.default.partitionTable(), fileController.getDefaultPartitionTable);
     app.get(endpoint.files.default.NVS(), fileController.getDefaultNVS);
+    app.get(endpoint.files.default.bootloader(), fileController.getBootloader);
+    app.get(endpoint.files.default.partitionTable(), fileController.getPartitionTable);
     app.get(endpoint.files.configForm(), fileController.getConfigForm);
 
     // Board

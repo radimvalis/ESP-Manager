@@ -19,7 +19,16 @@ export default function FileController(context) {
         res.sendFile(path);
     });
 
-    this.getDefaultBootloader = asyncCatch(async (req, res) => {
+    this.getDefaultNVS = asyncCatch(async (req, res) => {
+
+        await context.board.getOne(req.params.id, req.userId);
+
+        const path = await context.file.getDefaultNVSPath(req.params.id);
+
+        res.sendFile(path);
+    });
+
+    this.getBootloader = asyncCatch(async (req, res) => {
 
         const board = await context.board.getOne(req.params.id, req.userId);
 
@@ -28,20 +37,11 @@ export default function FileController(context) {
         res.sendFile(path);
     });
 
-    this.getDefaultPartitionTable = asyncCatch(async (req, res) => {
+    this.getPartitionTable = asyncCatch(async (req, res) => {
 
         const board = await context.board.getOne(req.params.id, req.userId);
 
         const path = context.file.getPartitionTablePath(board.flashSizeMB);
-
-        res.sendFile(path);
-    });
-
-    this.getDefaultNVS = asyncCatch(async (req, res) => {
-
-        await context.board.getOne(req.params.id, req.userId);
-
-        const path = await context.file.getDefaultNVSPath(req.params.id);
 
         res.sendFile(path);
     });
