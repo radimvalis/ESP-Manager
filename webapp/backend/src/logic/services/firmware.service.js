@@ -3,13 +3,20 @@ import { InvalidInputError, NotFoundError, ConflictError } from "../../utils/err
 
 export default class FirmwareService {
 
-    constructor(config) {
+    constructor(config, fileService) {
 
-        this._models = config.models;
+        this._db = config.db;
         this._targets = config.targets;
+
+        this._file = fileService;
     }
 
-    async create(name, userId, target, hasConfig) {
+    async create(userId, body, files) {
+
+        const name = body.name;
+        const target = body.target;
+        const firmwareFile = files[0];
+        const configFormFile = files[1];
 
         // Validate input
 
@@ -33,30 +40,61 @@ export default class FirmwareService {
             throw new InvalidInputError("Target: " + target.toUpperCase() + " not supported");
         }
 
-        // Create new firmware
+        // Check conflicts
 
-        const firmware = await this._models.firmware.findOne({ where: { name, userId } });
+        const firmware = await this._db.models.firmware.findOne({ where: { name, userId } });
 
         if (firmware) {
 
             throw new ConflictError("This firmware name already exists");
         }
 
-        const newFirmware = await this._models.firmware.create({ name, userId, target, hasConfig });
+        let newFirmwareId;
 
-        return newFirmware.toJSON();        
+        try {
+
+            return await this._db.transaction(async t => {
+
+                // Create new firmware
+    
+                const hasConfig = typeof configFormFile !== "undefined";
+    
+                const newFirmware = await this._db.models.firmware.create({ name, userId, target, hasConfig, sizeB: firmwareFile.size }, { transaction: t });
+    
+                newFirmwareId = newFirmware.id;
+
+                // Create firmware directory and save firmware file and its config form there
+    
+                await this._file.createFirmwareDir(newFirmware.id);
+    
+                await Promise.all([
+    
+                    this._file.saveFirmware(newFirmware.id, firmwareFile),
+                    hasConfig ? this._file.saveConfigForm(newFirmware.id, configFormFile) : Promise.resolve()
+                ]);
+
+                return newFirmware.getSanitized();
+            });
+        }
+
+        catch(e) {
+
+            await this._file.tryDeleteFirmwareDir(newFirmwareId);
+
+            throw e;
+        }
     }
 
     async getAll(userId) {
 
-        const firmwares = await this._models.firmware.findAll({ where: { userId } });
+        const firmwares = await this._db.models.firmware.findAll({ where: { userId } });
 
         return firmwares.map((f) => f.getSanitized());
     }
 
     async getOne(firmwareId) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId);
+        const firmware = await this._db.models.firmware.findByPk(firmwareId);
 
         if (!firmware) {
 
@@ -66,37 +104,22 @@ export default class FirmwareService {
         return firmware.getSanitized();
     }
 
-    async incrementVersion(firmwareId, userId) {
+    async update(userId, body, newFirmwareFile) {
 
-        const firmware = await this._getByIdAndUserId(firmwareId, userId);
+        const firmwareId = body.firmwareId;
 
-        await firmware.increment("version");
+        return await this._db.transaction(async t => {
 
-        await firmware.reload();
+            const firmware = await this._getByIdAndUserId(firmwareId, userId);
 
-        return firmware.toJSON();
-    }
+            await firmware.increment("version", { transaction: t });
+            await firmware.update({ sizeB: newFirmwareFile.size }, { transaction: t });
+            await firmware.reload({ transaction: t });
 
-    async decrementVersion(firmwareId, userId) {
+            await this._file.saveFirmware(firmwareId, newFirmwareFile);
 
-        const firmware = await this._getByIdAndUserId(firmwareId, userId);
-
-        await firmware.decrement("version");
-
-        await firmware.reload();
-
-        return firmware.toJSON();
-    }
-
-    async setSizeB(firmwareId, userId, sizeB) {
-
-        const firmware = await this._getByIdAndUserId(firmwareId, userId);
-
-        await firmware.update({ sizeB });
-
-        await firmware.reload();
-
-        return firmware.toJSON();
+            return firmware.getSanitized();
+        });
     }
 
     async delete(firmwareId, userId) {
@@ -104,27 +127,29 @@ export default class FirmwareService {
         const firmware = await this._getByIdAndUserId(firmwareId, userId);
 
         await firmware.destroy();
+
+        await this.tryForceDelete(firmwareId);
     }
 
     async tryForceDelete(firmwareId) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId, { paranoid: false });
+        const firmware = await this._db.models.firmware.findByPk(firmwareId, { paranoid: false });
 
         // Must be soft deleted and must not be flashed
 
-        if (!firmware || firmware.deletedAt === null || await this._isFlashed(firmwareId)) {
+        if (firmware && firmware.deletedAt !== null && !await this._isFlashed(firmwareId)) {
 
-            return false;
+            await firmware.destroy({ force: true });
+
+            // No board is using this firmware anymore so we can delete its directory
+
+            await this._file.tryDeleteFirmwareDir(firmwareId);
         }
-
-        await firmware.destroy({ force: true });
-
-        return true;
     }
 
     async _getByIdAndUserId(firmwareId, userId, paranoid=true) {
 
-        const firmware = await this._models.firmware.findByPk(firmwareId, { paranoid });
+        const firmware = await this._db.models.firmware.findByPk(firmwareId, { paranoid });
 
         if (!firmware || firmware.userId !== userId) {
 
@@ -136,6 +161,6 @@ export default class FirmwareService {
 
     async _isFlashed(firmwareId) {
 
-        return (await this._models.board.count({ where: { firmwareId } })) > 0;
+        return (await this._db.models.board.count({ where: { firmwareId } })) > 0;
     }
 }

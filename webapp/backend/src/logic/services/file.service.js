@@ -69,7 +69,7 @@ export default class FileService {
 
     getNVSPath(boardId) {
 
-        return path.join(this._getFirmwareDir(boardId), FileService._NVS_BIN);
+        return path.join(this._getBoardDir(boardId), FileService._NVS_BIN);
     }
 
     getFirmwarePath(firmwareId) {
@@ -146,14 +146,24 @@ export default class FileService {
         await fs.mkdir(path.join(this._firmwaresDir, firmwareId));
     }
 
-    async deleteBoardDir(boardId) {
+    async tryDeleteBoardDir(boardId) {
 
-        await fs.rm(this._getBoardDir(boardId), { recursive: true, force: true });
+        try {
+
+            await fs.rm(this._getBoardDir(boardId), { recursive: true, force: true });
+        }
+
+        catch {}
     }
 
-    async deleteFirmwareDir(firmwareId) {
+    async tryDeleteFirmwareDir(firmwareId) {
 
-        await fs.rm(this._getFirmwareDir(firmwareId), { recursive: true, force: true });
+        try {
+
+            await fs.rm(this._getFirmwareDir(firmwareId), { recursive: true, force: true });
+        }
+
+        catch {}
     }
 
     async createNVS(configData, firmwareId, boardId) {

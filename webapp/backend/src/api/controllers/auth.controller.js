@@ -5,7 +5,7 @@ export default function AuthController(context) {
 
     this.logIn = asyncCatch(async (req, res) => {
 
-        const user = await context.user.getByCredentials(req.body.username, req.body.password);
+        const user = await context.user.getByCredentials(req.body);
         const tokens = await context.auth.authenticate(user.id);
         const cookies = context.cookie.getCookiesFromTokens(tokens);
 
@@ -14,7 +14,7 @@ export default function AuthController(context) {
 
     this.signUp = asyncCatch(async (req, res) => {
 
-        const user = await context.user.create(req.body.username, req.body.password);
+        const user = await context.user.create(req.body);
         const tokens = await context.auth.authenticate(user.id);
         const cookies = context.cookie.getCookiesFromTokens(tokens);
 

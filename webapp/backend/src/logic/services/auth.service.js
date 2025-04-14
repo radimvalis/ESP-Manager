@@ -3,10 +3,10 @@ import { SignJWT, jwtVerify } from "jose";
 
 export default class AuthService {
 
-    constructor(secrets) {
+    constructor(config) {
 
-        this.accessTokenSecret = new TextEncoder().encode(secrets.accessTokenSecret);
-        this.refreshTokenSecret = new TextEncoder().encode(secrets.refreshTokenSecret);
+        this.accessTokenSecret = new TextEncoder().encode(config.auth.accessTokenSecret);
+        this.refreshTokenSecret = new TextEncoder().encode(config.auth.refreshTokenSecret);
     }
 
     async authenticate(userId) {

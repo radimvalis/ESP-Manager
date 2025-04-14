@@ -11,12 +11,15 @@ export default class UserService {
 
     static _saltRounds = 10;
 
-    constructor(models) {
+    constructor(config) {
 
-        this._models = models;
+        this._db = config.db;
     }
 
-    async create(username, password) {
+    async create(body) {
+
+        const username = body.username;
+        const password = body.password;
 
         // Validate credentials
 
@@ -41,7 +44,7 @@ export default class UserService {
 
             const hashedPassword = await bcrypt.hash(password, UserService._saltRounds);
 
-            const user = await this._models.user.create({ username, password: hashedPassword });
+            const user = await this._db.models.user.create({ username, password: hashedPassword });
 
             return user.getSanitized();
         }
@@ -57,9 +60,12 @@ export default class UserService {
         }
     }
 
-    async getByCredentials(username, password) {
+    async getByCredentials(body) {
 
-        const user = await this._models.user.findOne({ where: { username } });
+        const username = body.username;
+        const password = body.password;
+
+        const user = await this._db.models.user.findOne({ where: { username } });
 
         if (!user) {
 
@@ -78,7 +84,7 @@ export default class UserService {
 
     async getById(id) {
 
-        const user = await this._models.user.findByPk(id);
+        const user = await this._db.models.user.findByPk(id);
 
         if (!user) {
 

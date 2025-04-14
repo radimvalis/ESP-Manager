@@ -1,7 +1,5 @@
 
 import asyncCatch from "../middlewares/error.middleware.js";
-import { InvalidInputError } from "../../utils/errors.js";
-import { boardUpdateType } from "shared";
 
 export default function BoardController(context) {
 
@@ -9,27 +7,14 @@ export default function BoardController(context) {
 
         const targets = context.board.getSupportedChips();
         
-        res.json(targets).end();
+        res.json(targets);
     });
 
     this.create = asyncCatch(async (req, res) => {
 
-        const board = await context.board.create(req.body.name, req.userId, req.body.chipName, req.body.flashSizeMB);
+        const newBoard = await context.board.create(req.userId, req.body);
 
-        try {
-
-            await context.file.createBoardDir(board.id);
-            await context.file.createDefaultNVS(req.body, board);
-        }
-
-        catch(e) {
-
-            await context.board.delete(board.id, req.userId);
-
-            throw e;           
-        }
-
-        res.json(board).end();
+        res.json(newBoard);
     });
 
     this.watchAll = asyncCatch(async (req, res) => {
@@ -58,57 +43,26 @@ export default function BoardController(context) {
 
         const boards = await context.board.getAll(req.userId);
 
-        res.json(boards).end();
+        res.json(boards);
     });
 
     this.getOne = asyncCatch(async (req, res) => {
 
         const board = await context.board.getOne(req.params.id, req.userId);
 
-        res.json(board).end();
+        res.json(board);
     });
 
     this.update = asyncCatch(async (req, res) => {
 
-        const firmwareId = (await context.board.getOne(req.params.id, req.userId)).firmwareId;
+        const updatedBoard = await context.board.update(req.params.id, req.userId, req.body, req.files);
 
-        switch(req.body.type) {
-
-            case boardUpdateType.flashBoard:
-
-                await _flash(req, res);
-
-                break;
-
-            case boardUpdateType.updateFirmware:
-
-                await _updateFirmware(req, res);
-
-                break;
-
-            case boardUpdateType.bootDefaultFirmware:
-
-                await _bootDefaultFirmware(req, res);
-
-                break;
-
-            default:
-
-                throw new InvalidInputError("Unknown update type");
-        }
-
-        await this._tryForceDeleteFirmware(firmwareId);
+        res.json(updatedBoard);
     });
 
     this.delete = asyncCatch(async (req, res) => {
 
-        const firmwareId = (await context.board.getOne(req.params.id, req.userId)).firmwareId;
-
         await context.board.delete(req.params.id, req.userId);
-
-        await context.file.deleteBoardDir(req.params.id);
-
-        await this._tryForceDeleteFirmware(firmwareId);
 
         res.status(200).end();
     });
@@ -126,42 +80,4 @@ export default function BoardController(context) {
             res.end();
         });
     };
-
-    const _flash = async (req, res) => {
-
-        const firmware = await context.firmware.getOne(req.body.firmwareId);
-
-        if (firmware.hasConfig) {
-
-            req.files.forEach(f => req.body[f.fieldname] = f.path);
-
-            await context.file.createNVS(req.body, req.body.firmwareId, req.params.id);
-        }
-
-        const board = await context.board.flash(req.params.id, req.userId, firmware);
-
-        res.json(board).end();
-    };
-
-    const _updateFirmware = async (req, res) => {
-
-        const board = await context.board.updateFirmware(req.params.id, req.userId);
-
-        res.json(board).end();
-    };
-
-    const _bootDefaultFirmware = async (req, res) => {
-
-        const board = await context.board.bootDefaultFirmware(req.params.id, req.userId);
-
-        res.json(board).end();
-    };
-
-    this._tryForceDeleteFirmware = async (firmwareId) => {
-
-        if (await context.firmware.tryForceDelete(firmwareId)) {
-
-            await context.file.deleteFirmwareDir(firmwareId);
-        }
-    }
 }

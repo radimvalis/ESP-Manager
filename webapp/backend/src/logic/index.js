@@ -10,12 +10,12 @@ export default class ApplicationContext {
 
     constructor(config) {
 
-        this.auth = new AuthService(config.auth);
-        this.cookie = new CookieService(config.cookie);
-        this.user = new UserService(config.models);
+        this.auth = new AuthService(config);
+        this.cookie = new CookieService(config);
+        this.user = new UserService(config);
         this.file = new FileService(config);
-        this.board = new BoardService(config);
-        this.firmware = new FirmwareService(config);
+        this.firmware = new FirmwareService(config, this.file);
+        this.board = new BoardService(config, this.file, this.firmware);
 
         Object.freeze(this);
     }

@@ -1,19 +1,23 @@
 
 import { InvalidInputError, ConflictError, NotFoundError } from "../../utils/errors.js";
 import firmwareSizeLimit from "../../utils/limits.js";
-import { endpoint } from "shared";
+import { endpoint, boardUpdateType } from "shared";
 import { EventEmitter } from "events";
 import { randomBytes } from "crypto";
 
 export default class BoardService {
 
-    constructor(config) {
+    constructor(config, fileService, firmwareService) {
 
-        this._models = config.models;
         this._mqtt = config.mqtt;
         this._serverUrl = config.url.server;
-        this._emitter = new EventEmitter();
         this._targets = config.targets;
+        this._db = config.db;
+
+        this._file = fileService;
+        this._firmware = firmwareService;
+
+        this._emitter = new EventEmitter();
     }
 
     async init() {
@@ -30,7 +34,7 @@ export default class BoardService {
 
             const [ boardId, type, messageId ] = topic.split("/");
 
-            const board = await this._models.board.findByPk(boardId);
+            const board = await this._db.models.board.findByPk(boardId);
 
             if (board) {
 
@@ -67,7 +71,11 @@ export default class BoardService {
         return Object.keys(this._targets);
     }
 
-    async create(name, userId, chipName, flashSizeMB) {
+    async create(userId, body) {
+
+        const name = body.name;
+        const chipName = body.chipName;
+        const flashSizeMB = body.flashSizeMB;
 
         // Validate input
 
@@ -96,38 +104,57 @@ export default class BoardService {
             throw new InvalidInputError("Chip and flash size combination not supported");
         }
 
-        // Create new board
+        // Check conflicts
 
-        const board = await this._models.board.findOne({ where: { name, userId } });
-
+        const board = await this._db.models.board.findOne({ where: { name, userId } });
+    
         if (board) {
 
             throw new ConflictError("This board name already exists");
         }
 
-        const httpPassword = randomBytes(16).toString("hex");
-        const mqttPassword = randomBytes(16).toString("hex");
+        let newBoardId;
 
-        chipName = chipName.toLowerCase();
+        try {
 
-        const newBoard = await this._models.board.create({ name, userId, httpPassword, mqttPassword, chipName, flashSizeMB });
+            return await this._db.transaction(async t => {
 
-        // Create new MQTT client for given board
+                // Create new board
 
-        await this._createMqttClient(newBoard);
+                const httpPassword = randomBytes(16).toString("hex");
+                const mqttPassword = randomBytes(16).toString("hex");
+       
+                const newBoard = await this._db.models.board.create({ name, userId, httpPassword, mqttPassword, chipName: chipName.toLowerCase(), flashSizeMB }, { transaction: t });
 
-        return newBoard.toJSON();
+                newBoardId = newBoard.id;
+
+                await this._createMqttClient(newBoard);
+
+                await this._file.createBoardDir(newBoard.id);
+    
+                await this._file.createDefaultNVS(body, newBoard);
+
+                return newBoard.getSanitized();
+            });
+        }
+
+        catch(e) {
+
+            await this._file.tryDeleteBoardDir(newBoardId);
+
+            throw e;
+        }
     }
 
     async getAll(userId) {
 
-        const boards = await this._models.board.findAll({
+        const boards = await this._db.models.board.findAll({
             
             where: { userId },
             include: [
 
                 {
-                    model: this._models.firmware,
+                    model: this._db.models.firmware,
                     attributes:  [ "version" ],
                     paranoid: false
                 }
@@ -156,7 +183,7 @@ export default class BoardService {
 
     async getByHttpCredentials(boardId, httpPassword) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._db.models.board.findByPk(boardId);
 
         if (!board) {
 
@@ -201,8 +228,60 @@ export default class BoardService {
         this._emitter.on(board.userId, listener);
     }
 
-    async flash(boardId, userId, firmware) {
-        
+    async update(boardId, userId, body, files) {
+
+        switch(body.type) {
+
+            case boardUpdateType.flashBoard:
+
+                return await this._flash(boardId, userId, body, files);
+
+            case boardUpdateType.updateFirmware:
+
+                return await this._updateFirmware(boardId, userId);
+
+            case boardUpdateType.bootDefaultFirmware:
+
+                return await this._bootDefaultFirmware(boardId, userId);
+
+            default:
+
+                throw new InvalidInputError("Unknown update type");
+        }
+    }
+
+    async delete(boardId, userId) {
+
+        const board = await this._getByIdAndUserId(boardId, userId);
+
+        const firmwareId = board.firmwareId;
+
+        await this._deleteMqttClient(board);
+
+        await board.destroy();
+
+        await this._file.tryDeleteBoardDir(boardId);
+
+        await this._firmware.tryForceDelete(firmwareId);
+    }
+
+    async _flash(boardId, userId, body, files) {
+
+        const firmwareId = body.firmwareId;
+
+        // Compile configuration
+
+        const firmware = await this._firmware.getOne(firmwareId);
+
+        if (firmware.hasConfig) {
+
+            files.forEach(f => body[f.fieldname] = f.path);
+
+            await this._file.createNVS(body, firmwareId, boardId);
+        }
+
+        // Flash
+
         const board = await this._getByIdAndUserId(boardId, userId);
 
         this._ensureBoardIsReadyForUpdate(board);
@@ -217,7 +296,7 @@ export default class BoardService {
 
         if (firmware.hasConfig) {
 
-            message.config_url = this._serverUrl + "/api" + endpoint.files.nvs(board.id);
+            message.config_url = this._serverUrl + "/api" + endpoint.files.NVS(board.id);
         }
 
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
@@ -226,10 +305,10 @@ export default class BoardService {
 
         await board.reload();
 
-        return board.toJSON();
+        return board.getSanitized();        
     }
 
-    async updateFirmware(boardId, userId) {
+    async _updateFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
@@ -254,10 +333,10 @@ export default class BoardService {
 
         await board.reload();
 
-        return board.toJSON();
+        return board.getSanitized();
     }
 
-    async bootDefaultFirmware(boardId, userId) {
+    async _bootDefaultFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
 
@@ -274,21 +353,12 @@ export default class BoardService {
 
         await board.reload();
 
-        return board.toJSON();
-    }
-
-    async delete(boardId, userId) {
-
-        const board = await this._getByIdAndUserId(boardId, userId);
-
-        await this._deleteMqttClient(board);
-
-        await board.destroy();
+        return board.getSanitized();
     }
 
     async _getByIdAndUserId(boardId, userId) {
 
-        const board = await this._models.board.findByPk(boardId, { include: [ { model: this._models.firmware, paranoid: false } ] });
+        const board = await this._db.models.board.findByPk(boardId, { include: [ { model: this._db.models.firmware, paranoid: false } ] });
 
         if (!board || board.userId !== userId) {
 
@@ -326,7 +396,7 @@ export default class BoardService {
 
     async _setOnline(boardId) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._db.models.board.findByPk(boardId);
 
         if (board) {
 
@@ -336,7 +406,7 @@ export default class BoardService {
 
     async _setOffline(boardId) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._db.models.board.findByPk(boardId);
 
         if (board) {
 
@@ -346,7 +416,7 @@ export default class BoardService {
 
     async _finishUpdate(boardId, data) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._db.models.board.findByPk(boardId);
 
         if (data.firmware_id === "default") {
 
@@ -354,15 +424,19 @@ export default class BoardService {
             data.version = null;
         }
 
+        const oldFirmwareId = board.firmwareId;
+
         if (board) {
 
             await board.update({ firmwareId: data.firmware_id, firmwareVersion: data.version, isBeingUpdated: false });
+
+            await this._firmware.tryForceDelete(oldFirmwareId);
         }
     }
 
     async _cancelUpdate(boardId, data) {
 
-        const board = await this._models.board.findByPk(boardId);
+        const board = await this._db.models.board.findByPk(boardId);
 
         if (board) {
 

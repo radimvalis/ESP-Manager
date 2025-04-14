@@ -5,11 +5,11 @@ export default class CookieService {
 
     constructor(config) {
 
-        this.accessCookieName = config.accessCookieName;
-        this.refreshCookieName = config.refreshCookieName;
+        this.accessCookieName = config.cookie.accessCookieName;
+        this.refreshCookieName = config.cookie.refreshCookieName;
     
-        this.accessCookiePath = config.accessCookiePath;
-        this.refreshCookiePath = config.refreshCookiePath;
+        this.accessCookiePath = config.cookie.accessCookiePath;
+        this.refreshCookiePath = config.cookie.refreshCookiePath;
     }
 
     getCookiesFromTokens(tokens) {

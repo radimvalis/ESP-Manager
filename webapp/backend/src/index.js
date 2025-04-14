@@ -100,7 +100,7 @@ import start from "./api/index.js";
             caBundlePath: path.join(process.cwd(), "ca-bundle.crt")
         },
 
-        models: db.models,
+        db: db,
 
         mqtt: mqtt,
 
