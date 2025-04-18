@@ -410,7 +410,7 @@ export default class BoardService {
 
         if (board) {
 
-            await board.update({ isOnline: false });
+            await board.update({ isOnline: false, isBeingUpdated: false });
         }
     }
 
