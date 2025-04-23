@@ -56,9 +56,9 @@
 
             boards.value = await session.api.board.getAll();
 
-            // Filter out offline boards
+            // Filters out boards that are offline or currently being updated
 
-            boards.value = boards.value.filter((b) => b.isOnline);
+            boards.value = boards.value.filter((b) => b.isOnline && !b.isBeingUpdated);
 
             currentStage.value = STAGE.SELECT_BOARD;
 

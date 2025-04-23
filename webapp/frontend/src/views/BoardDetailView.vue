@@ -345,7 +345,7 @@
                         <v-btn
                             :class='{ "mb-2": xs, "ml-2": !xs }'
                             :to='{ name: "FlashBoard", query: { "id": board.id } }'
-                            :disabled="!board.isOnline"
+                            :disabled="!board.isOnline || board.isBeingUpdated"
                             :block="xs"
                             color="primary"
                             variant="flat"
