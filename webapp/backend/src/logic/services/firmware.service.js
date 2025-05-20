@@ -104,10 +104,8 @@ export default class FirmwareService {
         return firmware.getSanitized();
     }
 
-    async update(userId, body, newFirmwareFile) {
-
-        const firmwareId = body.firmwareId;
-
+    async update(userId, firmwareId, newFirmwareFile) {
+        
         return await this._db.transaction(async t => {
 
             const firmware = await this._getByIdAndUserId(firmwareId, userId);

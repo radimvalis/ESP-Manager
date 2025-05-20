@@ -26,7 +26,7 @@ export default function FirmwareController(context) {
 
     this.update = asyncCatch(async (req, res) => {
 
-        const updatedFirmware = await context.firmware.update(req.userId, req.body, req.file);
+        const updatedFirmware = await context.firmware.update(req.userId, req.params.id, req.file);
 
         res.json(updatedFirmware);
     });

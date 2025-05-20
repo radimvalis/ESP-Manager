@@ -37,7 +37,6 @@ export default class FirmwareApi {
 
         const formData = new FormData();
 
-        formData.append("firmwareId", firmwareId);
         formData.append("file", updatedFirmwareFile);
 
         return await this._httpClient.post(endpoint.firmwares.one(firmwareId), formData, {

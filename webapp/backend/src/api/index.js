@@ -40,7 +40,6 @@ export default function start(context, port) {
 
     app.post(endpoint.auth.logIn(), authController.logIn);
     app.post(endpoint.auth.signUp(), authController.signUp);
-    app.post(endpoint.auth.refreshTokens(), authRefreshMiddleware(context), authController.refreshTokens);
 
     // ============================
     // Password-protected endpoints
@@ -52,7 +51,15 @@ export default function start(context, port) {
     app.get(endpoint.files.NVS(), authBoardMiddleware(context), fileController.getNVS);
 
     // =========================
-    // Token-protected endpoints
+    // Refresh token–protected endpoints
+    // =========================
+
+    // Auth
+
+    app.post(endpoint.auth.refreshTokens(), authRefreshMiddleware(context), authController.refreshTokens);
+
+    // =========================
+    // Access token–protected endpoints
     // =========================
 
     app.use(authSessionMiddleware(context));

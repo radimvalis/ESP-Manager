@@ -7,6 +7,6 @@ export default function UserController(context) {
 
         const user = await context.user.getById(req.userId);
 
-        res.json(user).end();
+        res.json(user);
     });
 }
