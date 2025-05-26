@@ -7,7 +7,7 @@ ARG CA_BUNDLE
 
 EXPOSE $BACKEND_PORT
 
-RUN apt-get update || : && apt-get install python3 -y python3-pip
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 RUN pip install esp-idf-nvs-partition-gen
 
@@ -34,9 +34,9 @@ RUN npm ci --omit=dev
 
 COPY ./backend/src ./src
 
-COPY ./backend/data ./data
+COPY ./backend/data/default ./data/default
 
-COPY $CA_BUNDLE ./ca-bundle.crt
+RUN mkdir -p ./data/boards ./data/firmwares
 
 COPY ./shared ../shared
 
