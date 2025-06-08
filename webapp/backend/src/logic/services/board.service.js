@@ -26,13 +26,13 @@ export default class BoardService {
             
             "+/info/online",
             "+/info/offline",
-            "+/info/update=ok",
-            "+/info/update=error"
+            "+/info/update/ok",
+            "+/info/update/error"
         ]);
 
         this._mqtt.on("message", async (topic, message) => {
 
-            const [ boardId, type, messageId ] = topic.split("/");
+            const [ boardId, type, messageId, result ] = topic.split("/");
 
             const board = await this._db.models.board.findByPk(boardId);
 
@@ -49,15 +49,19 @@ export default class BoardService {
 
                         await this._setOffline(board.id);
                         break;
+                    
+                    case "update":
 
-                    case "update=ok":
+                        if (result === "ok") {
 
-                        await this._finishUpdate(board.id, JSON.parse(message));
-                        break;
+                            await this._finishUpdate(board.id, JSON.parse(message));
+                        }
 
-                    case "update=error":
+                        else if (result === "error") {
 
-                        await this._cancelUpdate(board.id, JSON.parse(message));
+                            await this._cancelUpdate(board.id, JSON.parse(message));
+                        }
+
                         break;
                 }
 
