@@ -5,7 +5,7 @@
 
 #define BUFFER_SIZE 1024
 
-static esp_err_t write_config(esp_manager_client_handle_t client, const esp_partition_t *partition, const char *image_url)
+static esp_err_t write_config(const esp_manager_client_handle_t client, const esp_partition_t *partition, const char *image_url)
 {
     esp_err_t err;
 
@@ -73,7 +73,7 @@ _cleanup:
     return err; 
 }
 
-esp_err_t config_update(esp_manager_client_handle_t client, const char *config_url)
+esp_err_t config_update(const esp_manager_client_handle_t client, const char *config_url)
 {
     esp_err_t err;
 

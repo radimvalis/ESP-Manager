@@ -7,7 +7,7 @@
 #include "nvs_flash.h"
 #include "esp_heap_caps.h"
 
-static char *nvs_get_str_ptr(nvs_handle_t handle, char *key)
+static char *nvs_get_str_ptr(const nvs_handle_t handle, const char *key)
 {
     char *ret;
     size_t ret_length;
@@ -45,7 +45,7 @@ _cleanup:
     return err; 
 }
 
-static esp_err_t set_firmware_data(char *firmware_id, int version)
+static esp_err_t set_firmware_data(const char *firmware_id, int version)
 {
     esp_err_t err;
     nvs_handle_t nvs_handle;
@@ -68,7 +68,7 @@ _cleanup:
     return err;
 }
 
-static int publish_update_result(esp_manager_client_handle_t client, const char *topic)
+static int publish_update_result(const esp_manager_client_handle_t client, const char *topic)
 {
     int msg_id;
 

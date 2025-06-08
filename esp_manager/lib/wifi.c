@@ -34,7 +34,7 @@ static void wifi_event_handler(void *args, esp_event_base_t event_base, int32_t 
     }
 }
 
-esp_err_t wifi_sta_start(esp_manager_client_handle_t client)
+esp_err_t wifi_sta_start(const esp_manager_client_handle_t client)
 {
     esp_err_t err;
 

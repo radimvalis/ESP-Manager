@@ -4,7 +4,7 @@
 #include "esp_https_ota.h"
 #include "esp_ota_ops.h"
 
-esp_err_t set_factory_as_boot_partition()
+esp_err_t set_factory_as_boot_partition(void)
 {
     esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_FACTORY, NULL);
     NULL_CHECK(pi, return ESP_FAIL);
@@ -18,7 +18,7 @@ esp_err_t set_factory_as_boot_partition()
     return esp_ota_set_boot_partition(factory_partition);
 }
 
-esp_err_t firmware_update(esp_manager_client_handle_t client, const char *firmware_url)
+esp_err_t firmware_update(const esp_manager_client_handle_t client, const char *firmware_url)
 {
     esp_http_client_config_t http_config = {
 

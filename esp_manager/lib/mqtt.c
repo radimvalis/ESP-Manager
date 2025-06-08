@@ -2,7 +2,7 @@
 #include <string.h>
 #include "mqtt_client.h"
 
-static char *create_topic_str(esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
+static char *create_topic_str(const esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
 {
     strcpy(topic_dest, client->id);
 
@@ -16,7 +16,7 @@ static char *create_topic_str(esp_manager_client_handle_t client, const char *to
     return topic_dest;
 }
 
-static char *get_data_str(esp_manager_client_handle_t client, esp_mqtt_event_handle_t mqtt_event)
+static char *get_data_str(const esp_manager_client_handle_t client, const esp_mqtt_event_handle_t mqtt_event)
 {
     char *ret = malloc(mqtt_event->data_len + 1);
     NULL_CHECK(ret, return NULL);
@@ -95,7 +95,7 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
     }
 }
 
-int mqtt_publish(esp_manager_client_handle_t client, const char *topic, const char *data, int qos)
+int mqtt_publish(const esp_manager_client_handle_t client, const char *topic, const char *data, int qos)
 {
     char topic_with_id[60];
     create_topic_str(client, topic, topic_with_id);
@@ -103,7 +103,7 @@ int mqtt_publish(esp_manager_client_handle_t client, const char *topic, const ch
     return esp_mqtt_client_publish(client->mqtt_handle, topic_with_id, data, 0, qos, 1);
 }
 
-esp_err_t mqtt_start(esp_manager_client_handle_t client)
+esp_err_t mqtt_start(const esp_manager_client_handle_t client)
 {
     esp_err_t err;
 
