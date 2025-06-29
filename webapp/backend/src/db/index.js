@@ -5,13 +5,9 @@ import defineUser from "./models/user.model.js";
 import defineBoard from "./models/board.model.js";
 import defineFirmware from "./models/firmware.model.js";
 
-export default async function getDb() {
+export default async function getDb(config) {
 
-    const sequelize = new Sequelize({
-
-        dialect: "sqlite",
-        storage: "db.sqlite"
-    });
+    const sequelize = new Sequelize({ dialect: "mariadb", ...config });
 
     [ defineUser, defineBoard, defineFirmware ].forEach((definer) => definer(sequelize, DataTypes));
 

@@ -32,4 +32,19 @@ services:
             args:
                 CA_BUNDLE: ${CA_BUNDLE}
         env_file: .env
-
+        depends_on:
+            database:
+                condition: service_healthy
+    database:
+        image: mariadb
+        environment:
+            MARIADB_USER: ${DATABASE_USERNAME}
+            MARIADB_PASSWORD: ${DATABASE_PASSWORD}
+            MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+            MARIADB_DATABASE: esp_manager
+        healthcheck:
+            test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3

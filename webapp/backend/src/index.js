@@ -9,7 +9,16 @@ import start from "./api/index.js";
 
 (async () => {
 
-    const db = await getDb();
+    const dbConfig = {
+
+        host: "database",
+        port: process.env.DATABASE_PORT,
+        username: process.env.DATABASE_USERNAME,
+        password: process.env.DATABASE_PASSWORD,
+        database: "esp_manager"
+    }
+
+    const db = await getDb(dbConfig);
 
     try {
 
