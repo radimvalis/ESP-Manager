@@ -1,0 +1,694 @@
+openapi: 3.0.4
+info:
+  title: "ESP Manager - Backend API"
+  version: 1.0.0
+servers:
+  - url: "http://{host}:4000"
+    variables:
+      host:
+        default: "localhost"
+paths:
+  "/auth/login":
+    post:
+      summary: "Logs a user into the system"
+      requestBody:
+        "$ref": "#/components/requestBodies/Credentials"
+      responses:
+        "204":
+          description: "Successfully authenticated, two tokens are returned in cookies named `accessCookie` and `refreshCookie`"
+          headers:
+            Set-Cookie:
+              schema:
+                type: "string"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+  "/auth/signup":
+    post:
+      summary: "Registers the user in the system"
+      requestBody:
+        "$ref": "#/components/requestBodies/Credentials"
+      responses:
+        "204":
+          description: "Successfully authenticated, two tokens are returned in cookies named `accessCookie` and `refreshCookie`"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "409":
+          "$ref": "#/components/responses/Conflict"
+        
+  "/auth/logout":
+    post:
+      summary: "Logs the user out"
+      security:
+        - accessAuth: []
+      responses:
+        "204":
+          description: "`accessCookie` and `refreshCookie` were removed"
+  "/auth/refresh":
+    post:
+      summary: "Refreshes the access and refresh tokens of the user"
+      security:
+        - refreshAuth: []
+      responses:
+        "204":
+          description: "`accessCookie` and `refreshCookie` were refreshed"
+  "/users/me":
+    get:
+      summary: "Returns the user"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          description: "A user with the specified ID was not found."
+  "/files/default/{filename}/{id}":
+    get:
+      summary: "Returns a default binary file (firmware executable or NVS image) associated with the board"
+      security:
+        - accessAuth: []
+      parameters:
+        - in: "path"
+          name: "filename"
+          schema:
+            type: "string"
+            enum: [ "firmware", "nvs", "bootloader", "partition-table" ]
+          required: true
+          description: "The name of the binary file."
+        - in: "path"
+          name: "id"
+          schema:
+            type: "string"
+          required: true
+          description: "The board ID."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/files/default/config-form":
+    get:
+      summary: "Returns the configuration form (in JSON format) associated with the default firmware"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - "$ref": "https://raw.githubusercontent.com/radimvalis/NPRG045/1a9cb47583fe6e76e8900ddeab51055aa860a0c0/webapp/backend/data/default/config-form.schema.json"
+                example: 
+                  - key: "name"
+                    type: "data"
+                    encoding: "string"
+                    isRequired: true
+                    label: "Board name"
+                  - key: "wifi_ssid"
+                    type: "data"
+                    encoding: "string"
+                    isRequired: true
+                    label: "SSID"
+                  - key: "wifi_password"
+                    type: "data"
+                    encoding: "string"
+                    isRequired: true
+                    label: "Password"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/files/{filename}/{id}":
+    get:
+      summary: "Returns a binary file (firmware executable or NVS image) associated with the board"
+      security:
+        - basicAuth: []
+      parameters:
+        - in: "path"
+          name: "filename"
+          schema:
+            type: "string"
+            enum: [ "firmware", "nvs" ]
+          required: true
+          description: "The name of the binary file."
+        - in: "path"
+          name: "id"
+          schema:
+            type: "string"
+          required: true
+          description: "The board ID."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+        "401":
+          "$ref": "#/components/responses/BasicAuthError"
+  "/files/config-form/{id}":
+    get:
+      summary: "Returns the configuration form (in JSON format) associated with the firmware"
+      security:
+        - accessAuth: []
+      parameters:
+        - in: "path"
+          name: "id"
+          schema:
+            type: "string"
+          required: true
+          description: "The firmware ID."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - "$ref": "https://raw.githubusercontent.com/radimvalis/NPRG045/1a9cb47583fe6e76e8900ddeab51055aa860a0c0/webapp/backend/data/default/config-form.schema.json"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/boards/chips":
+    get:
+      summary: "Returns a list of currently supported chips"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  "$ref": "#/components/schemas/ESPChip"
+                example: [ "esp32" ]
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+  "/boards":
+    get:
+      summary: "Returns a list of all the user's boards"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+                schema:
+                  type: "array"
+                  items:
+                    "$ref": "#/components/schemas/Board"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+    post:
+      summary: "Registers a new board"
+      security:
+        - accessAuth: []
+      requestBody:
+        "$ref": "#/components/requestBodies/NewBoard"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+                schema:
+                  "$ref": "#/components/schemas/Board"
+                example:
+                  id: "cf44ba44-ccbc-438f-af08-dbcec89a62a4"
+                  name: "my_board_3"
+                  isOnline: true
+                  isBeingUpdated: false
+                  chipName: "esp32"
+                  flashSizeMB: 8
+                  firmwareStatus: "default"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "409":
+          "$ref": "#/components/responses/Conflict"
+          
+  "/boards/watch":
+    get:
+      summary: "Monitors all the user's boards for updates"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/event-stream:
+                schema:
+                  type: "array"
+                  items:
+                    "$ref": "#/components/schemas/Board"
+  "/boards/{id}":
+    parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+        required: true
+        description: "Board ID"
+    get:
+      summary: "Returns the board"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+                schema:
+                  type: "array"
+                  items:
+                    "$ref": "#/components/schemas/Board"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+    put:
+      summary: "Changes the firmware that will run on the board"
+      security:
+        - accessAuth: []
+      requestBody:
+        "$ref": "#/components/requestBodies/BoardFlash"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+                schema:
+                  type: "array"
+                  items:
+                    "$ref": "#/components/schemas/Board"
+                example:
+                    id: "cf44ba44-ccbc-438f-af08-dbcec89a62a4"
+                    name: "my_board_3"
+                    isOnline: true
+                    isBeingUpdated: true
+                    chipName: "esp32"
+                    flashSizeMB: 8
+                    firmwareId: "517e332f-a41c-4441-98a4-38fbcf2bb47f"
+                    firmwareVersion: 1
+                    firmwareStatus: "latest"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+    delete:
+      summary: "Deletes the board"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+  "/boards/{id}/watch":
+    parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+        required: true
+        description: "Board ID"
+    get:
+      summary: "Monitors the board for updates"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/event-stream:
+              schema:
+                "$ref": "#/components/schemas/Board"
+              
+  "/firmwares":
+    get:
+      summary: "Returns a list of all the user's firmware"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  "$ref": "#/components/schemas/Firmware"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+    post:
+      summary: "Creates a new firmware"
+      security:
+        - accessAuth: []
+      requestBody:
+        "$ref": "#/components/requestBodies/NewFirmware"
+      responses:  
+        "200":
+            description: "OK"
+            content:
+              application/json:
+                schema:
+                  "$ref": "#/components/schemas/Firmware"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "409":
+          "$ref": "#/components/responses/Conflict"
+  "/firmwares/{id}":
+    parameters:
+      - in: "path"
+        name: "id"
+        schema:
+          type: "string"
+        required: true
+        description: "Firmware ID"
+    get:
+      summary: "Returns the firmware"
+      security:
+        - accessAuth: []
+      parameters:
+        - in: "path"
+          name: "id"
+          schema:
+            type: "string"
+          required: true
+          description: "The firmware ID."
+      responses:
+        "200":
+            description: "OK"
+            content:
+              application/json:
+                schema:
+                  "$ref": "#/components/schemas/Firmware"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+         "$ref": "#/components/responses/NotFound"
+    post:
+      summary: "Uploads a new version of the executable"
+      security:
+        - accessAuth: []
+      requestBody:
+        "$ref": "#/components/requestBodies/FirmwareUpdate"
+      responses:
+        "200":
+            description: "OK"
+            content:
+              application/json:
+                schema:
+                  "$ref": "#/components/schemas/Firmware"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+    delete:
+      summary: "Deletes the firmware"
+      security:
+        - accessAuth: []
+      responses:
+        "200":
+          description: "OK"
+        "400":
+          "$ref": "#/components/responses/BadRequest"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+      
+components:
+  securitySchemes:
+    accessAuth:
+      type: "apiKey"
+      in: "cookie"
+      name: "accessCookie"
+    refreshAuth:
+      type: "apiKey"
+      in: "cookie"
+      name: "refreshCookie"
+    basicAuth:
+      type: "http"
+      scheme: "basic"
+  requestBodies:
+    Credentials:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              username:
+                type: "string"
+              password:
+                type: "string"
+          example:
+            username: "example_user"
+            password: "example_password"
+    NewBoard:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              wifi_ssid:
+                type: "string"
+              wifi_password:
+                type: "string"
+              chipName:
+                "$ref": "#/components/schemas/ESPChip"
+              flashSizeMB:
+                "$ref": "#/components/schemas/FlashSizeMB"
+          example:
+            name: "my_board_3"
+            wifi_ssid: "ssid"
+            wifi_password: "wifi_password"
+            chipName: "esp32"
+            flashSizeMB: 8
+    BoardFlash:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              type:
+                "$ref": "#/components/schemas/BoardUpdateType"
+        multipart/form-data:
+          schema:
+            type: "object"
+            properties:
+              firmwareId:
+                type: "string"
+              type:
+                "$ref": "#/components/schemas/BoardUpdateType"
+            required: [ "firmwareId", "type" ]
+
+    NewFirmware:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              target:
+                type: "string"
+              files:
+                type: "array"
+                description: "Firmware file and, optionally, a config form"
+                minItems: 1
+                maxItems: 2
+                items:
+                  type: "string"
+                  format: "binary"
+            required: [ "name", "target", "files" ]
+    FirmwareUpdate:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: "object"
+            properties:
+              file:
+                type: "string"
+                format: "binary"
+            required: [ "file" ]
+  responses:
+    BadRequest:
+      description: "Request parameters are invalid or missing"
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    Unauthorized:
+      description: "Invalid or missing authentication credentials"
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+          example:
+            message: "Token verification has failed"
+    NotFound:
+      description: "The specified resource was not found"
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    Conflict:
+      description: "The resource already exists"
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    BasicAuthError:
+      description: "Unauthorized"
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: "string"
+            example: 'Basic realm="ESP Manager", charset="UTF-8"'
+  schemas:
+    ESPChip:
+      type: "string"
+      enum: [ "esp32", "esp32c2", "esp32c3", "esp32c5", "esp32c6", "esp32c61", "esp32h2", "esp32p4", "esp32s2", "esp32s3", "esp8266" ]
+    BoardUpdateType:
+      type: "string"
+      enum: [ "flash", "updateFirmware", "defaulFirmware" ]
+    FlashSizeMB:
+      type: "integer"
+      enum: [ 2, 4, 8, 16, 32 ]
+    Error:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          description: "The description of the error"
+      example:
+        message: "Error"
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "The user ID."
+        username:
+          type: "string"
+          description: "The user's username."
+      example:
+        id: "d35f4ca7-bc7d-4dd7-b761-86d2dda68a2a"
+        username: "example_user"
+    Firmware:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "The firmware ID."
+        name:
+          type: "string"
+          description: "The firmware's name."
+        target:
+          "$ref": "#/components/schemas/ESPChip"
+        version:
+          type: "integer"
+          description: "The version of the firmware."
+        hasConfig:
+          type: "boolean"
+          description: "Indicates whether the firmware has an associated configuration form."
+        sizeB:
+          type: "integer"
+          description: "The size of the executable in bytes."
+      example:
+        id: "517e332f-a41c-4441-98a4-38fbcf2bb47f"
+        name: "PIR_App"
+        target: "esp32"
+        version: 1
+        hasConfig: true
+        sizeB: 906912
+    Board:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "The board ID."
+        name:
+          type: "string"
+          description: "The board's name"
+        isOnline:
+          type: "boolean"
+          description: "Indicates whether the board is currently online."
+        isBeingUpdated:
+          type: "boolean"
+          description: "Indicates whether the board is currently being updated."
+        chipName:
+          "$ref": "#/components/schemas/ESPChip"
+        flashSizeMB:
+          "$ref": "#/components/schemas/FlashSizeMB"
+        firmwareId:
+          type: "string"
+          nullable: true
+        firmwareVersion:
+          type: "integer"
+          minimum: 1
+          nullable: true
+        firmwareStatus:
+          type: "string"
+          nullable: true
+          enum: [ "default", "latest", "update available" ]
+      example:
+          id: "cf44ba44-ccbc-438f-af08-dbcec89a62a4"
+          name: "my_board_3"
+          isOnline: true
+          isBeingUpdated: false
+          chipName: "esp32"
+          flashSizeMB: 8
+          firmwareId: "517e332f-a41c-4441-98a4-38fbcf2bb47f"
+          firmwareVersion: 1
+          firmwareStatus: "latest"
