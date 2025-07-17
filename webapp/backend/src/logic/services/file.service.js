@@ -21,6 +21,10 @@ export default class FileService {
     static _NVS_SIZE =  0x10000;
     static _DEFAULT_NVS_SIZE =  0x5000;
 
+    /**
+     * Creates FileService
+     * @param {object} config 
+     */
     constructor(config) {
 
         this._dataDirectoryPath = config.path.dataDirectoryPath;
@@ -31,9 +35,10 @@ export default class FileService {
         this._validateConfigForm = null;
     }
 
+    /**
+     * Loads and compiles config-forms schema
+     */
     async init() {
-
-        // Compile config-form schema
 
         const ajv = new Ajv2019();
         const schema = await fs.readFile(path.join(this._defaultDir, FileService._CONFIG_FORM_SCHEMA), "utf8");
@@ -42,46 +47,91 @@ export default class FileService {
         this._validateConfigForm = ajv.compile(schemaAsObject);
     }
 
+    /**
+     * 
+     * @param {string} target 
+     * @returns {string}
+     */
     getDefaultFirmwarePath(target) {
 
         return path.join(this._getTargetDir(target), FileService._FIRMWARE);
     }
 
+    /**
+     * 
+     * @returns {string}
+     */
     getDefaultConfigFormPath() {
 
         return path.join(this._defaultDir, FileService._CONFIG_FORM);
     }
 
+    /**
+     * 
+     * @param {number} flashSizeMB 
+     * @returns {string} 
+     */
     getPartitionTablePath(flashSizeMB) {
 
         return path.join(this._partitionTablesDir, "partition_table_" + flashSizeMB + "MB.bin");
     }
 
+    /**
+     * 
+     * @param {string} taget 
+     * @param {number} flashSizeMB 
+     * @returns 
+     */
     getBootloaderPath(taget, flashSizeMB) {
 
         return path.join(this._getBootloadersDir(taget), "bootloader_" + flashSizeMB + "MB.bin");
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     * @returns {string}
+     */
     getDefaultNVSPath(boardId) {
 
         return path.join(this._getBoardDir(boardId), FileService._DEFAULT_NVS_BIN);
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     * @returns {string}
+     */
     getNVSPath(boardId) {
 
         return path.join(this._getBoardDir(boardId), FileService._NVS_BIN);
     }
 
+    /**
+     * 
+     * @param {string} firmwareId 
+     * @returns {string}
+     */
     getFirmwarePath(firmwareId) {
 
         return path.join(this._getFirmwareDir(firmwareId), FileService._FIRMWARE);
     }
 
+    /**
+     * 
+     * @param {string} firmwareId 
+     * @returns {string}
+     */
     getConfigFormPath(firmwareId) {
 
         return path.join(this._getFirmwareDir(firmwareId), FileService._CONFIG_FORM);
     }
 
+    /**
+     * Stores firmware image to firmware directory
+     * @param {string} firmwareId 
+     * @param {File} firmwareFile 
+     */
     async saveFirmware(firmwareId, firmwareFile) {
 
         // Validate
@@ -106,6 +156,11 @@ export default class FileService {
         await fs.unlink(firmwareFile.path);
     }
     
+    /**
+     * Stores configuration file to firmware directory
+     * @param {string} firmwareId 
+     * @param {File} configFormFile 
+     */
     async saveConfigForm(firmwareId, configFormFile) {
 
         // Validate
@@ -136,16 +191,28 @@ export default class FileService {
        await fs.unlink(configFormFile.path);
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     */
     async createBoardDir(boardId) {
 
         await fs.mkdir(path.join(this._boardsDir, boardId));
     }
 
+    /**
+     * 
+     * @param {string} firmwareId 
+     */
     async createFirmwareDir(firmwareId) {
 
         await fs.mkdir(path.join(this._firmwaresDir, firmwareId));
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     */
     async tryDeleteBoardDir(boardId) {
 
         try {
@@ -156,6 +223,10 @@ export default class FileService {
         catch {}
     }
 
+    /**
+     * 
+     * @param {string} firmwareId 
+     */
     async tryDeleteFirmwareDir(firmwareId) {
 
         try {
@@ -166,6 +237,12 @@ export default class FileService {
         catch {}
     }
 
+    /**
+     * Generates NVS image
+     * @param {object} configData 
+     * @param {string} firmwareId 
+     * @param {string} boardId 
+     */
     async createNVS(configData, firmwareId, boardId) {
 
         const configFormPath = this.getConfigFormPath(firmwareId);
@@ -180,11 +257,16 @@ export default class FileService {
         await this._createNVS(csvPath, binPath, FileService._NVS_SIZE);        
     }
 
+    /**
+     * Generates NVS image with ESP Manager data
+     * @param {object} configData 
+     * @param {object} board 
+     */
     async createDefaultNVS(configData, board) {
 
         const defaultConfigForm = await FileService._loadConfigForm(path.join(this._defaultDir, FileService._CONFIG_FORM));
 
-        // Add config which is not part of default config form
+        // Add ESP Manager configuration which is not part of default config form
 
         configData.id = board.id;
         defaultConfigForm.push({ key: "id", type: "data", encoding: "string" });
@@ -260,6 +342,11 @@ export default class FileService {
         return path.join(this._firmwaresDir, firmwareId);
     }
 
+    /**
+     * Loads configuration form from firmware directory
+     * @param {string} configFormPath 
+     * @returns {object} Configuration form object
+     */
     static async _loadConfigForm(configFormPath) {
 
         const buffer = await fs.readFile(configFormPath);
@@ -267,6 +354,12 @@ export default class FileService {
         return JSON.parse(buffer);
     }
 
+    /**
+     * Generates NVS description using configData and configForm
+     * @param {object} configData 
+     * @param {object} configForm 
+     * @param {string} outputPath 
+     */
     static async _saveConfigDataAsCSV(configData, configForm, outputPath) {
 
         let content = "";
@@ -299,6 +392,11 @@ export default class FileService {
         await fs.writeFile(outputPath, content);
     }
 
+    /**
+     * 
+     * @param {string} value Value to escape 
+     * @returns {string} Escaped value
+     */
     static _escapeCSVString(value) {
 
         if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -311,6 +409,9 @@ export default class FileService {
         return value;
     }
 
+    /***
+     * Generates NVS image from CSV
+     */
     async _createNVS(inputPath, outputPath, nvsSize) {
      
         const process = spawn("python3", [ "-m", "esp_idf_nvs_partition_gen", "generate", inputPath, outputPath, nvsSize ]);

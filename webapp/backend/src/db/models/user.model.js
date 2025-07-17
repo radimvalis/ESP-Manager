@@ -27,6 +27,10 @@ export default (sequelize, DataTypes) => {
         }
     );
 
+    /**
+     * Removes sensitive data from user object
+     * @returns {object} - user without sensitive data
+     */
     User.prototype.getSanitized = function () {
 
         const user = this.toJSON();

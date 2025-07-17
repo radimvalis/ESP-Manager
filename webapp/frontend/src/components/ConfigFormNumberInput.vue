@@ -51,6 +51,10 @@
         model.value = newValue === "" ? undefined : newValue; 
     });
 
+    /**
+     * Checks invalid number formats
+     * @param event - Input event
+     */
     function validateBeforeInput(event) {
 
         if (event.inputType === "insertFromPaste" && !/^0$|^-?([1-9]\d*)$/.test(event.data)) {

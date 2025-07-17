@@ -47,6 +47,10 @@ export default (sequelize, DataTypes) => {
         }
     );
 
+    /**
+     * Removes sensitive data from firmware object
+     * @returns {object} - firmware without sensitive data
+     */
     Firmware.prototype.getSanitized = function () {
 
         const firmware = this.toJSON();

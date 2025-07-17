@@ -11,6 +11,9 @@ import { endpoint } from "shared";
 
 export default class ApiProvider {
 
+    /**
+     * Creates ApiProvider
+     */
     constructor() {
 
         const apiBaseUrl = location.origin + "/api";

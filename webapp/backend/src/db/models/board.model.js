@@ -86,6 +86,10 @@ export default (sequelize, DataTypes) => {
         }
     );
 
+    /**
+     * Removes sensitive data from board object
+     * @returns {object} - board without sensitive data
+     */
     Board.prototype.getSanitized = function () {
 
         const board = this.toJSON();

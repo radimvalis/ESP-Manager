@@ -1,6 +1,11 @@
 
 import { connectAsync } from "mqtt";
 
+/**
+ * Connects to MQTT broker
+ * @param {object} config - MQTT configuration
+ * @returns {object} - MQTT client
+ */
 export default async function getMqtt(config) {
 
     const client = await connectAsync(config.brokerUrl, {
@@ -11,6 +16,8 @@ export default async function getMqtt(config) {
         username: config.username,
         password: config.password,
     });
+
+    // Connect as Dynamic Security Plugin admin
 
     const message = {
 

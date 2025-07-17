@@ -3,6 +3,9 @@
 
     const props = defineProps({ textToCopy: String });
 
+    /**
+     * Saves text to clipboard
+     */
     async function copyToClipboard() {
         
         try {

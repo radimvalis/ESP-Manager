@@ -9,6 +9,8 @@ static esp_err_t write_config(const esp_manager_client_handle_t client, const es
 {
     esp_err_t err;
 
+    // Open HTTP connection
+
     esp_http_client_config_t http_config = {
 
         .url = image_url,
@@ -35,6 +37,8 @@ static esp_err_t write_config(const esp_manager_client_handle_t client, const es
 
     while (true) {
 
+        // Write data from HTTP stream to buffer
+
         int data_length = esp_http_client_read(http_client, buffer, BUFFER_SIZE);
 
         if (data_length < 0) {
@@ -45,6 +49,8 @@ static esp_err_t write_config(const esp_manager_client_handle_t client, const es
         }
 
         else if (data_length > 0) {
+
+            // Write data from buffer to NVS partition
 
             err = esp_partition_write(partition, image_length, (const void *)buffer, data_length);
             ERROR_CHECK(err, goto _cleanup);
@@ -77,6 +83,9 @@ esp_err_t config_update(const esp_manager_client_handle_t client, const char *co
 {
     esp_err_t err;
 
+
+    // Find NVS partition labeled as "config"
+
     esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "config");
     NULL_CHECK(pi, return ESP_FAIL);
 
@@ -88,6 +97,8 @@ esp_err_t config_update(const esp_manager_client_handle_t client, const char *co
 
     err = esp_partition_erase_range(config_partition, 0, config_partition->size);
     ERROR_CHECK(err, return err);
+
+    // Download NVS image and write ti to NVS partition
 
     err = write_config(client, config_partition, config_url);
     ERROR_CHECK(err, return err);

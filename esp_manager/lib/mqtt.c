@@ -4,6 +4,8 @@
 
 static char *create_topic_str(const esp_manager_client_handle_t client, const char *topic_src, char *topic_dest)
 {
+    // Set board ID as first level of topic
+
     strcpy(topic_dest, client->id);
 
     if (*topic_src != '/') {
@@ -11,11 +13,14 @@ static char *create_topic_str(const esp_manager_client_handle_t client, const ch
         strcat(topic_dest, "/");
     }
 
+    // Append rest of topic path
+
     strcat(topic_dest, topic_src);
 
     return topic_dest;
 }
 
+// Parses data from MQTT event
 static char *get_data_str(const esp_manager_client_handle_t client, const esp_mqtt_event_handle_t mqtt_event)
 {
     char *ret = malloc(mqtt_event->data_len + 1);
@@ -40,6 +45,8 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
 
         const char* subscribe_topics[] = { TOPIC_CMD_UPDATE, TOPIC_CMD_BOOT_DEFAULT };
 
+        // Subscribe to command topics
+
         for (size_t i = 0; i < sizeof(subscribe_topics) / sizeof(subscribe_topics[0]); i++) {
 
             create_topic_str(client, subscribe_topics[i], topic);
@@ -61,6 +68,8 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
             connect_result_event.id = EVENT_MQTT_ERROR;
         }
 
+        // Inform ESP Manager about result of MQTT connection attempt
+
         xQueueSend(client->queue_handle, &connect_result_event, 0);
 
         break;
@@ -76,6 +85,8 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
             data_event.id = EVENT_UPDATE;
             data_event.data = get_data_str(client, mqtt_event);
 
+            // Send message to ESP Manager
+
             xQueueSend(client->queue_handle, &data_event, 0);
         }
 
@@ -83,6 +94,8 @@ static void mqtt_event_handler(void *args, esp_event_base_t event_base, int32_t 
 
             data_event.id = EVENT_BOOT_DEFAULT;
             data_event.data = get_data_str(client, mqtt_event);
+
+            // Send message to ESP Manager
 
             xQueueSend(client->queue_handle, &data_event, 0);   
         }

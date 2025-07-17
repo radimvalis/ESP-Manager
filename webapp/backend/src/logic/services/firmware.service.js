@@ -11,6 +11,13 @@ export default class FirmwareService {
         this._file = fileService;
     }
 
+    /**
+     * Creates FirmwareService
+     * @param {string} userId 
+     * @param {object} body Request body
+     * @param {Array<File>} files Firmware bianry and optional configuration file
+     * @returns {object} New firmware object
+     */
     async create(userId, body, files) {
 
         const name = body.name;
@@ -85,6 +92,11 @@ export default class FirmwareService {
         }
     }
 
+    /**
+     * Retrieves all boards of the user
+     * @param {string} userId 
+     * @returns {Array<object>}
+     */
     async getAll(userId) {
 
         const firmwares = await this._db.models.firmware.findAll({ where: { userId } });
@@ -92,6 +104,11 @@ export default class FirmwareService {
         return firmwares.map((f) => f.getSanitized());
     }
 
+    /**
+     * Retrieves board
+     * @param {string} firmwareId 
+     * @returns {object} Board object
+     */
     async getOne(firmwareId) {
 
         const firmware = await this._db.models.firmware.findByPk(firmwareId);
@@ -104,6 +121,13 @@ export default class FirmwareService {
         return firmware.getSanitized();
     }
 
+    /**
+     * Stores new firmware image
+     * @param {string} userId 
+     * @param {string} firmwareId 
+     * @param {File} newFirmwareFile 
+     * @returns {object} Updated firmware object
+     */
     async update(userId, firmwareId, newFirmwareFile) {
         
         return await this._db.transaction(async t => {
@@ -120,6 +144,11 @@ export default class FirmwareService {
         });
     }
 
+    /**
+     * Soft-deletes firmware
+     * @param {string} firmwareId 
+     * @param {string} userId 
+     */
     async delete(firmwareId, userId) {
 
         const firmware = await this._getByIdAndUserId(firmwareId, userId);
@@ -129,6 +158,10 @@ export default class FirmwareService {
         await this.tryForceDelete(firmwareId);
     }
 
+    /**
+     * Deletes firmware and its directory if possible
+     * @param {string} firmwareId 
+     */
     async tryForceDelete(firmwareId) {
 
         const firmware = await this._db.models.firmware.findByPk(firmwareId, { paranoid: false });
@@ -145,6 +178,13 @@ export default class FirmwareService {
         }
     }
 
+    /**
+     * 
+     * @param {string} firmwareId 
+     * @param {string} userId 
+     * @param {boolean} paranoid 
+     * @returns {object} Firmware object
+     */
     async _getByIdAndUserId(firmwareId, userId, paranoid=true) {
 
         const firmware = await this._db.models.firmware.findByPk(firmwareId, { paranoid });
@@ -157,6 +197,11 @@ export default class FirmwareService {
         return firmware;
     }
 
+    /**
+     * Checks if firmware is flashed into any board
+     * @param {string} firmwareId 
+     * @returns {boolean}
+     */
     async _isFlashed(firmwareId) {
 
         return (await this._db.models.board.count({ where: { firmwareId } })) > 0;

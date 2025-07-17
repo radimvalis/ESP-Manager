@@ -6,6 +6,8 @@
 
 esp_err_t set_factory_as_boot_partition(void)
 {
+    // Find factory partition
+
     esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_FACTORY, NULL);
     NULL_CHECK(pi, return ESP_FAIL);
 
@@ -14,6 +16,8 @@ esp_err_t set_factory_as_boot_partition(void)
     esp_partition_iterator_release(pi);
 
     NULL_CHECK(factory_partition, return ESP_FAIL);
+
+    // Set it as boot partition
 
     return esp_ota_set_boot_partition(factory_partition);
 }

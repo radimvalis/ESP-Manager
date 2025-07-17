@@ -5,6 +5,11 @@ import defineUser from "./models/user.model.js";
 import defineBoard from "./models/board.model.js";
 import defineFirmware from "./models/firmware.model.js";
 
+/**
+ * Creates Sequelize instance
+ * @param {object} config - Sequelize configuration 
+ * @returns {object} - Sequelize instance
+ */
 export default async function getDb(config) {
 
     const sequelize = new Sequelize({ dialect: "mariadb", ...config });

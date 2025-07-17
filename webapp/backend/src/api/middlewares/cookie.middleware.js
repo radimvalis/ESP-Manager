@@ -2,6 +2,12 @@
 import asyncCatch from "./error.middleware.js";
 import { InvalidInputError, AuthorizationError } from "../../utils/errors.js";
 
+/**
+ * 
+ * @param {string} cookieName - Cookie name to check 
+ * @param {(token: string) => object} verifyFn - Function that verifies token stored in cookieName
+ * @returns 
+ */
 export default function cookieMiddleware(cookieName, verifyFn) {
 
     return asyncCatch(async (req, res, next) => {

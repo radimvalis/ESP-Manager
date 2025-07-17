@@ -9,6 +9,8 @@ import start from "./api/index.js";
 
 (async () => {
 
+    // Connect to database
+
     const dbConfig = {
 
         host: "database",
@@ -31,6 +33,8 @@ import start from "./api/index.js";
         
         return;
     }
+
+    // Connect to MQTT
 
     let mqtt;
 
@@ -78,9 +82,9 @@ import start from "./api/index.js";
 
         return;
     }
-
-    const port = process.env.BACKEND_PORT || 4000;
     
+    // Create context object
+
     const config = {
 
         url: {
@@ -119,6 +123,10 @@ import start from "./api/index.js";
     const context = new ApplicationContext(config);
 
     await context.init();
+
+    // Start HTTP server
+
+    const port = process.env.BACKEND_PORT || 4000;
 
     start(context, port);
 })();

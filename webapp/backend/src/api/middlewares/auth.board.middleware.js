@@ -1,6 +1,10 @@
 
 import asyncCatch from "./error.middleware.js";
 
+/**
+ * Checks basic access authentication
+ * @param {ApplicationContext} context 
+ */
 export default function authBoardMiddleware(context) {
 
     return asyncCatch(async (req, res, next) => {
@@ -14,6 +18,8 @@ export default function authBoardMiddleware(context) {
 
             return;
         }
+
+        // Parse auth header
 
         const credentialsEncoded = authHeader.split(" ")[1];
         const credentialsDecoded = Buffer.from(credentialsEncoded, "base64").toString("utf-8");

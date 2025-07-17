@@ -21,7 +21,6 @@ class AuthorizationError extends Error {
     }
 }
 
-
 class NotFoundError extends Error {
 
     constructor(...params) {

@@ -3,6 +3,10 @@ import { serialize } from "cookie";
 
 export default class CookieService {
 
+    /**
+     * Creates CookieService
+     * @param {object} config 
+     */
     constructor(config) {
 
         this.accessCookieName = config.cookie.accessCookieName;
@@ -12,6 +16,11 @@ export default class CookieService {
         this.refreshCookiePath = config.cookie.refreshCookiePath;
     }
 
+    /**
+     * Converts tokens to cookie headers
+     * @param {object} tokens  
+     * @returns {Array<string>} Tokens converted to cookie headers
+     */
     getCookiesFromTokens(tokens) {
 
         return [
@@ -21,6 +30,13 @@ export default class CookieService {
         ];
     }
 
+    /**
+     * Serializes data into cookie header
+     * @param {any} data 
+     * @param {string} cookieName 
+     * @param {string} cookiePath 
+     * @returns {string} Cookie header
+     */
     _createCookie(data, cookieName, cookiePath) {
 
         const cookieOptions = {
@@ -29,6 +45,8 @@ export default class CookieService {
             sameSite: true,
             path: cookiePath
         };
+
+        // Serialize data into cookie header
 
         return serialize(cookieName, data, cookieOptions);   
     }

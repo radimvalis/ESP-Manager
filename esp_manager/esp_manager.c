@@ -7,6 +7,7 @@
 #include "nvs_flash.h"
 #include "esp_heap_caps.h"
 
+// Reads string from NVS
 static char *nvs_get_str_ptr(const nvs_handle_t handle, const char *key)
 {
     char *ret;
@@ -25,6 +26,7 @@ static char *nvs_get_str_ptr(const nvs_handle_t handle, const char *key)
     return ret;
 }
 
+// Reads firmware ID and firmware version from NVS
 static esp_err_t get_firmware_data(char **firmware_id, int16_t *version)
 {
     esp_err_t err;
@@ -45,6 +47,7 @@ _cleanup:
     return err; 
 }
 
+// Writes firmware ID and firmware version from NVS
 static esp_err_t set_firmware_data(const char *firmware_id, int version)
 {
     esp_err_t err;
@@ -68,6 +71,7 @@ _cleanup:
     return err;
 }
 
+// Sends udpate result to backend via MQTT
 static int publish_update_result(const esp_manager_client_handle_t client, const char *topic)
 {
     int msg_id;
@@ -105,6 +109,8 @@ static void handle_connect_wifi_state(esp_manager_client_handle_t client)
 
     esp_manager_event_t event;
 
+    // Wait for Wi-Fi connection
+
     xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
 
     if (event.id == EVENT_WIFI_CONNECTED) {
@@ -129,10 +135,14 @@ static void handle_connect_mqtt_state(esp_manager_client_handle_t client)
 
     esp_manager_event_t event;
 
+    // Wait for MQTT connection
+
     xQueueReceive(client->queue_handle, &event, portMAX_DELAY);
 
     if (event.id == EVENT_MQTT_CONNECTED) {
         
+        // Inform backend that board is online
+
         mqtt_publish(client, TOPIC_INFO_ONLINE, NULL, 1);
 
         client->state = STATE_RUN;
@@ -152,6 +162,8 @@ static void handle_run_state(esp_manager_client_handle_t client)
 
     if (event.id == EVENT_UPDATE) {
 
+        // Parse MQTT message
+
         cJSON *update_data = cJSON_Parse((char *)event.data);
 
         cJSON *firmware_id = cJSON_GetObjectItemCaseSensitive(update_data, "firmware_id");
@@ -161,9 +173,13 @@ static void handle_run_state(esp_manager_client_handle_t client)
 
         esp_err_t err = ESP_FAIL;
 
+        // Download firmware if firmware URL was received
+
         if (firmware_url && firmware_url->valuestring) {
 
             err = firmware_update(client, firmware_url->valuestring);
+
+            // Download config if config URL was received
 
             if (err == ESP_OK && config_url && config_url->valuestring) {
 
@@ -173,7 +189,11 @@ static void handle_run_state(esp_manager_client_handle_t client)
 
         if (err == ESP_OK) {
 
+            // Save info about new firmware
+
             set_firmware_data(firmware_id->valuestring, version->valueint);
+
+            // Inform backend that update was successful
 
             publish_update_result(client, TOPIC_INFO_UPDATE_OK);
 
@@ -183,6 +203,8 @@ static void handle_run_state(esp_manager_client_handle_t client)
         }
         
         else {
+
+            // Inform backend that update failed
 
             publish_update_result(client, TOPIC_INFO_UPDATE_ERROR);
         }
@@ -196,7 +218,11 @@ static void handle_run_state(esp_manager_client_handle_t client)
         
         if (err == ESP_OK) {
 
+            // Switch to default firmware
+
             set_firmware_data(DEFAULT_FIRMWARE_ID, DEFAULT_FIRMWARE_VERSION);
+
+            // Inform backend that update was successful
 
             publish_update_result(client, TOPIC_INFO_UPDATE_OK);
 
@@ -206,6 +232,8 @@ static void handle_run_state(esp_manager_client_handle_t client)
         }
 
         else {
+
+            // Inform backend that update failed
 
             publish_update_result(client, TOPIC_INFO_UPDATE_ERROR);
         }

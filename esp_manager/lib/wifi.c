@@ -18,6 +18,8 @@ static void wifi_event_handler(void *args, esp_event_base_t event_base, int32_t 
         
         esp_manager_event_t event = { .id = EVENT_WIFI_CONNECTED };
 
+        // Inform ESP Manager that Wi-Fi connection was established
+
         xQueueSend(client->queue_handle, &event, 0);
         
         break;

@@ -7,6 +7,12 @@ import { randomBytes } from "crypto";
 
 export default class BoardService {
 
+    /**
+     * Creates BoardService
+     * @param {object} config 
+     * @param {FileService} fileService 
+     * @param {FirmwareService} firmwareService 
+     */
     constructor(config, fileService, firmwareService) {
 
         this._mqtt = config.mqtt;
@@ -20,7 +26,12 @@ export default class BoardService {
         this._emitter = new EventEmitter();
     }
 
+    /**
+     * Registers MQTT message handlers
+     */
     async init() {
+
+        // Subscribe to all topics
 
         await this._mqtt.subscribeAsync([
             
@@ -70,11 +81,21 @@ export default class BoardService {
         });
     }
 
+    /**
+     * Returns list of supported targets
+     * @returns {Array<string>} List of supported targets
+     */
     getSupportedChips() {
 
         return Object.keys(this._targets);
     }
 
+    /**
+     * Creates new board
+     * @param {string} userId 
+     * @param {object} body Request body containing board data
+     * @returns {object} New board object
+     */
     async create(userId, body) {
 
         const name = body.name;
@@ -150,6 +171,11 @@ export default class BoardService {
         }
     }
 
+    /**
+     * Retrieves all boards of given user
+     * @param {string} userId 
+     * @returns {Array<object>} List of board objects
+     */
     async getAll(userId) {
 
         const boards = await this._db.models.board.findAll({
@@ -178,6 +204,12 @@ export default class BoardService {
         return boardsSanitized;
     }
 
+    /**
+     * Retrieves board
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @returns {object} Board object
+     */
     async getOne(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -185,6 +217,12 @@ export default class BoardService {
         return board.getSanitized();
     }
 
+    /**
+     * Retrieves board if httpPassword of the board matches httpPassword
+     * @param {string} boardId 
+     * @param {string} httpPassword 
+     * @returns {object} Board object
+     */
     async getByHttpCredentials(boardId, httpPassword) {
 
         const board = await this._db.models.board.findByPk(boardId);
@@ -202,6 +240,12 @@ export default class BoardService {
         return board;
     }
 
+    /**
+     * Watches all boards of the user for changes
+     * @param {string} userId 
+     * @param {(updatedBoards: Array<object>) => void} updateCb 
+     * @param {AbortSignal} abortSignal 
+     */
     async watchAll(userId, updateCb, abortSignal) {
 
         const listener = async () => {
@@ -216,6 +260,13 @@ export default class BoardService {
         this._emitter.on(userId, listener);
     }
 
+    /**
+     * Watches board for changes
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @param {(updatedBoards: Array<object>) => void} updateCb 
+     * @param {AbortSignal} abortSignal 
+     */
     async watchOne(boardId, userId, updateCb, abortSignal) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -232,6 +283,14 @@ export default class BoardService {
         this._emitter.on(board.userId, listener);
     }
 
+    /**
+     * Updates board over the air
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @param {object} body Request body 
+     * @param {Array<File>} files Files to be written to NVS
+     * @returns {object} Updated board object
+     */
     async update(boardId, userId, body, files) {
 
         switch(body.type) {
@@ -254,6 +313,11 @@ export default class BoardService {
         }
     }
 
+    /**
+     * Deletes board
+     * @param {string} boardId 
+     * @param {string} userId 
+     */
     async delete(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -269,6 +333,14 @@ export default class BoardService {
         await this._firmware.tryForceDelete(firmwareId);
     }
 
+    /**
+     * Flashes firmware into board over the air
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @param {object} body Request body 
+     * @param {Array<File>} files Files to be written to NVS
+     * @returns {object} Updated board object
+     */
     async _flash(boardId, userId, body, files) {
 
         const firmwareId = body.firmwareId;
@@ -303,6 +375,8 @@ export default class BoardService {
             message.config_url = this._serverUrl + "/api" + endpoint.files.NVS(board.id);
         }
 
+        // Send update command to board
+
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
 
         await board.update({ isBeingUpdated: true });
@@ -312,6 +386,12 @@ export default class BoardService {
         return board.getSanitized();        
     }
 
+    /**
+     * Updates firmware flashed to the board over the air
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @returns {object} Updated board object
+     */
     async _updateFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -331,6 +411,8 @@ export default class BoardService {
             firmware_url: this._serverUrl + "/api" + endpoint.files.firmware(board.firmwareId)
         };
 
+        // Send update command to board
+
         await this._mqtt.publishAsync(board.id + "/cmd/update", JSON.stringify(message), { qos: 2 });
 
         await board.update({ isBeingUpdated: true });
@@ -340,6 +422,12 @@ export default class BoardService {
         return board.getSanitized();
     }
 
+    /**
+     * Flashes default firmware into the board over the air
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @returns {object} Updated board object
+     */
     async _bootDefaultFirmware(boardId, userId) {
 
         const board = await this._getByIdAndUserId(boardId, userId);
@@ -353,6 +441,8 @@ export default class BoardService {
 
         await this._mqtt.publishAsync(board.id + "/cmd/boot-default", null, { qos: 2 });
 
+        // Send update command to board
+
         await board.update({ isBeingUpdated: true });
 
         await board.reload();
@@ -360,6 +450,12 @@ export default class BoardService {
         return board.getSanitized();
     }
 
+    /**
+     * Retrieves board
+     * @param {string} boardId 
+     * @param {string} userId 
+     * @returns {object} Board object
+     */
     async _getByIdAndUserId(boardId, userId) {
 
         const board = await this._db.models.board.findByPk(boardId, { include: [ { model: this._db.models.firmware, paranoid: false } ] });
@@ -372,7 +468,13 @@ export default class BoardService {
         return board;
     }
 
+    /**
+     * Checks that board can be updated now
+     * @param {string} board 
+     */
     _ensureBoardIsReadyForUpdate(board) {
+
+        // Board must be online and must not being updated
 
         if (!board.isOnline) {
 
@@ -385,7 +487,14 @@ export default class BoardService {
         }
     }
 
+    /**
+     * Checks that firmware fits into OTA partition of given board
+     * @param {string} board 
+     * @param {object} firmware 
+     */
     _ensureFirmwareFits(board, firmware) {
+
+        // Check if firmwere fits into OTA partition
 
         if (firmware.target !== board.chipName) {
 
@@ -398,6 +507,10 @@ export default class BoardService {
         }
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     */
     async _setOnline(boardId) {
 
         const board = await this._db.models.board.findByPk(boardId);
@@ -408,6 +521,10 @@ export default class BoardService {
         }
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     */
     async _setOffline(boardId) {
 
         const board = await this._db.models.board.findByPk(boardId);
@@ -418,6 +535,11 @@ export default class BoardService {
         }
     }
 
+    /**
+     * Writes new firmware data to DB
+     * @param {string} boardId 
+     * @param {object} data Firmware info received from the board 
+     */
     async _finishUpdate(boardId, data) {
 
         const board = await this._db.models.board.findByPk(boardId);
@@ -432,12 +554,19 @@ export default class BoardService {
 
         if (board) {
 
+            // Update board according to data recieved from ESP Manager
+
             await board.update({ firmwareId: data.firmware_id, firmwareVersion: data.version, isBeingUpdated: false });
 
             await this._firmware.tryForceDelete(oldFirmwareId);
         }
     }
 
+    /**
+     * 
+     * @param {string} boardId 
+     * @param {object} data Not used
+     */
     async _cancelUpdate(boardId, data) {
 
         const board = await this._db.models.board.findByPk(boardId);
@@ -448,6 +577,10 @@ export default class BoardService {
         }
     }
 
+    /**
+     * Creates new Dynamic Security Plugin user and sets their access rights
+     * @param {string} board 
+     */
     async _createMqttClient(board) {
 
         const message = {
@@ -485,6 +618,10 @@ export default class BoardService {
         await this._mqtt.publishAsync("$CONTROL/dynamic-security/v1", JSON.stringify(message), { qos: 2 });
     }
 
+    /**
+     * Deletes Dynamic Security Plugin user
+     * @param {string} board 
+     */
     async _deleteMqttClient(board) {
 
         const message = {

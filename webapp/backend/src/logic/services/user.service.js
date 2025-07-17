@@ -11,11 +11,20 @@ export default class UserService {
 
     static _saltRounds = 10;
 
+    /**
+     * Creates UserService
+     * @param {object} config 
+     */
     constructor(config) {
 
         this._db = config.db;
     }
 
+    /**
+     * 
+     * @param {object} body Request body 
+     * @returns {object} New user object
+     */
     async create(body) {
 
         const username = body.username;
@@ -60,6 +69,11 @@ export default class UserService {
         }
     }
 
+    /**
+     * Retriveves user by username and password
+     * @param {object} body Username and password 
+     * @returns {object} User object
+     */
     async getByCredentials(body) {
 
         const username = body.username;
@@ -82,6 +96,11 @@ export default class UserService {
         return user.getSanitized();
     }
 
+    /**
+     * 
+     * @param {string} id 
+     * @returns {object} Board object
+     */
     async getById(id) {
 
         const user = await this._db.models.user.findByPk(id);

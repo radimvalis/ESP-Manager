@@ -20,6 +20,9 @@ export default class ApplicationContext {
         Object.freeze(this);
     }
 
+    /**
+     * Initializes all services
+     */
     async init() {
 
         await this.file.init();
