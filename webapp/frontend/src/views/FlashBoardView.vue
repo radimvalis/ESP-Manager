@@ -84,11 +84,17 @@
         }
     });
 
+    /**
+     * Advances flashing to 2nd stage
+     */
     function selectBoard() {
 
         currentStage.value = STAGE.SELECT_FIRMWARE;
     }
 
+    /**
+     * Requests configuration file of given firmware; advances flashing to 3rd stage
+     */
     async function selectFirmware() {
 
         try {
@@ -131,6 +137,9 @@
         }
     }
 
+    /**
+     * Flashes the board over the air
+     */
     async function flash() {
 
         try {
@@ -162,6 +171,9 @@
         }
     }
 
+    /**
+     * Returns to 1st stage
+     */
     function resetBoardSelection() {
 
         alert.value = false;
@@ -171,6 +183,9 @@
         currentStage.value = STAGE.SELECT_BOARD;
     }
 
+    /**
+     * Return to 2nd stage
+     */
     function resetFirmwareSelection() {
 
         alert.value = false;

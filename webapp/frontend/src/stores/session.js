@@ -14,6 +14,10 @@ export const useSessionStore = defineStore("session", {
 
     getters: {
 
+        /**
+         * Checks if "init" has been already called
+         * @returns {boolean}
+         */
         isInitialized() {
 
             return this.isLoggedIn !== null;
@@ -22,6 +26,9 @@ export const useSessionStore = defineStore("session", {
 
     actions: {
 
+        /**
+         * Requests user data
+         */
         async init() {
 
             if (!this.isInitialized) {
@@ -42,12 +49,19 @@ export const useSessionStore = defineStore("session", {
             }
         },
 
+        /**
+         * Sets user as logged in
+         * @param {string} username 
+         */
         logIn(username) {
 
             this.username = username;
             this.isLoggedIn = true;
         },
 
+        /**
+         * Sets user as logged out
+         */
         logOut() {
 
             this.username = null;

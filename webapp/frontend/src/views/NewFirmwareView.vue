@@ -64,6 +64,9 @@
         catch {}
     });
 
+    /**
+     * Creates new firmware; uploads firmware binary and optional configuration file; redirects user to FirmwareDetailView
+     */
     async function upload() {
         
         try {

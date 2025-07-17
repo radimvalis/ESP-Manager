@@ -9,6 +9,9 @@
 
     const drawer = ref(false);
 
+    /**
+     * Logs user out; redirects user to LogInView
+     */
     async function logOut() {
 
         window.dispatchEvent(new Event("logout"));

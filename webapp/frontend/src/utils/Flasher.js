@@ -7,16 +7,26 @@ export default class Flasher {
     _transport = null;
     _loader = null;
 
+    /**
+     * Creates Flasher
+     * @param {number} baudRate 
+     */
     constructor(baudRate = 921600) {
 
         this._baudRate = baudRate;
     }
 
+    /**
+     * Prompts user to select port their board is connected to
+     */
     async requestPort() {
 
         this._device = await navigator.serial.requestPort();
     }
 
+    /**
+     * Establishes serial connection
+     */
     async connect() {
 
         this._transport = new Transport(this._device, false);
@@ -32,21 +42,37 @@ export default class Flasher {
         await this._loader.main();
     }
 
+    /**
+     * Gets chip name of the connected board
+     * @returns {string} Chip name
+     */
     getChipName() {
 
         return this._loader.chip.CHIP_NAME.toLowerCase();
     }
 
+    /**
+     * Gets flash memory size of the connected board
+     * @returns {number} Flash memory size in MB
+     */
     async getFlashSizeMB() {
 
         return await this._loader.getFlashSize() / 1024;
     }
 
+    /**
+     * Erases flash memory of the connected board
+     */
     async eraseFlash() {
 
         await this._loader.eraseFlash();
     };
 
+    /**
+     * Flashes bootloader, partition table, default firmware and configuration of ESP Manager into board
+     * @param {object} defaultApp - Files to flash
+     * @param {(progress: number) => void} reportProgressPercentage - Progress CB
+     */
     async program(defaultApp, reportProgressPercentage) {
 
         const fileArray = [
@@ -76,6 +102,9 @@ export default class Flasher {
         await this._loader.after();
     }
 
+    /**
+     * Closes serial connection
+     */
     async disconnect() {
 
         if (this._transport) {
@@ -84,6 +113,9 @@ export default class Flasher {
         }
    }
 
+   /**
+    * Cleans up internal references
+    */
    cleanUp() {
 
         this._device = null;

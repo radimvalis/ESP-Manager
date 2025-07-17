@@ -32,6 +32,9 @@
         (x) => !password.value || (password.value && x === password.value) || "Passwords must match"
     ];
 
+    /**
+     * Signs user up; redirects user to BoardsView
+     */
     async function signUp() {
 
         const { valid } = await form.value.validate();

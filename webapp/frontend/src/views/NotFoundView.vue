@@ -7,6 +7,9 @@
     const router = useRouter();
     const session = useSessionStore();
 
+    /**
+     * Redirects user to BoardsView or LogInView
+     */
     function returnHome() {
 
         router.push(session.isLoggedIn ? { name: "Boards" } : { name: "LogIn" });

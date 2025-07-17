@@ -50,6 +50,9 @@
         }
     });
 
+    /**
+     * Uploads new version of the firmware
+     */
     async function updateFirmware() {
 
         try {
@@ -72,6 +75,9 @@
         alert.value = true;
     }
 
+    /**
+     * Deletes firmware
+     */
     async function deleteFirmware() {
 
         try {

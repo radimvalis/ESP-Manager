@@ -115,6 +115,9 @@
         }
     });
 
+    /**
+     * Boots default firmware into the board over the air
+     */
     async function bootDefaultFirmware() {
 
         try {
@@ -130,6 +133,9 @@
         }
     }
 
+    /**
+     * Updates firmware flashed into the board over the air
+     */
     async function updateFirmware() {
 
         try {
@@ -145,6 +151,9 @@
         }
     }
 
+    /**
+     * Deletes board
+     */
     async function deleteBoard() {
 
         try {

@@ -26,6 +26,9 @@
         (x) => !!x,
     ];
 
+    /**
+     * Logs user in; redirects user to BoardsView
+     */
     async function logIn() {
 
         const { valid } = await form.value.validate();

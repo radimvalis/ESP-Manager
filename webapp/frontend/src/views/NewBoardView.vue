@@ -105,6 +105,9 @@
         window.removeEventListener("logout", onLogOut);
     });
 
+    /**
+     * Deletes board when the registration has not been completed
+     */
     async function onLogOut() {
         
         try {
@@ -115,6 +118,9 @@
         catch {}
     }
 
+    /**
+     * Establishes serial connection with the board; advances registration to 2nd stage
+     */
     async function connect() {
 
         try {
@@ -142,6 +148,9 @@
         }
     }
 
+    /**
+     * Registers board; flashes default firmware and related data into the board using serial connection; redirects user to BoardDetailView
+     */
     async function register() {
 
         try {
