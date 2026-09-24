@@ -13,7 +13,7 @@ COPY $MQTT_BROKER_CRT /mosquitto/certs/broker.crt
 COPY $MQTT_BROKER_KEY /mosquitto/certs/broker.key
 
 RUN mosquitto_ctrl dynsec init /mosquitto/config/dynamic-security.json $MQTT_ADMIN_USERNAME $MQTT_ADMIN_PASSWORD
-
+RUN chown mosquitto:mosquitto /mosquitto/config/dynamic-security.json
 
 # PRODUCTION STAGE
 
